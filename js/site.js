@@ -176,13 +176,14 @@ function pic(src, px = Infinity) {
 // Pictures written as <img data-pic="img/…jpg"> get the copy their box needs, measured right after the page is made, so
 // they are asked for as early as a plain src was: the larger of the box's width and its height times the photograph's
 // proportion (object-fit: cover), times density(). A box with no size yet counts as the window. A page that makes
-// pictures later (the next photographer on a profile) calls it again
-function fitPics(root = document) {
-	$$("img[data-pic]", root).forEach(im => {
-		const src = im.dataset.pic, r = picRatio(src)
+// pictures later (the next photographer on a profile) calls it again. Another key leaves pictures for later: Home's
+// intro asks for its other frames only once the first is in (data-later, fitPics(root, "later"))
+function fitPics(root = document, key = "pic") {
+	$$(`img[data-${key}]`, root).forEach(im => {
+		const src = im.dataset[key], r = picRatio(src)
 		let w = im.offsetWidth, h = im.offsetHeight
 		if (w < 2 || h < 2) { w = window.innerWidth; h = window.innerHeight }
-		delete im.dataset.pic
+		delete im.dataset[key]
 		im.src = pic(src, (r ? Math.max(w, h * r) : w) * density())
 	})
 }

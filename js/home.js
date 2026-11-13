@@ -26,7 +26,7 @@ let sceneTl = null
 boot({
 	render() {
 		// one stacked photo per photographer; the first is the hero frame
-		$(".frame-in").innerHTML = people.map((p, i) => `<img data-pic="${imageFor(theme, p.name)}"${i ? "" : ' fetchpriority="high"'}${photoPos(theme, imageFor(theme, p.name))} alt="">`).join("")
+		$(".frame-in").innerHTML = people.map((p, i) => `<img ${i ? "data-later" : 'fetchpriority="high" data-pic'}="${imageFor(theme, p.name)}"${photoPos(theme, imageFor(theme, p.name))} alt="">`).join("")
 		$(".h-intro ul").innerHTML = people.map((p, i) => `
 			<li><h2><a class="f-50" href="${profileUrl(p)}" data-index="${i}">
 				<span class="hero-split chars">${p.name}</span>
@@ -92,6 +92,9 @@ function scene(split, signal) {
 	// the lead is cut into lines only for its entrance: afterwards it is plain text again, so it re-wraps when the window
 	// changes. A window change during the entrance finishes it at once, and a page rebuilt after one starts finished
 	intro.eventCallback("onComplete", () => lead.revert())
+	// the other eleven frames come once the first is in, so on a slow connection they do not share it (13.11.2026:
+	// PageSpeed on a phone, the first frame 7.4 s with all twelve at once)
+	imgs[0].decode().catch(() => {}).then(() => { if (!signal.aborted) fitPics($(".frame-in"), "later") })
 	if (ctx.rebuilt) intro.progress(1)
 	else Promise.race([imgs[0].decode().catch(() => {}), new Promise(r => setTimeout(r, 1200))]).then(() => { if (!signal.aborted) intro.play() })
 	window.addEventListener("resize", () => { if (intro.progress() < 1) intro.progress(1) }, { signal })
@@ -208,6 +211,7 @@ function scene(split, signal) {
 			hovering = i
 			show(i)
 			if (i === onStage) return gsap.to(hoverImg, { opacity: 0, duration: 0.4, ease: "power2", overwrite: true })
+			if (imgs[i].dataset.later) fitPics(imgs[i].parentNode, "later") // the pointer came before the frames did
 			hoverTag.src = imgs[i].src
 			gsap.fromTo(hoverImg, { opacity: 0, filter: "blur(15px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.45, ease: "power2", overwrite: true })
 		}, { signal })
