@@ -156,7 +156,7 @@ boot({
 			</aside>
 			<div class="ca-grid">${PEOPLE.map(p => `
 				<article class="ca-card" id="${slug(p.name)}">
-					<a class="ca-main" href="${profileUrl(p)}" aria-label="${p.name}: profile"><img src="${portrait(p)}" alt="${p.name}"><i class="ca-go"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 17.5 17 7M8.5 6.5H17.5V15.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></i></a>
+					<a class="ca-main" href="${profileUrl(p)}" aria-label="${p.name}: profile"><img data-pic="${portrait(p)}" alt="${p.name}"><i class="ca-go"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 17.5 17 7M8.5 6.5H17.5V15.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></i></a>
 					<div class="ca-text">
 						<div class="ca-head"><h2 class="ca-name">${p.name}</h2><p class="caps ca-meta">${p.city} · ${p.focus.join(", ")}</p></div>
 						<p class="ca-bio">${p.bio}</p>

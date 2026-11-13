@@ -130,25 +130,25 @@ function reveal(el, text) {
 boot({
 	render() {
 		$(".st-hero").innerHTML = `<div class="st-pin">
-			<div class="st-photo"><img src="${OPENING_IMG}" alt=""></div>
+			<div class="st-photo"><img data-pic="${OPENING_IMG}" fetchpriority="high" alt=""></div>
 			<div class="ha-mask"><h1 class="ha-word display">Studio</h1></div>
 			<p class="h-lead">Twelve photographers. Two cities. <span>One way of looking.</span></p>
 		</div>`
 		$(".st-how").innerHTML = `<div class="st-pin hw" data-mode="${hwMode()}"><span class="caps hw-label">How we work</span>${STEPS.map((s, i) => `
 			<div class="hw-row">
 				<div class="hw-word"><b>${pad(i + 1)}</b><b>${s.word}</b></div>
-				<div class="hw-body"><figure><img src="${s.img}" alt=""></figure><p>${s.text}</p></div>
+				<div class="hw-body"><figure><img data-pic="${s.img}" loading="lazy" alt=""></figure><p>${s.text}</p></div>
 			</div>`).join("")}</div>`
 		$(".st-mf").innerHTML = `<div class="st-pin">
 			<div class="mf-in">
 				<div class="mf-head"><span class="caps mf-label">Manifesto</span><p class="mf-text">${SENTENCE.split(" ").map(w => `<span>${w}</span>`).join(" ")}</p></div>
-				<div class="mf-strip"><span class="caps mf-count">36 frames</span><div class="mf-frames">${CONTACT_SHEET.map(src => `<img src="${src}" alt="" loading="lazy">`).join("")}</div></div>
+				<div class="mf-strip"><span class="caps mf-count">36 frames</span><div class="mf-frames">${CONTACT_SHEET.map(src => `<img data-pic="${src}" alt="" loading="lazy">`).join("")}</div></div>
 			</div>
-			<div class="mf-kept"><img src="${CONTACT_SHEET[KEPT]}" alt=""></div>
+			<div class="mf-kept"><img data-pic="${CONTACT_SHEET[KEPT]}" loading="lazy" alt=""></div>
 		</div>`
 		$(".st-val").innerHTML = `<div class="st-pin">
 			<span class="caps val-label">Our values</span>
-			<div class="vd-text"><div class="vd-row">${VALUES.map(v => `<span class="vd-word">${v.word}</span><span class="vd-pic"><img src="${v.img}" alt=""></span>`).join("")}</div></div>
+			<div class="vd-text"><div class="vd-row">${VALUES.map(v => `<span class="vd-word">${v.word}</span><span class="vd-pic"><img data-pic="${v.img}" loading="lazy" alt=""></span>`).join("")}</div></div>
 			<p class="vd-desc"></p>
 		</div>`
 		$(".st-cc").innerHTML = `<div class="cc-pin">

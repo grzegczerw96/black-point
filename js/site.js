@@ -59,7 +59,7 @@ const localTarget = href => {
 const STUDIOS_HTML = `
 	<div class="studios-frame">
 		<a class="city" href="https://maps.google.com/?q=Rua+das+Flores+28,+Lisbon" target="_blank" rel="noopener" data-tz="Europe/Lisbon">
-			<figure><img src="img/studio-lisbon.jpg" alt="Fallow deer in a forest clearing"></figure>
+			<figure><img data-pic="img/studio-lisbon.jpg" loading="lazy" alt="Fallow deer in a forest clearing"></figure>
 			<div class="city-txt">
 				<h2>Lisbon</h2>
 				<div class="city-info">
@@ -69,7 +69,7 @@ const STUDIOS_HTML = `
 			</div>
 		</a>
 		<a class="city" href="https://maps.google.com/?q=ul.+Mokotowska+12,+Warsaw" target="_blank" rel="noopener" data-tz="Europe/Warsaw">
-			<figure><img src="img/studio-warsaw.jpg" alt="Curved facade of folded metal strips"></figure>
+			<figure><img data-pic="img/studio-warsaw.jpg" loading="lazy" alt="Curved facade of folded metal strips"></figure>
 			<div class="city-txt">
 				<h2>Warsaw</h2>
 				<div class="city-info">
@@ -136,6 +136,7 @@ function render() {
 	if (studiosEl) studiosEl.innerHTML = STUDIOS_HTML
 	if (contactEl) contactEl.innerHTML = CONTACT_HTML(here === "contact.html" ? "mailto:studio@blackpoint.studio" : "contact.html")
 	page.render?.()
+	fitPics()
 }
 
 // FIT DISPLAY TYPE /////////////////////////////////////////////////////////////////////////////////////////
@@ -171,6 +172,19 @@ function pic(src, px = Infinity) {
 	if (!s || !imgFmt) return src
 	const w = s[2].find(w => w >= px) || s[0]
 	return src.replace(/^img\//, "img/opt/").replace(/\.jpg$/, `-${w}.${imgFmt}`)
+}
+// Pictures written as <img data-pic="img/…jpg"> get the copy their box needs, measured right after the page is made, so
+// they are asked for as early as a plain src was: the larger of the box's width and its height times the photograph's
+// proportion (object-fit: cover), times density(). A box with no size yet counts as the window. A page that makes
+// pictures later (the next photographer on a profile) calls it again
+function fitPics(root = document) {
+	$$("img[data-pic]", root).forEach(im => {
+		const src = im.dataset.pic, r = picRatio(src)
+		let w = im.offsetWidth, h = im.offsetHeight
+		if (w < 2 || h < 2) { w = window.innerWidth; h = window.innerHeight }
+		delete im.dataset.pic
+		im.src = pic(src, (r ? Math.max(w, h * r) : w) * density())
+	})
 }
 const picRatio = src => (PHOTO_SIZES[src] ? PHOTO_SIZES[src][0] / PHOTO_SIZES[src][1] : 0) // width / height of the original, known before it loads
 // a photograph fetched before it is needed, once per file; resolves when it can be shown at once

@@ -26,7 +26,7 @@ let sceneTl = null
 boot({
 	render() {
 		// one stacked photo per photographer; the first is the hero frame
-		$(".frame-in").innerHTML = people.map(p => `<img src="${imageFor(theme, p.name, 1800, 1100)}"${photoPos(theme, imageFor(theme, p.name))} alt="">`).join("")
+		$(".frame-in").innerHTML = people.map((p, i) => `<img data-pic="${imageFor(theme, p.name)}"${i ? "" : ' fetchpriority="high"'}${photoPos(theme, imageFor(theme, p.name))} alt="">`).join("")
 		$(".h-intro ul").innerHTML = people.map((p, i) => `
 			<li><h2><a class="f-50" href="${profileUrl(p)}" data-index="${i}">
 				<span class="hero-split chars">${p.name}</span>

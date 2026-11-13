@@ -5,9 +5,8 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1">
 	<title>Projects - Black Point</title>
 	<meta name="description" content="Twelve projects by the photographers of Black Point: portraits, campaigns and quiet documentary work.">
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..75,700..900&family=Archivo:wdth,wght@112,800&family=Instrument+Sans:wght@400;500;600&display=swap">
+	<!-- fonts and GSAP from this site, not from Google and jsdelivr (13.11.2026): one server less to wait for. No font preload: measured, it held up the scripts and the first paint (FCP 1.3 → 2.1–2.5 s) -->
+	<link rel="stylesheet" href="css/fonts.css">
 	<link rel="stylesheet" href="css/style.css" />
 	<link rel="stylesheet" href="css/tokens.css" />
 	<link rel="stylesheet" href="css/home.css" />
@@ -44,11 +43,11 @@
 		</div>
 	</main>
 
-	<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollSmoother.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/CustomEase.min.js"></script>
+	<script src="js/vendor/gsap-3.13.0/gsap.min.js"></script>
+	<script src="js/vendor/gsap-3.13.0/ScrollTrigger.min.js"></script>
+	<script src="js/vendor/gsap-3.13.0/ScrollSmoother.min.js"></script>
+	<script src="js/vendor/gsap-3.13.0/SplitText.min.js"></script>
+	<script src="js/vendor/gsap-3.13.0/CustomEase.min.js"></script>
 	<script src="js/themes.js"></script>
 	<script src="img/opt/sizes.js"></script>
 	<script src="js/site.js"></script>

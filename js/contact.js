@@ -28,7 +28,7 @@ const subAt = (i, f, start = 0.1) => {
 boot({
 	render() {
 		$(".c-story .film-pin").innerHTML = `
-			${STORY.map(s => `<div class="film-shot"><img src="${IMG(s.img)}" style="object-position:${s.pos}" alt=""></div>`).join("")}
+			${STORY.map((s, i) => `<div class="film-shot"><img data-pic="${IMG(s.img)}"${i ? "" : ' fetchpriority="high"'} style="object-position:${s.pos}" alt=""></div>`).join("")}
 			${CHAPTERS.map(c => `<div class="ka-card"><span class="caps">Chapter ${c.no}</span><span class="display">${c.word}</span></div>`).join("")}
 			<div class="film-top"><span class="caps">Black Point — how we work</span><span class="caps film-no"></span></div>
 			<p class="film-sub"></p>

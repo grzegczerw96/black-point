@@ -71,14 +71,14 @@ function renderProfile() {
 	$$("#smooth-content > .pin-spacer").forEach(sp => { const kid = sp.firstElementChild; kid.style.cssText = ""; sp.replaceWith(kid) })
 	document.title = `${pr.name} - Black Point`
 	contentTag.dataset.mode = pfMode()
-	$(".pf-backdrop").innerHTML = `<img src="${cover}"${photoPos(theme, cover)} alt="">`
+	$(".pf-backdrop").innerHTML = `<img data-pic="${cover}"${photoPos(theme, cover)} alt="">`
 	$("#hero").innerHTML = `
 			<a href="${p.backHref}" class="pf-back pf-small pf-intro">&larr; ${p.back}</a>
-			<div class="pf-card"><figure><img src="${cover}" alt="${pr.name}"></figure></div>
+			<div class="pf-card"><figure><img data-pic="${cover}" fetchpriority="high" alt="${pr.name}"></figure></div>
 			<h1 class="hero-split chars pf-name">${words[0]}<br>${words.slice(1).join(" ")}</h1>`
 	// on a phone About opens with the photographer's portrait, as on Team (stock pictures for now, img/portraits/CREDITS.md)
 	$("#bio").innerHTML = `${phone ? `
-			<figure class="pf-portrait pf-in"><img src="img/portraits/${slug(pr.name)}.jpg" alt="${pr.name}"></figure>` : ""}
+			<figure class="pf-portrait pf-in"><img data-pic="img/portraits/${slug(pr.name)}.jpg" alt="${pr.name}"></figure>` : ""}
 			<span class="pf-label pf-small pf-in">About</span>
 			<div class="pf-about">
 				<p class="pf-text">${pr.bio}</p>
@@ -98,7 +98,7 @@ function renderProfile() {
 					const src = galleryImage(theme, pr.name, k), what = w.title ? `${w.client} &mdash; ${w.title}` : w.client
 					return `
 					<li class="${w.landscape ? "land" : "port"}">
-						<figure><img src="${src}"${photoPos(theme, src)} alt="${w.title ? `${w.client} — ${w.title}` : w.client}" draggable="false"></figure>
+						<figure><img data-pic="${src}" loading="lazy"${photoPos(theme, src)} alt="${w.title ? `${w.client} — ${w.title}` : w.client}" draggable="false"></figure>
 						<p class="pf-cap"><span>${pad(k + 1)}</span><span>${what}</span><span>${w.year}</span></p>
 					</li>`
 				}).join("")}
