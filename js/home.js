@@ -14,6 +14,15 @@ const holdAt = i => OPEN + i * STEP + STEP / 2 // middle of photographer i's tur
 
 let sceneTl = null
 
+// UNDER THE NAMES: the user chose c, a darker shade over the whole photo (13.11.2026), on every window. On phones the other
+// two stay to compare: ?tlo=a gradient from the names' side, ?tlo=b blur + the old 55% shade; ?tlo=c or ?tlo=0 back to c.
+// The choice stays for the tab (sessionStorage), like ?scroll= in site.js
+;(() => {
+	let v = new URLSearchParams(location.search).get("tlo")
+	try { if (/^[abc0]$/.test(v || "")) sessionStorage.setItem("bp-tlo", v); else v = sessionStorage.getItem("bp-tlo") } catch (e) {}
+	if (/^[ab]$/.test(v || "")) document.documentElement.dataset.tlo = v
+})()
+
 boot({
 	render() {
 		// one stacked photo per photographer; the first is the hero frame
@@ -50,7 +59,7 @@ function scene(split, signal) {
 	const section = $(".h-intro"), frame = $(".intro-frame"), zoom = $(".frame-zoom"), shade = $(".frame-shade"),
 		imgs = $$(".frame-in img"), hoverImg = $(".frame-hover"), [l1, l2] = $$(".hero-title .hl"),
 		items = $$(".h-intro li"), links = $$(".h-intro li a"), ball = $(".team-list .track"),
-		capNo = $(".cap-no > span > span"), capWork = $(".cap-work > span > span"), capLink = $(".cap-link")
+		capWork = $(".cap-work > span > span"), capLink = $(".cap-link")
 
 	// the frame rectangle at rest, resolved from the CSS custom properties (--frame-w / -h / -y)
 	const frameSize = () => { const p = document.createElement("div"); p.style.cssText = "position:absolute;width:var(--frame-w);height:var(--frame-h)"; section.appendChild(p); const r = [p.offsetWidth, p.offsetHeight]; p.remove(); return r }
@@ -102,9 +111,9 @@ function scene(split, signal) {
 	arrive.from(".team-cap p > span, .cap-link", { yPercent: 110, opacity: 0, duration: 0.8, stagger: 0.06, ease: "expo.out" }, 0.3)
 
 	// who is on stage: the active name turns accent letter by letter, the dot slides to it,
-	// the caption rolls to the new line
+	// the caption (the project only since 13.11.2026: the "01 / 12 — name" label is gone) rolls to the new line
 	let shown = -1, onStage = 0, hovering = -1
-	const caption = i => [`${pad(i + 1)} / ${pad(people.length)} — ${people[i].name}`, `${people[i].work[0].title} · ${people[i].work[0].client} · ${people[i].work[0].year}`]
+	const caption = i => `${people[i].work[0].title} · ${people[i].work[0].client} · ${people[i].work[0].year}`
 	const show = i => {
 		if (i === shown) return
 		const prev = shown
@@ -114,14 +123,12 @@ function scene(split, signal) {
 		gsap.to(hovers[i], { yPercent: 0, scaleY: 1, stagger: { amount: 0.1 }, duration: 0.5, ease: "expo", overwrite: true })
 		gsap.to(ball, { y: items[i].offsetTop + (items[i].offsetHeight - ball.offsetHeight) / 2, duration: 0.5, ease: "power3", overwrite: true })
 		capLink.href = profileUrl(people[i])
-		const [no, work] = caption(i)
-		if (prev === -1) { capNo.textContent = no; capWork.textContent = work; return }
-		gsap.to([capNo, capWork], {
-			yPercent: -110, duration: 0.25, ease: "power3.in", stagger: 0.04, overwrite: true,
+		if (prev === -1) { capWork.textContent = caption(i); return }
+		gsap.to(capWork, {
+			yPercent: -110, duration: 0.25, ease: "power3.in", overwrite: true,
 			onComplete: () => {
-				const [n, w] = caption(shown) // always the latest, even after fast scrolling
-				capNo.textContent = n; capWork.textContent = w
-				gsap.fromTo([capNo, capWork], { yPercent: 110 }, { yPercent: 0, duration: 0.45, ease: "power3.out", stagger: 0.04 })
+				capWork.textContent = caption(shown) // always the latest, even after fast scrolling
+				gsap.fromTo(capWork, { yPercent: 110 }, { yPercent: 0, duration: 0.45, ease: "power3.out" })
 			}
 		})
 	}
