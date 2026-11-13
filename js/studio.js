@@ -1,0 +1,315 @@
+// BLACK POINT — STUDIO. The shared chrome and sections live in site.js; this file is the page itself, in order:
+// the word you walk through, how we work, the manifesto, the five rules and the clients as closing credits.
+// Scroll is the only thing the visitor has to do. The layouts for each window shape follow test 2 (5.11.2026);
+// everything that depends on the window is measured in fit() and init(), so a rebuild after a window change gets it right.
+
+// CONTENT /////////////////////////////////////////////////////////////////////////////////////////////////
+const work = (who, k) => `img/work/${who}-${k}.jpg`
+const OPENING_IMG = work("lola-vandermeer", 1)
+const STEPS = [
+	{ word: "Brief", text: "We read the brief together and answer with references, not a deck. One meeting, one page.", img: work("vera-kowalska", 1) },
+	{ word: "Casting", text: "The story picks the photographer. Every brief is cast in one meeting, the whole table votes.", img: work("nina-sorrento", 2) },
+	{ word: "Shoot", text: "Three people on set instead of thirty. Quieter sets get truer pictures, and smaller budgets go further.", img: work("dex-margolin", 0) },
+	{ word: "Edit & Print", text: "Hand retouching, a paper proof, a printed archive for you. What was there stays.", img: work("nina-sorrento", 1) }
+]
+const SENTENCE = "We believe a photograph is earned, not taken. We wait for the light, we listen before we shoot and we leave things out."
+const VALUES = [
+	{ word: "Patience", text: "We wait for the moment instead of manufacturing it.", img: work("vera-kowalska", 2) },
+	{ word: "Honesty", text: "No smoothed skin, no swapped skies. What was there stays.", img: work("zane-holloway", 1) },
+	{ word: "Craft", text: "Light, print and paper: we care about the whole chain.", img: work("ivo-ruskin", 0) },
+	{ word: "Restraint", text: "A frame is finished when nothing is left to remove.", img: work("nina-sorrento", 1) },
+	{ word: "Trust", text: "Twelve photographers, one table. Every edit is reviewed together.", img: work("greta-lindmark", 0) }
+]
+const CONTACT_SHEET = theme.roster.flatMap(n => [0, 1, 2].map(k => galleryImage(theme, n, k)))
+const KEPT = 17 // the one frame of the 36 that survives the edit
+// every client named in the profiles, with who shot for them and when (years are illustrative)
+const CLIENTS = []
+theme.profile.people.forEach((p, i) => p.clients.forEach((name, k) => {
+	let c = CLIENTS.find(x => x.name === name)
+	if (!c) CLIENTS.push(c = { name, people: [], years: [] })
+	c.people.push(theme.roster[i].split(" ")[0])
+	c.years.push(2014 + ((i * 5 + k * 3) % 13))
+}))
+// the jobs on the profiles count too, so a project's year always falls inside its client's dates
+theme.roster.forEach((n, i) => profileFor(theme, i).work.forEach(w => CLIENTS.find(c => c.name === w.client).years.push(w.year)))
+CLIENTS.forEach(c => { c.from = Math.min(...c.years); c.to = Math.max(...c.years) })
+CLIENTS.sort((a, b) => a.from - b.from || a.name.localeCompare(b.name))
+
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v))
+const lerp = (a, b, t) => a + (b - a) * t
+const smooth = t => t * t * (3 - 2 * t)
+// Scroll progress to a scene's stops. Each stop is a shelf: it holds for most of the way and the change happens in the
+// middle, so the scene is nearly always at rest on a stop
+const shelves = (progress, units) => {
+	const t = clamp(progress * (units + 0.4) - 0.2, 0, units), i = Math.min(units, Math.floor(t))
+	return i + smooth(clamp((t - i - 0.28) / 0.44))
+}
+// The gentle pull: only when the scroll has come to rest in the middle of a change, it finishes the change in the
+// direction of travel. On a shelf nothing moves, and any new scroll cancels it, so it never works against the visitor
+const settle = units => ({
+	snapTo: (progress, st) => {
+		const t = progress * (units + 0.4) - 0.2, i = Math.floor(t), f = t - i
+		if (t <= 0 || t >= units || f <= 0.28 || f >= 0.72) return progress
+		return (i + (st.direction > 0 ? 0.73 : 0.27) + 0.2) / (units + 0.4)
+	},
+	delay: 0.4, duration: { min: 0.35, max: 0.8 }, ease: "power1.inOut", inertia: false
+})
+// How we work, by the window's shape (test 2): low or very wide windows put the list beside the picture, tall and
+// square ones put the picture across the measure, the rest the picture with its indent and the text beside it
+const hwMode = () => {
+	const W = window.innerWidth, H = window.innerHeight, ratio = W / H
+	return ratio >= 1.9 || (H < 700 && (W >= 600 || ratio >= 1.1)) ? "side" : ratio < 1.1 ? "column" : "indent"
+}
+const PIC_WIDTH = 1.3 // em
+// the rows the values may stand in; a word slides along its row as a picture opens and never changes row
+const VALUE_ROWS = [[[0, 3], [3, 5]], [[0, 1], [1, 3], [3, 5]], [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]]
+// One rule for the size, from the window's shape: a tenth of the width, more on a tall window, never more than a quarter
+// of the height. The words take the fewest rows in which every row still fits with its picture open, and the size never
+// grows past the three-row fit unless that is below 92px (then a phone gets one word per row): the rows follow from the
+// size, so the size never jumps where the number of rows changes
+function fitValues() {
+	const box = $(".vd-text"), root = $(".st-val")
+	if (!box) return
+	const W = window.innerWidth, H = window.innerHeight, base = 100
+	box.style.fontSize = base + "px"
+	const words = $$(".vd-word", box), pics = $$(".vd-pic", box), widths = words.map(w => w.getBoundingClientRect().width)
+	const gap = base * 0.17, room = box.offsetWidth
+	const runW = ([a, b]) => widths.slice(a, b).reduce((s, w) => s + w, 0) + base * PIC_WIDTH + gap * ((b - a) * 2 - 1)
+	const fits = VALUE_ROWS.map(rows => base * room / Math.max(...rows.map(runW)))
+	const want = Math.min(W * 0.1 + Math.max(0, H - 0.9 * W) * 0.2, H * 0.26)
+	let size = clamp(Math.min(want, Math.max(fits[1], 92), fits[2]), 48, 288)
+	const pick = Math.max(0, fits.findIndex(f => f >= size - 0.5)), rows = VALUE_ROWS[pick]
+	// the rows stay clear of the label above and of the text below (two lines at most)
+	const label = $(".val-label", root), descSize = Math.min(32, Math.max(parseFloat(getComputedStyle($(".vd-desc", root)).fontSize) || 16, size * 0.14))
+	const above = label.offsetTop + label.offsetHeight, below = Math.max(16, 60 * u()) + descSize * 2.7
+	size = Math.max(Math.min(size, (H - 2 * (Math.max(above, below) + 16)) / (rows.length * 0.875)), Math.min(size, 48))
+	// the same word and picture elements move into their rows, so the scene keeps hold of them
+	box.replaceChildren(...rows.map(([a, b]) => {
+		const row = document.createElement("div")
+		row.className = "vd-row"
+		for (let i = a; i < b; i++) row.append(words[i], pics[i])
+		return row
+	}))
+	box.style.fontSize = size + "px"
+	root.style.setProperty("--vd-size", size + "px")
+}
+// The opening word (test 2): as wide as the measure, or as wide as the room between the logo and the menu when the screen
+// is low, whichever is larger; in the middle of the screen, never under the menu, never on the lead
+function fitOpening() {
+	const hero = $(".st-hero"), word = $(".ha-word", hero), lead = $(".h-lead", hero)
+	if (!word) return
+	const W = window.innerWidth, H = window.innerHeight, GAP = 16, menu = $("#hamburger").getBoundingClientRect(), logo = $("#logo")
+	// the letters themselves, not their line, must stay clear of the menu and the lead: their height and their place in
+	// the line, from the font (at 100px)
+	const pen = document.createElement("canvas").getContext("2d"), style = getComputedStyle(word)
+	pen.font = `900 100px ${style.fontFamily}`
+	const m = pen.measureText(word.textContent.toUpperCase()), line = parseFloat(style.lineHeight) / parseFloat(style.fontSize)
+	const inkH = (m.actualBoundingBoxAscent + m.actualBoundingBoxDescent) / 100 // in em
+	const inkTop = (line - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent) / 100) / 2 + (m.fontBoundingBoxAscent - m.actualBoundingBoxAscent) / 100
+	fitWidth(word, 1000)
+	const ratio = word.scrollWidth / (inkH * parseFloat(word.style.fontSize)) // the word's width per height of its letters
+	let w = measure()
+	for (let k = 0; k < 2; k++) { // the lead starts where the word starts, and its height decides how low the word may go
+		hero.style.setProperty("--ha-left", (W - w) / 2 + "px")
+		const room = H - lead.offsetHeight - parseFloat(getComputedStyle(lead).bottom) - GAP
+		const across = Math.min(measure(), (room - menu.bottom - GAP) * ratio)
+		const between = Math.min(W - 2 * (logo.offsetLeft + logo.offsetWidth + 48), (room - menu.top - GAP) * ratio)
+		w = Math.max(across, between)
+		fitWidth(word, w)
+		// the line in the middle of the screen, as long as its letters stay under the menu's top and above the lead
+		const F = parseFloat(word.style.fontSize)
+		hero.style.setProperty("--ha-top", Math.min(Math.max(H / 2 - word.offsetHeight / 2, menu.bottom + GAP - inkTop * F), room - (inkTop + inkH) * F) + "px")
+	}
+	hero.style.setProperty("--ha-left", (W - word.scrollWidth) / 2 + "px")
+}
+function reveal(el, text) {
+	el.textContent = text
+	gsap.fromTo(el, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: dur(0.45), ease: "power3.out", overwrite: true })
+}
+
+boot({
+	render() {
+		$(".st-hero").innerHTML = `<div class="st-pin">
+			<div class="st-photo"><img src="${OPENING_IMG}" alt=""></div>
+			<div class="ha-mask"><h1 class="ha-word display">Studio</h1></div>
+			<p class="h-lead">Twelve photographers. Two cities. <span>One way of looking.</span></p>
+		</div>`
+		$(".st-how").innerHTML = `<div class="st-pin hw" data-mode="${hwMode()}"><span class="caps hw-label">How we work</span>${STEPS.map((s, i) => `
+			<div class="hw-row">
+				<div class="hw-word"><b>${pad(i + 1)}</b><b>${s.word}</b></div>
+				<div class="hw-body"><figure><img src="${s.img}" alt=""></figure><p>${s.text}</p></div>
+			</div>`).join("")}</div>`
+		$(".st-mf").innerHTML = `<div class="st-pin">
+			<div class="mf-in">
+				<div class="mf-head"><span class="caps mf-label">Manifesto</span><p class="mf-text">${SENTENCE.split(" ").map(w => `<span>${w}</span>`).join(" ")}</p></div>
+				<div class="mf-strip"><span class="caps mf-count">36 frames</span><div class="mf-frames">${CONTACT_SHEET.map(src => `<img src="${src}" alt="" loading="lazy">`).join("")}</div></div>
+			</div>
+			<div class="mf-kept"><img src="${CONTACT_SHEET[KEPT]}" alt=""></div>
+		</div>`
+		$(".st-val").innerHTML = `<div class="st-pin">
+			<span class="caps val-label">Our values</span>
+			<div class="vd-text"><div class="vd-row">${VALUES.map(v => `<span class="vd-word">${v.word}</span><span class="vd-pic"><img src="${v.img}" alt=""></span>`).join("")}</div></div>
+			<p class="vd-desc"></p>
+		</div>`
+		$(".st-cc").innerHTML = `<div class="cc-pin">
+			<div class="cc-in">
+				<div class="cc-count"><span class="cc-num display">01</span><span class="caps">/ ${CLIENTS.length} brands since ${CLIENTS[0].from}</span></div>
+				<div class="cc-view"><div class="cc-roll">${CLIENTS.map(c => `<div class="cc-row"><b>${c.name}</b><span>${[...new Set(c.people)].join(", ")}</span><span>${c.from === c.to ? c.from : c.from + "–" + String(c.to).slice(2)}</span></div>`).join("")}</div></div>
+			</div>
+		</div>`
+	},
+	fit() {
+		fitOpening()
+		fitValues()
+	},
+	init(split) {
+		opening(split)
+		how()
+		manifesto()
+		values()
+		clients()
+	}
+})
+
+// 01 THE OPENING — the word is a hole in a dark sheet; scrolling walks into the O until the photo is all there is //
+function opening(split) {
+	const root = $(".st-hero"), word = $(".ha-word"), mask = $(".ha-mask")
+	const chars = split(word, { type: "chars", charsClass: "char" }).chars
+	fitAll() // split letters lose kerning: re-fit
+	gsap.fromTo(chars, { transformOrigin: "top left", y: "-30%", scaleY: 0 }, { scaleY: 1, y: 0, duration: dur(1.5), stagger: { amount: dur(0.3) }, ease: customEase })
+	gsap.fromTo(".h-lead", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: dur(1.1), delay: dur(0.5), ease: "expo.out" })
+	// the zoom centres on the left stroke of the O, so the screen fills with photo and not with its counter.
+	// The letters are still folded here, so only their x is usable
+	const origin = () => {
+		const o = chars[chars.length - 1].getBoundingClientRect(), w = word.getBoundingClientRect()
+		return `${((o.left + o.width * 0.15 - w.left) / w.width) * 100}% 50%`
+	}
+	gsap.set(word, { transformOrigin: origin })
+	const tl = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: root, start: "top top", end: () => "+=" + innerHeight * 1.6, pin: $(".st-pin", root), scrub: true, invalidateOnRefresh: true } })
+	tl.to(word, { scale: 70, duration: 1, ease: "power3.in" }, 0)
+	tl.to(".h-lead", { opacity: 0, y: -40, duration: 0.25 }, 0)
+	tl.set(mask, { autoAlpha: 0 }, 1)
+	tl.fromTo(".st-photo img", { scale: 1.12 }, { scale: 1, duration: 1.2 }, 0.2)
+	tl.set({}, {}, 1.4)
+}
+
+// 02 HOW WE WORK — four rows, one open; the sizes come from the window, so it always fits one screen /////////////
+function how() {
+	const root = $(".st-how"), pin = $(".hw", root), mode = pin.dataset.mode, label = $(".hw-label", root),
+		rows = $$(".hw-row", root), words = $$(".hw-word", root), bodies = $$(".hw-body", root), figs = $$(".hw-body figure", root), texts = $$(".hw-body p", root)
+	let top, size, open, figTop
+	const sizes = () => {
+		const W = pin.offsetWidth, H = pin.offsetHeight, U = W / 1440, gutter = (W - measure()) / 2
+		top = Math.max(112, 192 * U)
+		const bottom = Math.max(32, 64 * U) // the margin below the last row
+		size = Math.max(isSmall() ? 40 : 0, Math.min(64 * u(), H * 0.09)) // a size: the size unit; the positions above follow the width (U)
+		pin.style.setProperty("--hw-size", size + "px")
+		const cs = getComputedStyle(bodies[0]), PAD = parseFloat(cs.paddingTop), AFTER = parseFloat(cs.paddingBottom), gap = parseFloat(cs.rowGap) || 16 // the body's paddings (css/studio.css per mode); --gap-tight
+		const textH = () => Math.max(...texts.map(p => p.offsetHeight))
+		if (mode === "side") {
+			// the text opens under its row, in the list's column; the picture fills the rest, from the label to the margin
+			const col = Math.max(240, ...words.map(w => w.offsetWidth)), colGap = Math.max(24, 64 * U)
+			texts.forEach(p => { p.style.width = col + "px" })
+			open = PAD + textH() + AFTER
+			figTop = label.offsetTop
+			figs.forEach(f => { f.style.left = col + colGap + "px"; f.style.width = W - 2 * gutter - col - colGap + "px"; f.style.height = H - bottom - figTop + "px" })
+			return
+		}
+		// the rows take what they need, the open one gets the rest
+		open = Math.max(100, H - top - bottom - size * rows.length)
+		if (mode === "column") {
+			// the picture across the measure, the text under it, a group's gap before the next row
+			const fh = Math.max(60, open - PAD - gap - textH() - AFTER)
+			figs.forEach(f => { f.style.width = measure() + "px"; f.style.height = fh + "px" })
+		} else {
+			const fh = open - 24, fw = Math.min(fh * 1.6, W * 0.42)
+			figs.forEach(f => { f.style.width = fw + "px"; f.style.height = fh + "px" })
+		}
+	}
+	const render = t => {
+		const i0 = Math.min(rows.length - 1, Math.floor(t)), f = smooth(clamp(t - i0))
+		let y = top
+		rows.forEach((r, i) => {
+			const o = i === i0 ? 1 - f : i === i0 + 1 ? f : 0
+			r.style.transform = `translate3d(0,${y}px,0)`
+			words[i].style.opacity = lerp(0.38, 1, o)
+			if (mode === "side") {
+				// the text opens under its row as the body does elsewhere; the next picture opens downwards over the
+				// open one, which stays whole under it, so two pictures never show through each other
+				texts[i].style.clipPath = `inset(0 0 ${(1 - o) * 100}% 0)`
+				const shown = i === i0 ? 1 : i === i0 + 1 ? f : 0
+				figs[i].style.top = figTop - y - size + "px"
+				figs[i].style.clipPath = `inset(0 0 ${(1 - shown) * 100}% 0)`
+			} else bodies[i].style.clipPath = `inset(0 0 ${(1 - o) * 100}% 0)`
+			y += size + open * o
+		})
+	}
+	const units = rows.length - 1
+	ScrollTrigger.create({
+		trigger: root, start: "top top", end: () => "+=" + innerHeight * rows.length * 0.6, pin, invalidateOnRefresh: true, snap: settle(units),
+		onRefresh: s => { sizes(); render(shelves(s.progress, units)) },
+		onUpdate: s => render(shelves(s.progress, units))
+	})
+	sizes()
+	render(0)
+}
+
+// 03 MANIFESTO — the sentence lights up word by word, then "we leave things out" happens below it: the contact
+// sheet goes dark frame by frame until one is kept, and that one opens to the full screen, as the frame on Home ////
+function manifesto() {
+	const root = $(".st-mf"), words = $$(".mf-text span", root), frames = $$(".mf-frames img", root), kept = $(".mf-kept", root), count = $(".mf-count", root)
+	// the strip shows as many frames as fit in one row; the kept frame is one of them (the middle one when the strip is
+	// short), and it keeps its picture: the two pictures swap places
+	const shown = frames.filter(f => f.offsetTop === frames[0].offsetTop).length
+	const k = shown > KEPT ? KEPT : Math.floor(shown / 2)
+	if (k !== KEPT) [frames[k].src, frames[KEPT].src] = [frames[KEPT].src, frames[k].src]
+	const order = frames.slice(0, shown).map((_, i) => i).filter(i => i !== k).sort((a, b) => ((a * 13) % 35) - ((b * 13) % 35))
+	const clip = () => { const r = frames[k].getBoundingClientRect(), p = kept.parentNode.getBoundingClientRect(); return `inset(${r.top - p.top}px ${p.right - r.right}px ${p.bottom - r.bottom}px ${r.left - p.left}px round 3px)` }
+	gsap.set(kept, { clipPath: clip, autoAlpha: 0 })
+	const tl = gsap.timeline({
+		defaults: { ease: "none" },
+		scrollTrigger: {
+			trigger: root, start: "top top", end: () => "+=" + innerHeight * 2.6, pin: $(".st-pin", root), scrub: true, invalidateOnRefresh: true,
+			onUpdate: s => { count.textContent = s.progress > 0.76 ? "36 frames. 1 kept." : "36 frames" }
+		}
+	})
+	words.forEach((w, i) => tl.to(w, { opacity: 1, duration: 0.03 }, i / words.length * 0.62))
+	order.forEach((i, n) => tl.to(frames[i], { opacity: 0.08, duration: 0.03 }, 0.3 + n / order.length * 0.45))
+	tl.set(kept, { autoAlpha: 1 }, 0.78)
+	tl.to(kept, { clipPath: "inset(0px 0px 0px 0px round 0px)", duration: 0.22, ease: "power2.inOut" }, 0.78)
+	tl.set({}, {}, 1)
+}
+
+// 04 VALUES — the five rules in a few lines of type; a picture opens inside the line and pushes the words apart ////
+function values() {
+	const root = $(".st-val"), words = $$(".vd-word", root), pics = $$(".vd-pic", root), desc = $(".vd-desc", root), units = VALUES.length - 1
+	let cur = -1
+	const render = t => {
+		words.forEach((w, i) => {
+			const o = 1 - smooth(clamp(Math.abs(t - i)))
+			w.style.opacity = lerp(0.2, 1, o)
+			pics[i].style.width = `${o * PIC_WIDTH}em`
+		})
+		const near = Math.round(t)
+		if (near !== cur) { cur = near; reveal(desc, VALUES[near].text) }
+	}
+	ScrollTrigger.create({
+		trigger: root, start: "top top", end: () => "+=" + innerHeight * VALUES.length * 0.65, pin: $(".st-pin", root), invalidateOnRefresh: true, snap: settle(units),
+		onUpdate: s => render(shelves(s.progress, units)),
+		onRefresh: s => render(shelves(s.progress, units))
+	})
+	render(0)
+}
+
+// 05 CLIENTS — closing credits: the row in the middle of the window is lit, the rest fades out above and below //////
+function clients() {
+	const root = $(".st-cc"), pin = $(".cc-pin", root), view = $(".cc-view", root), roll = $(".cc-roll", root), rows = $$(".cc-row", root), num = $(".cc-num", root)
+	const mid = r => r.offsetTop + r.offsetHeight / 2
+	let cur = -1
+	const set = i => { if (i === cur) return; cur = i; rows.forEach((r, k) => r.classList.toggle("on", k === i)); num.textContent = pad(i + 1) }
+	set(0)
+	gsap.fromTo(roll, { y: () => view.offsetHeight / 2 - mid(rows[0]) }, {
+		y: () => view.offsetHeight / 2 - mid(rows[rows.length - 1]), ease: "none",
+		scrollTrigger: { trigger: root, start: "top top", end: () => "+=" + rows.length * innerHeight * 0.16, pin, scrub: true, invalidateOnRefresh: true, onUpdate: s => set(Math.round(s.progress * (rows.length - 1))) }
+	})
+}

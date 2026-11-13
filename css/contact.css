@@ -1,0 +1,66 @@
+/* ==========================================================================================
+   BLACK POINT — CONTACT. The opening is a short film (cut A of the Contact lab): nature shots,
+   the story told in subtitles, chapter cards between. Uses the home tokens (css/home.css).
+   ========================================================================================== */
+
+.film-pin .caps {
+	font-size: var(--fs-label);
+	line-height: 1.5;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--dim);
+}
+.film-pin .display {
+	font-family: var(--font-black);
+	font-variation-settings: var(--fvs-black);
+	font-weight: normal;
+	text-transform: uppercase;
+	line-height: 0.82;
+}
+
+.film-pin { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: var(--film); }
+.film-shot { position: absolute; inset: 0; opacity: 0; }
+.film-shot img { width: 100%; height: 100%; object-fit: cover; will-change: transform, filter; }
+/* contrast: labels and subtitles must read on snow and sky too — a deeper shade top and bottom, full
+   white type with a soft shadow, and a darker subtitle box */
+.film-shot::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, var(--film-fade-top), transparent 32%, transparent 52%, var(--film-fade-bottom)); }
+.film-top { position: absolute; z-index: 3; top: var(--space-7); left: var(--gutter); right: var(--gutter); display: flex; justify-content: space-between; gap: var(--space-5); }
+.film-top .caps { color: var(--white); font-variant-numeric: tabular-nums; text-shadow: 0 1px 0.75rem rgba(0, 0, 0, 0.6); }
+.film-sub { position: absolute; z-index: 3; left: 50%; bottom: 13vh; width: min(57.5rem, 90vw); margin: 0; text-align: center; transform: translateX(-50%); }
+.film-sub span {
+	padding: 0.08em 0.35em;
+	background: var(--film-sub);
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
+	font-size: var(--fs-text-32);
+	font-weight: 500;
+	line-height: 1.55;
+}
+.film-end { position: absolute; z-index: 8; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--space-6); padding: 0 var(--gutter); text-align: center; opacity: 0; visibility: hidden; }
+/* a sentence, not a name: at width 50 / weight 900 the counters of M, W, K and N close up, so the
+   closing line uses a wider, lighter cut of the same family with open tracking and more leading */
+.film-pin .film-end h3 {
+	margin: 0;
+	max-width: 14ch;
+	font-size: var(--fs-display-96-statement);
+	font-variation-settings: "wdth" 75, "wght" 800;
+	line-height: 0.92;
+	letter-spacing: 0.02em;
+}
+.film-end .mail { font-size: var(--fs-lead); border-bottom: 1px solid currentColor; }
+.film-end .mail:hover { color: var(--accent); }
+
+/* A — chapters: title cards between the shots */
+.ka-card { position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--space-4); background: var(--film); opacity: 0; }
+/* the cut of How we work: at width 50 / weight 900 the short chapter words close up */
+.ka-card .display { font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); font-size: var(--fs-display-144-compact); }
+.ka-card .caps { color: var(--accent); }
+
+
+/* ON THE PAGE — the fixed logo and menu hold the top of the screen, so the film's labels sit in the
+   darkened bottom of the frame, where they read on snow and sky too */
+.contact .film-top { top: auto; bottom: var(--margin); }
+@media only screen and (max-width: 768px) {
+	.contact .film-top { justify-content: space-between; }
+	.contact .film-sub { bottom: 15vh; }
+}

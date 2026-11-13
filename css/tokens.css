@@ -1,0 +1,106 @@
+/* ==========================================================================================
+   BLACK POINT — TOKENS. One file for every page, with the same names as the Figma variables
+   (each variable's "Code syntax" in Figma gives its name here, e.g. layout/col → --gutter).
+
+   How a size is written:
+   - Fixed values (the spacing scale, radii) in rem: 1rem = 16px.
+   - Fluid sizes (type, gaps, pictures) grow with the window: --u is one Figma pixel, so a Figma value N at 1440 is
+     calc(var(--u) * N), with a lower and an upper limit (clamp, max, min). js/site.js sets --u (SIZE UNIT): the
+     smaller of window width / frame width and window height / frame height, the frame picked by the window's shape
+     (desktop 1440 × 900, tablet upright 834 × 1080, phone 375 × 812) and blended between shapes, so nothing jumps.
+     At 1440 × 900 and at 375 × 812 it is 100vw / 1440, so they give the values of the Figma modes 1440 and 375.
+   - Positions and widths of the grid follow the width alone: --u-width, the margin and the gutter.
+   - A token that the code does not use yet is not written here: it is added, with its own rule,
+     when the page that uses it is built. The list of Figma tokens is in docs/figma-design-system.md.
+   Load order on every page: style.css, tokens.css, then the page's own CSS.
+   ========================================================================================== */
+
+:root {
+	/* COLOUR — collection "Black Point" */
+	--bg: #131212;                                   /* color/bg */
+	--panel: #2A2929;                                /* color/panel */
+	--accent: #E8DCC4;                               /* color/accent */
+	--white: #fff;                                   /* color/text */
+	--title: #99855D;                                /* color/title */
+	--dim: rgba(255, 255, 255, 0.58);                /* color/text-dim */
+	--name-dim: rgba(255, 255, 255, 0.42);           /* color/text-faint */
+	--text-ghost: rgba(255, 255, 255, 0.2);          /* color/text-ghost */
+	--text-closed: rgba(255, 255, 255, 0.4);         /* color/text-closed */
+	--overlay-soft: rgba(19, 18, 18, 0.35);          /* color/overlay-soft */
+	--overlay-strong: rgba(19, 18, 18, 0.75);        /* color/overlay-strong */
+	--overlay-shade: rgba(19, 18, 18, 0.55);         /* color/overlay-shade */
+	--overlay-dim: rgba(0, 0, 0, 0.45);              /* color/overlay-dim */
+	--overlay-menu: rgba(0, 0, 0, 0.6);              /* color/overlay-menu */
+	--film: #000;                                    /* color/film */
+	--film-sub: rgba(0, 0, 0, 0.8);                  /* color/film-sub */
+	--film-fade-top: rgba(0, 0, 0, 0.62);            /* color/film-fade-top */
+	--film-fade-bottom: rgba(0, 0, 0, 0.72);         /* color/film-fade-bottom */
+
+	/* SPACING SCALE — space/1 … space/11: 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 160 */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.5rem;
+	--space-6: 2rem;
+	--space-7: 3rem;
+	--space-8: 4rem;
+	--space-9: 6rem;
+	--space-10: 8rem;
+	--space-11: 10rem;
+
+	/* RADII — radius/s, radius/m, radius/full */
+	--radius-s: 5px;
+	--radius-m: 6px;
+	--radius-full: 999px;
+
+	/* GRID */
+	--u: calc(100vw / 1440);      /* one Figma pixel; js/site.js replaces it with the size unit (this is only its first value) */
+	--u-width: calc(100vw / 1440);                                                /* one Figma pixel of the width: the grid only */
+	--margin: clamp(1rem, calc(var(--u-width) * 32), 2rem);                       /* layout/margin: 16 → 32 */
+	/* layout/col: the margin up to 768, then it opens evenly to one grid column at 1440 and follows the column from there */
+	--gutter: max(var(--margin), min(calc(var(--u-width) * 64), calc(7vw - 2.3rem)));  /* 16 → 64 */
+
+	/* LOGO AND MENU — they grow from their phone size at 768 to their full size at 1024 */
+	--header-inset: clamp(1rem, calc(6.25vw - 2rem), 2rem);                       /* layout/header-inset: 16 → 32 */
+	--size-menu-w: clamp(5rem, calc(6.25vw + 2rem), 6rem);                        /* size/menu-w: 80 → 96 */
+	--size-menu-h: clamp(3.5rem, calc(9.375vw - 1rem), 5rem);                     /* size/menu-h: 56 → 80 */
+
+	/* TEXT — Instrument Sans for everything that is not display type */
+	--font-body: "Instrument Sans", "General Sans", "Helvetica Neue", Arial, sans-serif;
+	--fs-label: clamp(0.75rem, calc(var(--u) * 12), 1.125rem);                   /* font/text-12 */
+	--fs-body: clamp(1rem, calc(var(--u) * 16), 1.5rem);                          /* font/text-16 */
+	--fs-lead: clamp(1rem, calc(var(--u) * 20), 2rem);                            /* font/text-20: 16 → 20 */
+	--fs-addr: clamp(1.25rem, calc(var(--u) * 24), 2.5rem);                       /* font/text-24: 20 → 24 */
+
+	/* LINE HEIGHT AND THE GAP INSIDE A GROUP (decision 11.11.2026) */
+	--lh-text: 1.3;                                                               /* text to read: the same on every screen */
+	/* inside a group (a picture and its text, a label and its lines): never less than one line of text, so the lines of a
+	   paragraph always stand closer to each other than the paragraph to its picture */
+	--gap-tight: max(var(--space-4), calc(var(--u) * 32));                        /* 16 → 32 */
+	/* between two groups (a caption and its link): at least 24, so on a phone too it reads clearly larger than the 8 inside a group */
+	--gap-group: max(var(--space-5), calc(var(--u) * 32));                        /* 24 → 32 */
+
+	/* DISPLAY — Display/144: meets the phone size (6rem) where the layout changes at 768 */
+	/* a city name on its half of the screen: at most 15vw, so on a tall tablet it never leaves its picture */
+	--fs-display-144: max(min(calc(var(--u) * 144), 15vw), 6rem);                /* font/display-144 */
+
+	/* SECTIONS SHARED BY EVERY PAGE (Lisbon and Warsaw, Get in touch and the footer) */
+	--layout-top: max(8rem, calc(var(--u-width) * 160));                                /* layout/top: 128 → 160, room under the logo and menu */
+	--layout-grid-gap: calc(var(--u-width) * 48);                                     /* layout/grid-gap: between the contact columns */
+	--layout-label-gap: calc(var(--fs-label) * 0.9);                              /* layout/label-gap: 10.8 under a label */
+	--layout-foot-bottom: calc(var(--u-width) * 48);                                    /* layout/foot-bottom: 12 → 48 */
+	--size-disc: max(7.7rem, min(calc(var(--u) * 160), calc(var(--u-width) * 160))); /* size/disc: the Get in touch circle, beside a word that fills the row, so never larger than the width allows; on phones fitAll() sizes it */
+}
+
+/* CONTACT — the film */
+:root {
+	--fs-text-32: clamp(1.25rem, calc(var(--u) * 32), 2.5rem);                     /* font/text-32: subtitles, 20 → 32 */
+	--fs-display-96-statement: min(max(3rem, calc(var(--u) * 96)), 10.67vh);      /* font/display-96-statement: 48 → 96, never taller than the screen allows */
+	--fs-display-144-compact: min(max(3rem, calc(var(--u) * 144)), 16vh);         /* font/display-144-compact: chapter cards, 48 → 144 */
+}
+
+/* phones: Display/144 is fitted to the width, up to its 768 size */
+@media only screen and (max-width: 768px) {
+	:root { --fs-display-144: min(24vw, 6rem); }
+}

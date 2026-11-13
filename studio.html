@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Studio - Black Point</title>
+	<meta name="description" content="How Black Point works: four steps, five rules on every set, and the brands we have photographed since 2014.">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..75,700..900&family=Archivo:wdth,wght@112,800&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif&display=swap">
+	<link rel="stylesheet" href="css/style.css" />
+	<link rel="stylesheet" href="css/tokens.css" />
+	<link rel="stylesheet" href="css/home.css" />
+	<link rel="stylesheet" href="css/studio.css" />
+</head>
+<body class="loading">
+
+	<div id="pageOverlay"></div>
+
+	<div id="page-to-page">
+		<div class="red-bg"></div>
+		<div class="grey-bg"></div>
+	</div>
+
+	<a href="home.html" id="logo" class="page-link" aria-label="Black Point"></a>
+
+	<div id="hamburger">
+		<span><span>Close</span></span>
+		<i><b></b><b></b><b></b></i>
+	</div>
+	<div id="nav-bg"></div>
+	<nav id="navigation" class="op-xl-10 op-lg-10 op-sm-24"><div></div></nav>
+
+	<main id="smooth-wrapper">
+		<div id="smooth-content" class="home st">
+
+			<!-- 01 THE OPENING — scrolling walks through the word ===================================== -->
+			<section id="opening" class="st-hero"></section>
+			<!-- 02 HOW WE WORK — four rows, one open, always one screen ============================== -->
+			<section id="how" class="st-how"></section>
+			<!-- 03 MANIFESTO — lit word by word; 36 frames go out until one is kept =================== -->
+			<section id="manifesto" class="st-mf"></section>
+			<!-- 04 VALUES — five rules in one line of type; a photo opens inside the line ============= -->
+			<section id="values" class="st-val"></section>
+			<!-- 05 CLIENTS — the credits roll ========================================================= -->
+			<section id="clients" class="st-cc"></section>
+
+			<!-- 06 TWO STUDIOS + 07 GET IN TOUCH — shared with Home, rendered by js/site.js =========== -->
+			<section id="studios" class="h-studios" data-include="studios"></section>
+			<footer id="contact" class="h-contact" data-include="contact"></footer>
+
+		</div>
+	</main>
+
+	<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollSmoother.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/CustomEase.min.js"></script>
+	<script src="js/themes.js"></script>
+	<script src="js/site.js"></script>
+	<script src="js/studio.js"></script>
+</body>
+</html>

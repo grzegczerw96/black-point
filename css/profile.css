@@ -1,0 +1,163 @@
+/* ==========================================================================================
+   BLACK POINT — PROFILE (one photographer, profile.html?p=first-last). Builds on style.css, css/tokens.css and the
+   home tokens (css/home.css). The motion and the look follow the profile that lived in index.html (css/style.css,
+   "PROFILE PAGE"): a tilted card over the name, the about text, a row of work that scrolls sideways, the next person.
+   js/profile.js picks the layout from the window's shape (pfMode()) and writes it on #smooth-content: data-mode
+   (desk, tall, low, phone). Sizes come from the size unit --u (type, pictures, gaps) with lower limits for phones;
+   positions in the grid from the width (--u-width, --margin, --gutter). Every value at 1440 × 900 and 375 × 812 is the
+   one the old profile had, unless docs/stan-stron.md says otherwise.
+   ========================================================================================== */
+
+.pf {
+	position: relative;
+	z-index: 1;
+	/* the bottom of the menu: what stands still on the page stands below it (js/profile.js reads the same, menuBottom()) */
+	--pf-top: calc(var(--header-inset) + var(--size-menu-h));
+	/* small type: 14 at 1440, 14 on phones (labels, facts) */
+	--pf-small: clamp(0.875rem, calc(var(--u) * 14), 1.25rem);
+	/* the smallest type: 14 at 1440, 12 on phones (captions, the footer) */
+	--pf-tiny: clamp(0.75rem, calc(var(--u) * 14), 1.25rem);
+}
+.pf section { position: relative; }
+.pf .pf-small { font-size: var(--pf-small); line-height: 1.14; text-transform: uppercase; }
+
+/* THE BACKDROP: the person's photo, dim and still behind the page (phones show the plain background, as before) */
+.pf-backdrop { position: fixed; inset: 0; z-index: 0; margin: 0; overflow: hidden; pointer-events: none; }
+.pf-backdrop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; }
+@media only screen and (max-width: 768px) { .pf-backdrop { display: none; } }
+
+/* 01 HERO — the card stands in the middle of the room below the menu, the name at the foot, under the card ============ */
+.pf-hero { height: 100vh; height: 100svh; overflow: hidden; }
+.pf[data-mode="phone"] .pf-hero { min-height: 35rem; }
+.pf-back { position: absolute; top: max(5.5rem, calc(var(--u-width) * 96)); left: var(--margin); z-index: 3; }
+.pf-back:hover { color: var(--accent); }
+/* the card: 360 at 1440 × 900, 62% of the width on phones, never taller than the room between the menu and its mirror
+   below, so the tilted card is always whole */
+.pf-card {
+	--pf-card-w: min(max(calc(var(--u) * 360), min(62vw, 14.5rem)), calc((100svh - 2 * var(--pf-top)) * 0.7));
+	position: absolute;
+	left: 50%;
+	top: calc(var(--pf-top) + (100svh - var(--pf-top)) * 0.385); /* 46% of 900 at 1440 × 900, 44% of 812 at 375 × 812 */
+	width: var(--pf-card-w);
+	transform: translate(-50%, -50%);
+	z-index: 1;
+}
+.pf-card figure { margin: 0; aspect-ratio: 3 / 4; overflow: hidden; border-radius: var(--radius-s); will-change: transform; box-shadow: 0 1vw 2.5vw rgba(0, 0, 0, 0.3); }
+.pf-card img { width: 100%; height: 100%; object-fit: cover; }
+/* magazine-cover layering: the card lies on the name, so the name is white on the dark backdrop and simply disappears
+   where the print covers it. The size is fitted by js/profile.js (fit()): out of the type scale on purpose */
+.pf-name {
+	position: absolute;
+	left: var(--gutter);
+	bottom: var(--gap-group);
+	z-index: 0;
+	margin: 0;
+	color: var(--white);
+	line-height: 0.82;
+	letter-spacing: 0.01em;
+	white-space: nowrap;
+}
+
+/* 02 ABOUT — the label beside the text, the facts as the next group under it; one column on narrow windows ========== */
+.pf-bio {
+	display: grid;
+	grid-template-columns: calc(var(--u-width) * 420) minmax(0, calc(var(--u-width) * 840));
+	align-items: baseline;
+	padding: max(var(--space-9), calc(var(--u) * 256)) var(--gutter) max(var(--space-8), calc(var(--u) * 192));
+}
+.pf-label { color: var(--accent); }
+.pf-about { display: flex; flex-direction: column; gap: max(var(--gap-group), calc(var(--u) * 64)); min-width: 0; }
+.pf-text { margin: 0; font-size: clamp(1.5rem, calc(var(--u) * 32), 3rem); line-height: var(--lh-text); letter-spacing: -0.01em; }
+.pf-text .line { overflow: hidden; }
+.pf-facts { display: flex; gap: max(var(--gap-group), calc(var(--u) * 64)); margin: 0; }
+.pf-facts > div { display: flex; flex-direction: column; gap: var(--space-2); }
+.pf-facts dt { opacity: 0.45; white-space: nowrap; }
+.pf-facts dd { margin: 0; }
+@media only screen and (max-width: 768px) {
+	.pf-bio { display: flex; flex-direction: column; align-items: stretch; gap: var(--gap-tight); }
+	.pf-facts { flex-direction: column; gap: var(--gap-group); }
+}
+
+/* 03 SELECTED WORK — pinned (pointer screens): one full screen, the row moves sideways; touch screens swipe the row ==== */
+.pf-work { display: flex; flex-direction: column; gap: var(--gap-tight); }
+.pf-work.is-pinned { justify-content: center; min-height: 100vh; min-height: 100svh; }
+.pf-work-head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-4); padding: 0 var(--gutter); }
+/* the size of "Who shoots" on Team: 100 at 1440, 75 on phones (20vw), never more than 15% of the height */
+.pf-work-title { margin: 0; font-size: min(max(calc(var(--u) * 100), min(20vw, 4.7rem)), 15vh); line-height: 0.82; font-variation-settings: var(--fvs-bold); }
+/* the split lines keep only the room the capitals need (style.css gives split lines 10px), so two lines of the title stand
+   close, as one title (user 13.11: too much space between the lines) */
+.pf .pf-work-title .line { padding-top: 0.04em; }
+.pf-work-head .pf-small { padding-bottom: 0.4em; }
+/* the height of the row: 480 at 1440 (52% of the height at most), 72% of the width on phones; js/profile.js lowers it
+   where the pinned section would not fit between the menu and its mirror below (--pf-row-fit) */
+.pf-gallery {
+	--pf-row: min(max(calc(var(--u) * 480), min(72vw, 17rem)), 52vh, var(--pf-row-fit, 100vh));
+	overflow: hidden;
+}
+.pf-gallery.swipe { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.pf-gallery.swipe::-webkit-scrollbar { display: none; }
+.pf-track { display: flex; gap: var(--margin); padding: 0 var(--gutter); width: max-content; margin: 0; will-change: transform; }
+.pf-track li { flex: 0 0 auto; display: flex; flex-direction: column; gap: var(--gap-tight); }
+.pf-track .port { width: calc(var(--pf-row) * 0.8); }
+.pf-track .land { width: calc(var(--pf-row) * 1.6); }
+.pf-track figure { margin: 0; height: var(--pf-row); overflow: hidden; border-radius: var(--radius-s); background: var(--panel); }
+.pf-track img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; user-select: none; transform: scale(1.06); }
+.pf-cap { display: flex; flex-wrap: wrap; gap: 0 var(--space-4); margin: 0; font-size: var(--pf-tiny); line-height: 1.14; text-transform: uppercase; }
+.pf-cap span:first-child { color: var(--accent); }
+.pf-cap span:last-child { margin-left: auto; opacity: 0.45; }
+
+/* 04 NEXT PHOTOGRAPHER + FOOT — the last screen: the next person in the middle of the room below the menu, the foot
+   at the bottom, so at the end of the page nothing stands under the logo or the menu ================================ */
+.pf-end { display: flex; flex-direction: column; min-height: 100vh; min-height: 100svh; padding-top: calc(var(--pf-top) + var(--gap-group)); }
+.pf-next-group { display: flex; flex-direction: column; gap: var(--gap-tight); margin: auto 0; padding: var(--gap-group) var(--gutter); }
+.pf-next { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-group); }
+.pf-next h2 { margin: 0; line-height: 0.85; font-variation-settings: var(--fvs-bold); }
+.pf-next h2 span { white-space: nowrap; }
+.pf-next .double-hover span:nth-of-type(2) { color: var(--title); } /* large type hovers bronze, as the menu and Get in touch */
+/* the disc: 256 at 1440, 78 on phones (20.833vw) */
+.pf-disc {
+	flex: 0 0 auto;
+	width: max(calc(var(--u) * 256), min(20.833vw, 4.9rem));
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: var(--accent);
+	color: var(--bg);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: transform 600ms var(--ease-out-quint);
+}
+.pf-disc svg { width: 28%; transition: transform 600ms var(--ease-out-quint); }
+.pf-next:hover .pf-disc { transform: scale(0.92); }
+.pf-next:hover .pf-disc svg { transform: translateX(18%); }
+.pf-foot { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--gap-group) var(--gutter); font-size: var(--pf-tiny); line-height: 1.14; text-transform: uppercase; }
+.pf-foot a:hover { color: var(--accent); }
+
+/* PHONE (data-mode="phone") — chosen by the user 12.11.2026 in Figma ("Profil mobile: propozycje", 285:173) =========== */
+/* Hero B: js/profile.js (phoneHero()) sizes the card and stands the group in the middle; the name's first line lies on
+   the foot of the card, in front of it (on the desktop the card lies on the name) */
+.pf[data-mode="phone"] .pf-name { z-index: 2; }
+/* About 2: the photographer's portrait, the text 16 under it, the facts in one row; at least one screen tall */
+.pf-portrait { margin: 0; aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--radius-m); background: var(--panel); }
+.pf-portrait img { width: 100%; height: 100%; object-fit: cover; }
+/* more air (user 13.11): portrait → About 32, text → facts 48, 96 under the section; the text only a little larger than
+   the labels and the facts, which have the size of the captions under the pictures (12) */
+.pf[data-mode="phone"] .pf-bio { min-height: 100vh; min-height: 100svh; justify-content: center; padding: calc(var(--pf-top) + var(--gap-group)) var(--gutter) var(--space-9); }
+.pf[data-mode="phone"] .pf-portrait { margin-bottom: var(--space-4); } /* + the section's 16 = 32 */
+.pf[data-mode="phone"] .pf-about { gap: var(--space-7); }
+.pf[data-mode="phone"] .pf-text { font-size: var(--fs-body); }
+.pf[data-mode="phone"] .pf-bio .pf-small { font-size: var(--pf-tiny); }
+.pf[data-mode="phone"] .pf-facts { flex-direction: row; gap: var(--space-4); }
+.pf[data-mode="phone"] .pf-facts > div { flex: 1 1 0; min-width: 0; }
+/* Selected work B: the pictures one under the other, across the width, with the page; no swipe */
+.pf[data-mode="phone"] .pf-work { gap: var(--space-7); }
+.pf[data-mode="phone"] .pf-gallery { overflow: visible; }
+.pf[data-mode="phone"] .pf-track { flex-direction: column; width: auto; gap: var(--space-7); }
+.pf[data-mode="phone"] .pf-track li { width: auto; }
+.pf[data-mode="phone"] .pf-track figure { height: auto; aspect-ratio: 1.6; }
+.pf[data-mode="phone"] .pf-track .port figure { aspect-ratio: 4 / 5; }
+/* the end: the next person 64 under the work, the foot 48 under it and 12 from the bottom (the user's correction in Figma:
+   about 64, 50 and 10); no screen of its own, so at the very end the logo and menu stand over the last picture */
+.pf[data-mode="phone"] .pf-end { min-height: 0; gap: var(--space-7); padding: var(--space-8) 0 var(--space-3); }
+.pf[data-mode="phone"] .pf-next-group { margin: 0; padding: 0 var(--gutter); }
+.pf[data-mode="phone"] .pf-foot { padding: 0 var(--gutter); }

@@ -1,0 +1,108 @@
+/* ==========================================================================================
+   BLACK POINT — STUDIO. Uses the home tokens (css/home.css) and css/tokens.css. One idea per section, driven by scroll.
+   The layouts for each window shape are the ones approved in test 2 (5.11.2026), written on the project's tokens;
+   the motion is Studio's own. What depends on the window is measured in js/studio.js fit() and init().
+   ========================================================================================== */
+
+.st {
+	--st-bar: calc(var(--header-inset) + var(--size-menu-h));      /* the bottom edge of the fixed menu */
+	--st-label-top: max(5.5rem, calc(var(--u-width) * 160));       /* a section label: under the logo and menu, 160 at 1440 */
+}
+.st .caps { font-size: var(--fs-label); line-height: 1.5; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+.st .display { font-family: var(--font-black); font-variation-settings: var(--fvs-black); font-weight: normal; text-transform: uppercase; line-height: 0.82; color: var(--white); }
+.st-pin { position: relative; height: 100vh; height: 100svh; overflow: hidden; } /* svh: the whole scene shows with the address bar in view (13.11.2026) */
+
+/* 01 THE OPENING — a dark sheet with a white word, multiplied over the photo: the word is a hole.
+   fit() sizes and places the word: across the measure, or between the logo and the menu when the screen is low,
+   in the middle of the screen but never under the menu or on the lead; the lead starts where the word starts */
+.st-photo { position: absolute; inset: 0; }
+.st-photo img { width: 100%; height: 100%; object-fit: cover; }
+.ha-mask { position: absolute; inset: 0; z-index: 2; background: var(--bg); mix-blend-mode: multiply; }
+.ha-word { position: absolute; left: var(--ha-left, var(--gutter)); top: var(--ha-top, 30%); margin: 0; font-size: 6rem; white-space: nowrap; }
+.h-lead { position: absolute; z-index: 4; left: var(--ha-left, var(--gutter)); bottom: clamp(1rem, calc(24vh - 6rem), 12.2vh); width: min(max(17.5rem, calc(var(--u) * 416)), calc(100% - var(--ha-left, var(--gutter)) - var(--gutter))); margin: 0; font-size: var(--fs-lead); line-height: var(--lh-text); color: var(--white); }
+.h-lead span { display: inline-block; }
+
+/* 02 HOW WE WORK — always exactly one screen, with a margin below; rows move on transforms only. Three layouts by the
+   window's shape (js/studio.js hwMode()): "indent" the picture with its indent and the text beside it, "column" (tall and
+   square windows, phones) the picture across the measure and the text under it, "side" (low and very wide windows) the
+   list on the left with the text opening under its row and the picture on the right.
+   The cut of the client list: at width 50 / weight 900 the counters close up and the words stop reading */
+.hw-label { position: absolute; z-index: 2; left: var(--gutter); top: var(--st-label-top); }
+.hw-row { position: absolute; left: 0; right: 0; top: 0; padding: 0 var(--gutter); will-change: transform; }
+.hw-word { display: flex; gap: calc(var(--u) * 32); align-items: baseline; font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); text-transform: uppercase; line-height: 1; font-size: var(--hw-size); opacity: 0.38; white-space: nowrap; }
+.hw-word b { font-weight: normal; }
+.hw-body { position: absolute; left: var(--gutter); top: var(--hw-size); padding-top: 0.75rem; display: flex; align-items: flex-end; gap: var(--gap-tight); will-change: clip-path; }
+.hw-body figure { margin: 0 0 0 calc(var(--u-width) * 128); overflow: hidden; border-radius: 6px; }
+.hw-body img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.hw-body p { width: min(calc(var(--u) * 416), calc(var(--u-width) * 416)); min-width: 15rem; margin: 0; font-size: var(--fs-body); line-height: var(--lh-text); }
+.hw[data-mode="column"] .hw-body { right: var(--gutter); flex-direction: column; align-items: flex-start; padding-bottom: max(var(--space-6), calc(var(--u) * 48)); } /* the text belongs to its picture: farther from the next row than from the picture */
+.hw[data-mode="column"] .hw-body figure { margin-left: 0; }
+.hw[data-mode="column"] .hw-body p { width: auto; min-width: 0; max-width: 26em; }
+.hw[data-mode="side"] .hw-word { width: max-content; }
+.hw[data-mode="side"] .hw-body { display: block; will-change: auto; padding-top: var(--space-1); padding-bottom: max(var(--space-6), calc(var(--u) * 48)); } /* the text hangs from its row, the next row stands apart */
+.hw[data-mode="side"] .hw-body p { min-width: 0; will-change: clip-path; }
+.hw[data-mode="side"] .hw-body figure { position: absolute; top: 0; margin: 0; will-change: clip-path; }
+
+/* 03 MANIFESTO — the sentence and the strip are one group. The free height goes first into the gap between them, up to
+   half the difference of the window's width and height: on a wide screen the text stands at the top and the strip at
+   the bottom, on a tall one the group stands in the middle with a small gap */
+.mf-in {
+	--mf-gap: max(clamp(3rem, calc(var(--u) * 96), 6rem), calc((100vw - 100vh) / 2));
+	position: absolute; inset: 0; z-index: 3; padding-inline: var(--gutter);
+	display: grid; grid-template-columns: minmax(0, 1fr);
+	grid-template-rows: minmax(var(--st-label-top), 1fr) auto minmax(clamp(0.5rem, calc(var(--u) * 32), 2rem), var(--mf-gap)) auto minmax(max(1rem, calc(var(--u-width) * 64)), 1fr);
+}
+.mf-head { grid-row: 2; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
+.mf-text { margin: 0; color: var(--white); font-family: "Instrument Serif", serif; font-size: max(2rem, min(calc(var(--u) * 96), 10.67vh, 9vw)); line-height: 1.08; text-wrap: pretty; }
+.mf-text span { opacity: 0.16; }
+.mf-strip { grid-row: 4; container-type: inline-size; }
+/* one row: as many frames as fit at the desktop's size, the rest are cut (js/studio.js keeps the kept frame among them) */
+.mf-frames { display: grid; grid-template-columns: repeat(auto-fit, minmax(2rem, 1fr)); grid-template-rows: auto; grid-auto-rows: 0; column-gap: clamp(0.125rem, calc(var(--u) * 4), 0.25rem); overflow: hidden; margin-top: clamp(0.5rem, calc(var(--u) * 12), 0.75rem); }
+.mf-frames img { display: block; width: 100%; height: auto; aspect-ratio: 33 / 96; max-height: max(1.5rem, calc(25vh - 4.5rem), min(calc((100vw - 100vh) * 0.14), 13vh)); object-fit: cover; will-change: opacity; }
+/* when not all 36 show, the last one fades out: the strip goes on */
+@container (max-width: 81rem) {
+	.mf-frames { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 3rem), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 3rem), transparent); }
+}
+.mf-kept { position: absolute; inset: 0; z-index: 4; will-change: clip-path; }
+.mf-kept img { width: 100%; height: 100%; object-fit: cover; }
+
+/* 04 VALUES — the words in fixed rows, at 60 / 700 (readable on a phone too). fit() picks the size from the window's shape
+   (a taller window gets larger words) and the fewest rows in which every word still fits with its picture open */
+.val-label { position: absolute; z-index: 3; left: var(--gutter); top: var(--st-label-top); }
+.vd-text { position: absolute; z-index: 2; left: var(--gutter); right: var(--gutter); top: 50%; display: grid; font-size: 6rem; transform: translateY(-50%); font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); line-height: 0.875; letter-spacing: -0.008em; font-weight: normal; text-transform: uppercase; color: var(--white); }
+.vd-row { display: flex; align-items: center; gap: 0.17em; white-space: nowrap; }
+.vd-word { opacity: 0.2; will-change: opacity; }
+.vd-pic { display: block; flex: none; width: 0; height: 0.74em; overflow: hidden; border-radius: 6px; will-change: width; }
+.vd-pic img { display: block; width: 1.3em; height: 100%; object-fit: cover; }
+/* the text grows with the words; its top edge stays put whatever the length: two lines' room is kept above the bottom margin */
+.vd-desc { --vd-desc: min(max(var(--fs-body), calc(var(--vd-size, 144px) * 0.14)), 2rem); position: absolute; z-index: 3; left: var(--gutter); top: calc(100% - max(1rem, calc(var(--u) * 60)) - var(--vd-desc) * 2.7); width: min(24em, 100% - 2 * var(--gutter)); margin: 0; font-size: var(--vd-desc); line-height: var(--lh-text); }
+
+/* 05 CLIENTS — the credits roll in a window under the menu; the count stands below it, or beside it on a wide screen */
+.cc-pin { position: relative; height: 100vh; height: 100svh; overflow: hidden; }
+.cc-in { position: absolute; inset: var(--st-bar) var(--gutter) 0; display: flex; flex-direction: column-reverse; }
+.cc-count { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 1rem; padding-bottom: var(--space-5); }
+.cc-num { font-size: clamp(3.5rem, calc(var(--u) * 144), 9rem); font-variant-numeric: tabular-nums; }
+.cc-count .caps { padding-bottom: 0.6em; }
+.cc-view { position: relative; flex: 1 1 0; min-height: 0; overflow: hidden; container-type: inline-size; -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); }
+.cc-roll { position: absolute; top: 0; left: 0; right: 0; will-change: transform; }
+.cc-row { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 1.5rem; padding: 0.75rem 0; color: rgba(255, 255, 255, 0.2); transition: color 0.35s; }
+.cc-row b { font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); font-weight: normal; text-transform: uppercase; font-size: clamp(2rem, calc(var(--u) * 48), 3.5rem); line-height: 1; }
+.cc-row span { font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; }
+.cc-row span:nth-child(2) { display: none; }
+.cc-row span:last-child { text-align: right; }
+.cc-row.on { color: var(--white); }
+.cc-row.on span { color: var(--accent); }
+/* who shot for them, when the list has room for it */
+@container (min-width: 34rem) {
+	.cc-row { grid-template-columns: 1.5fr 1fr 7rem; }
+	.cc-row span:nth-child(2) { display: block; }
+}
+@media (min-aspect-ratio: 5/4) and (min-width: 600px) {
+	.cc-in { inset: 0 var(--gutter); display: grid; grid-template-columns: 31.9% minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+	.cc-count { grid-column: 1; grid-row: 1; align-self: start; padding: var(--st-label-top) 1.5rem 0 0; }
+	.cc-view { grid-column: 2; grid-row: 1; margin-top: calc(var(--st-bar) + var(--space-4)); }
+}
+
+@media only screen and (max-width: 768px) {
+	.vd-desc { width: auto; right: var(--gutter); }
+}

@@ -1,0 +1,101 @@
+/* ==========================================================================================
+   BLACK POINT — PROJECTS. The wall of prints and the page of one project. Uses the home tokens (css/home.css).
+   ========================================================================================== */
+
+/* the stage */
+.pj-pin { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: var(--bg); }
+.pj-pin .caps { font-size: var(--fs-label); line-height: 1.5; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+.pj-credits { display: grid; grid-template-columns: auto 1fr; gap: 0 0.75rem; margin: 0; font-size: var(--fs-label); line-height: 1.5; }
+.pj-credits dt { opacity: 0.6; }
+.pj-credits dd { margin: 0; }
+
+/* the wall: one sheet, the camera moves it */
+.wl { position: absolute; inset: 0; transform-origin: 0 0; will-change: transform; }
+.t { position: absolute; inset: 0; display: block; pointer-events: none; }
+.t-box { position: absolute; overflow: hidden; pointer-events: auto; }
+.t-box img { display: block; width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s; }
+.t-cap { position: absolute; display: flex; gap: 0.5rem; align-items: baseline; overflow: hidden; white-space: nowrap; pointer-events: none; font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); text-transform: uppercase; line-height: 1; font-size: clamp(0.75rem, 1.78vh, 1rem); color: var(--white); transition: color 0.3s; }
+.t-cap b { font-weight: normal; opacity: 0.5; }
+.is-wall .t-box { cursor: zoom-in; }
+.is-wall .t:hover .t-cap { color: var(--accent); }
+.is-wall .t:hover .t-box img { filter: brightness(1.12); }
+.wl-cap { position: absolute; z-index: 3; left: var(--gutter); bottom: 2vh; margin: 0; font-size: var(--fs-label); line-height: 1.5; color: var(--dim); pointer-events: none; transition: opacity 0.2s; }
+.wl-cap .caps { margin-right: 0.75rem; color: var(--white) !important; }
+.pj-pin:not(.is-wall) .wl-cap { opacity: 0; }
+
+/* the project: an opaque page around its photograph */
+.pv { position: absolute; inset: 0; z-index: 6; visibility: hidden; opacity: 0; overflow: hidden; background: var(--bg); will-change: transform; }
+.pv-dim { position: absolute; inset: 0; z-index: 3; background: var(--bg); opacity: 0; pointer-events: none; }
+.pv-text { position: absolute; left: var(--gutter); top: calc(var(--u-width) * 192); bottom: calc(var(--u-width) * 64); width: calc(var(--u-width) * 416); display: flex; flex-direction: column; justify-content: space-between; }
+.pv-no { display: block; }
+.pv-title { margin: 0.5rem 0 0; font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); font-weight: normal; text-transform: uppercase; line-height: 0.85; color: var(--white); font-size: min(calc(var(--u) * 96), calc(var(--u-width) * 96), 13vh); } /* never wider than its grid column allows */
+.pv-line { margin: 1rem 0 0; font-size: var(--fs-lead); line-height: var(--lh-text); }
+.pv figure { position: absolute; margin: 0; }
+.pv-a { left: calc(var(--u-width) * 544); right: calc(var(--u-width) * 304); top: calc(var(--u-width) * 128); bottom: calc(var(--u-width) * 64); display: grid; place-items: center; overflow: hidden; }
+.pv-a img { display: block; border-radius: 6px; will-change: transform; }
+.pv-b, .pv-c { right: var(--gutter); width: calc(var(--u-width) * 208); height: calc(50% - var(--u-width) * 112); overflow: hidden; border-radius: 6px; }
+.pv-b img, .pv-c img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pv-b { top: calc(var(--u-width) * 128); }
+.pv-c { bottom: calc(var(--u-width) * 64); }
+/* close: a small square in the column of the text, in the same material as the menu button */
+.pv-x { all: unset; position: absolute; z-index: 8; left: var(--gutter); top: calc(var(--u-width) * 128); width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 5px; background: var(--panel); color: var(--white); cursor: pointer; visibility: hidden; opacity: 0; transition: color 0.3s; }
+.pv-x svg { width: 1rem; height: 1rem; }
+.pv-x:hover { color: var(--accent); }
+
+@media only screen and (max-width: 768px) {
+	.wl-cap { left: var(--margin); }
+	.pv-x { top: 5rem; left: var(--margin); width: 2rem; height: 2rem; }
+	.pv-text { left: var(--margin); right: var(--margin); top: 7.5rem; bottom: auto; width: auto; display: grid; gap: 0.75rem; }
+	.pv-title { font-size: 3rem; }
+	.pv-a { left: var(--margin); right: var(--margin); top: 50%; bottom: 25%; }
+	.pv-b { left: var(--margin); right: 51%; top: auto; bottom: 1rem; width: auto; height: 22%; }
+	.pv-c { left: 51%; right: var(--margin); bottom: 1rem; width: auto; height: 22%; }
+}
+
+/* AN UPRIGHT TABLET AND LOW WINDOWS (12.11.2026, layouts chosen by the user): data-mode on .pj-pin from pjMode() in
+   js/projects.js. The desktop keeps the layout above; the phone keeps its sizes but stands on gaps too (13.11). Groups stand apart by gap, the type grows with --u,
+   the photograph takes the room that is left (the camera fits it into .pv-a), and at rest nothing lies under the logo
+   or the menu. */
+.pj-pin {
+	--pv-head: calc(var(--header-inset) + var(--size-menu-h));                          /* the bottom of the menu button */
+	--pv-logo: calc(clamp(1.875rem, calc(0.78vw + 1.5rem), 2rem) + 1.75rem);           /* the bottom of the logo */
+	--pv-x: max(2rem, calc(var(--u) * 40));
+}
+.pj-pin:is([data-mode="phone"], [data-mode="tall"], [data-mode="low"], [data-mode="flat"]) .pv-x { left: var(--gutter); width: var(--pv-x); height: var(--pv-x); }
+.pj-pin:is([data-mode="phone"], [data-mode="tall"], [data-mode="low"], [data-mode="flat"]) .pv { display: grid; gap: var(--gap-group); padding: 0 var(--gutter) var(--gap-group); }
+.pj-pin:is([data-mode="phone"], [data-mode="tall"], [data-mode="low"], [data-mode="flat"]) :is(.pv-text, .pv figure) { position: relative; inset: auto; width: auto; height: auto; min-width: 0; min-height: 0; }
+.pj-pin:is([data-mode="phone"], [data-mode="tall"], [data-mode="low"], [data-mode="flat"]) .pv-text { grid-area: t; display: flex; flex-direction: column; justify-content: space-between; gap: var(--gap-group); }
+.pj-pin:is([data-mode="tall"], [data-mode="low"], [data-mode="flat"]) .pv-title { margin-top: var(--space-2); font-size: min(calc(var(--u) * 96), 13vh); }
+.pj-pin:is([data-mode="tall"], [data-mode="low"], [data-mode="flat"]) .pv-line { margin-top: var(--gap-tight); max-width: 30em; }
+.pj-pin:is([data-mode="phone"], [data-mode="tall"], [data-mode="low"], [data-mode="flat"]) .pv-a { grid-area: a; }
+.pj-pin:is([data-mode="phone"], [data-mode="tall"], [data-mode="low"], [data-mode="flat"]) .pv-b { grid-area: b; }
+.pj-pin:is([data-mode="phone"], [data-mode="tall"], [data-mode="low"], [data-mode="flat"]) .pv-c { grid-area: c; }
+
+/* phone (13.11, after the user's look): the X, the text in the middle of the room that is left, the photograph and the two
+   small ones under it. The pictures keep their former size (a quarter and a fifth of the screen) and give way when three
+   lines of text need the room, so the text never touches the photograph */
+.pj-pin[data-mode="phone"] .pv-x { top: 5rem; }
+.pj-pin[data-mode="phone"] .pv { padding: calc(5rem + var(--pv-x) + var(--gap-tight)) var(--margin) 1rem; column-gap: var(--space-2); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(min-content, 1fr) minmax(0, 25vh) minmax(0, 22vh); grid-template-areas: "t t" "a a" "b c"; }
+.pj-pin[data-mode="phone"] .pv-text { align-self: center; justify-content: flex-start; gap: var(--space-3); }
+
+/* upright tablet — a column, as on the phone: the X under the menu, the text, the photograph, the two small ones side by side */
+.pj-pin[data-mode="tall"] .pv-x { top: calc(var(--pv-head) + var(--gap-group)); }
+.pj-pin[data-mode="tall"] .pv { padding-top: calc(var(--pv-head) + var(--gap-group) + var(--pv-x) + var(--gap-tight)); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "t t" "a a" "b c"; }
+.pj-pin[data-mode="tall"] :is(.pv-b, .pv-c) { aspect-ratio: 2 / 1; } /* low enough that the photograph stays the largest picture */
+
+/* low windows: the text starts under the logo */
+.pj-pin:is([data-mode="low"], [data-mode="flat"]) .pv-x { top: calc(var(--pv-logo) + var(--gap-tight)); }
+.pj-pin:is([data-mode="low"], [data-mode="flat"]) .pv { padding-top: var(--header-inset); }
+.pj-pin:is([data-mode="low"], [data-mode="flat"]) .pv-text { margin-top: calc(var(--pv-logo) - var(--header-inset) + var(--gap-tight) + var(--pv-x) + var(--gap-tight)); }
+.pj-pin:is([data-mode="low"], [data-mode="flat"]) .pv-title { font-size: min(calc(var(--u) * 96), calc(var(--u-width) * 96), 13vh); }
+/* a low window — two columns: the text with the two small ones under it, the photograph large beside them, under the menu */
+.pj-pin[data-mode="low"] .pv { grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(0, 7fr); grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "t t a" "b c a"; }
+/* the photograph's room runs from the top of the label (09 / 12) to the bottom of the small ones (13.11, the user): a wide
+   photograph stands in its middle, an upright one fills it from top to bottom and never rises above the label */
+.pj-pin[data-mode="low"] .pv-a { margin-top: calc(var(--pv-logo) - var(--header-inset) + var(--gap-tight) + var(--pv-x) + var(--gap-tight)); }
+.pj-pin[data-mode="low"] :is(.pv-b, .pv-c) { aspect-ratio: 4 / 3; }
+/* a phone held sideways — three columns, as on the desktop. The photograph and the two small ones start in one line under
+   the menu, and the small ones together are as tall as the photograph (--pic-h, set by fitPic() in js/projects.js) */
+.pj-pin[data-mode="flat"] .pv { grid-template-columns: minmax(15rem, 4fr) minmax(0, 7fr) minmax(0, 2fr); grid-template-rows: calc(var(--size-menu-h) + var(--gap-tight) - var(--gap-group)) calc((var(--pic-h, 0px) - var(--gap-group)) / 2) calc((var(--pic-h, 0px) - var(--gap-group)) / 2) minmax(0, 1fr); grid-template-areas: "t . ." "t a b" "t a c" "t a ."; }
+.pj-pin[data-mode="flat"] .pv-a { place-items: start center; }
+.pv-a img { translate: 0 var(--pic-dy, 0px); } /* set by fitPic(): a photograph moved down to clear the menu */
