@@ -151,6 +151,57 @@ const measure = () => {
 	return W - 2 * Math.max(margin, Math.min(W * 64 / 1440, W * 0.07 - 36.8))
 }
 
+// LIGHTER PHOTOGRAPHS (13.11.2026). docs/testy/obrazy.py makes AVIF and WebP copies of every photograph at a few widths
+// in img/opt/ and lists them in img/opt/sizes.js (a page that wants them loads it before this file). pic(src, px) gives
+// the smallest copy at least px pixels wide in the best format this browser shows, or the original JPG where there are no
+// copies. boot() finds the format before the page is made. A size on screen becomes pixels with density(): on a 1× screen
+// a copy only as wide as the picture looked softer than the large JPG made small by the browser (measured 13.11 on 4
+// photographs: 85% of the edge contrast), so it gets a copy half as wide again (95–99%)
+const PHOTO_SIZES = typeof IMG_SIZES === "undefined" ? {} : IMG_SIZES
+let imgFmt = ""
+const imgFormat = (() => {
+	const can = src => new Promise(r => { const im = new Image(); im.onload = () => r(im.width > 0); im.onerror = () => r(false); im.src = src })
+	return can("data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUEAAAD3bWV0YQAAAAAAAAAvaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAFBpY3R1cmVIYW5kbGVyAAAAAA5waXRtAAAAAAABAAAAHmlsb2MAAAAARAAAAQABAAAAAQAAAR8AAAASAAAAKGlpbmYAAAAAAAEAAAAaaW5mZQIAAAAAAQAAYXYwMUNvbG9yAAAAAGhpcHJwAAAASWlwY28AAAAUaXNwZQAAAAAAAAACAAAAAgAAAA5waXhpAAAAAAEIAAAADGF2MUOBABwAAAAAE2NvbHJuY2x4AAEADQABgAAAABdpcG1hAAAAAAAAAAEAAQQBAoMEAAAAGm1kYXQKBxgANtgIaA0yBxyAAAFhJHs=")
+		.then(ok => ok || can("data:image/webp;base64,UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==").then(w => (w ? "webp" : "")))
+		.then(f => { imgFmt = f === true ? "avif" : f })
+})()
+const density = () => Math.max(1.5, Math.min(3, window.devicePixelRatio || 1))
+function pic(src, px = Infinity) {
+	const s = PHOTO_SIZES[src]
+	if (!s || !imgFmt) return src
+	const w = s[2].find(w => w >= px) || s[0]
+	return src.replace(/^img\//, "img/opt/").replace(/\.jpg$/, `-${w}.${imgFmt}`)
+}
+const picRatio = src => (PHOTO_SIZES[src] ? PHOTO_SIZES[src][0] / PHOTO_SIZES[src][1] : 0) // width / height of the original, known before it loads
+// a photograph fetched before it is needed, once per file; resolves when it can be shown at once
+const fetched = new Map()
+function preload(url, priority = "auto") {
+	if (!fetched.has(url)) {
+		const im = new Image()
+		im.fetchPriority = priority
+		im.src = url
+		fetched.set(url, im.decode().catch(() => {}))
+	}
+	return fetched.get(url)
+}
+// photographs wanted later, fetched two at a time after the page has loaded, so they never hold up what is on screen.
+// preload() with "high" takes one out of the queue at once (a click)
+const later = []
+let laterBusy = 0
+function preloadLater(urls) {
+	later.push(...urls)
+	const next = () => {
+		while (laterBusy < 2 && later.length) {
+			const url = later.shift()
+			if (fetched.has(url)) continue
+			laterBusy++
+			preload(url, "low").then(() => { laterBusy--; next() })
+		}
+	}
+	if (document.readyState === "complete") next()
+	else addEventListener("load", next, { once: true })
+}
+
 function fitAll() {
 	page.fit?.()
 	const cta = $(".cta span"), disc = $(".cta-disc")
@@ -455,16 +506,20 @@ function boot(p) {
 	if (startHash) history.replaceState(null, "", location.pathname + location.search)
 	history.scrollRestoration = "manual"
 	wrapperTag.addEventListener("scroll", () => { if (smoother) wrapperTag.scrollTop = 0 })
-	render()
-	Promise.all([
+	const fonts = Promise.all([
 		document.fonts.load('900 100px "Anybody"'),
 		document.fonts.load('700 100px "Anybody"'),
 		document.fonts.load('800 30px "Archivo"'),
 		document.fonts.load('400 16px "Instrument Sans"'),
 		document.fonts.load('600 16px "Instrument Sans"')
-	]).catch(() => {}).finally(() => {
-		init()
-		if (startHash && document.getElementById(startHash)) setTimeout(() => scrollToTarget(startHash), 300)
+	]).catch(() => {})
+	// the page is made once the photograph format is known (a few milliseconds), so each photograph is asked for once
+	imgFormat.finally(() => {
+		render()
+		fonts.finally(() => {
+			init()
+			if (startHash && document.getElementById(startHash)) setTimeout(() => scrollToTarget(startHash), 300)
+		})
 	})
 
 	// WINDOW CHANGES. After any change of the window's width or height the page is built again, as on a reload, but you

@@ -61,6 +61,18 @@ function placeTiles(vw, vh, asp) {
 	return out
 }
 
+// LIGHTER PHOTOGRAPHS (13.11.2026): a print on the wall loads a copy only as large as it hangs (pic() in js/site.js), its
+// size worked out from the same layout before the page is made. The larger copy for the open project comes before the
+// camera moves (open()), and the others follow once the page has loaded (preloadLater())
+const ratio = i => picRatio(PROJECTS[i].cover)
+function thumbs() {
+	if (!PROJECTS.every((p, i) => ratio(i))) return PROJECTS.map(p => p.cover)
+	const vw = window.innerWidth, vh = window.innerHeight
+	return placeTiles(vw, vh, PROJECTS.map((p, i) => Math.max(ratio(i), MIN_TILE))).map(({ R }, i) => {
+		const asp = ratio(i), w = asp > R.w / R.h ? R.h * asp : R.w // the whole photograph around the tile, as in layout()
+		return pic(PROJECTS[i].cover, w * density())
+	})
+}
 const pageLayer = (cls = "") => `<div class="pv${cls}">
 	<i class="pv-dim"></i>
 	<div class="pv-text"><div><span class="caps pv-no"></span><h2 class="pv-title"></h2><p class="pv-line"></p></div><div class="pv-credits"></div></div>
@@ -69,10 +81,11 @@ const pageLayer = (cls = "") => `<div class="pv${cls}">
 	<figure class="pv-c"><img alt=""></figure>
 </div>`
 function pageHtml() {
+	const src = thumbs()
 	return `<div class="pj-pin" data-mode="${pjMode()}">
 		<div class="wl">${PROJECTS.map((p, i) => `
 			<a class="t" href="#" aria-label="${p.title}">
-				<div class="t-box"><img src="${p.cover}" alt="" draggable="false"></div>
+				<div class="t-box"><img src="${src[i]}" alt="" draggable="false"></div>
 				<div class="t-cap"><b>${pad(i + 1)}</b><span>${p.title}</span></div>
 			</a>`).join("")}</div>
 		<p class="wl-cap"><span class="caps">Selected work</span> Twelve projects. Click one to see it.</p>
@@ -85,10 +98,11 @@ function pageHtml() {
 function wall(signal) {
 	const pin = $(".pj-pin"), sheet = $(".wl"), tiles = $$(".t"), boxes = $$(".t-box"), caps = $$(".t-cap"), imgs = $$(".t-box img"), layers = $$(".pv:not(.pv-probe)"), probe = $(".pv-probe"), x = $(".pv-x")
 	const cam = { s: 1, px: 0, py: 0, ox: 0, oy: 0 }, state = { others: 1, open: 0 }
-	let spots = [], insets = [], sizes = [], overview = {}, cur = null, busy = false, changing = false, front = 0, tl = null
+	let spots = [], insets = [], sizes = [], big = [], small = [], overview = {}, cur = null, busy = false, changing = false, front = 0, tl = null, ready = false
+	const aspect = i => ratio(i) || imgs[i].naturalWidth / imgs[i].naturalHeight || 1.6
 
 	const layout = () => {
-		const vw = pin.offsetWidth, vh = pin.offsetHeight, place = placeTiles(vw, vh, imgs.map(im => Math.max(im.naturalWidth / im.naturalHeight || 1.6, MIN_TILE))), box = pin.getBoundingClientRect()
+		const vw = pin.offsetWidth, vh = pin.offsetHeight, place = placeTiles(vw, vh, imgs.map((im, i) => Math.max(aspect(i), MIN_TILE))), box = pin.getBoundingClientRect()
 		overview = { s: 1, px: vw / 2, py: vh / 2, ox: vw / 2, oy: vh / 2 }
 		const atTop = getComputedStyle($(".pv-a", probe)).alignItems === "start"
 		const menu = $("#hamburger").getBoundingClientRect(), clear = menu.bottom + (parseFloat(getComputedStyle(probe).rowGap) || 0) / 2 // the menu on the screen, where the pin stands while a project is open
@@ -97,7 +111,7 @@ function wall(signal) {
 			words(probe, i)
 			const r = $(".pv-a", probe).getBoundingClientRect(), a = { left: r.left - box.left, right: r.right - box.left, top: r.top - box.top, bottom: r.bottom - box.top, width: r.width, height: r.height }, ax = a.left + a.width / 2
 			// the whole photograph around the tile; on the wall an upright print shows only its middle, so the rows fill the width
-			const asp = imgs[i].naturalWidth / imgs[i].naturalHeight || 1.6, wide = asp > R.w / R.h, w = wide ? R.h * asp : R.w, h = wide ? R.h : R.w / asp, bx = R.x + R.w / 2 - w / 2, by = R.y + R.h / 2 - h / 2
+			const asp = aspect(i), wide = asp > R.w / R.h, w = wide ? R.h * asp : R.w, h = wide ? R.h : R.w / asp, bx = R.x + R.w / 2 - w / 2, by = R.y + R.h / 2 - h / 2
 			boxes[i].style.cssText = `left:${bx}px;top:${by}px;width:${w}px;height:${h}px`
 			caps[i].style.cssText = `left:${cap.x}px;top:${cap.y}px;width:${cap.w}px;height:${cap.h}px`
 			insets[i] = [R.y - by, bx + w - R.x - R.w, by + h - R.y - R.h, R.x - bx]
@@ -113,6 +127,10 @@ function wall(signal) {
 			const ay = a.top + (atTop ? h * s / 2 : a.height / 2) + dy
 			spots[i] = { s, px: bx + w / 2, py: by + h / 2, ox: ax, oy: ay }
 			sizes[i] = { w: w * s, h: h * s, dy }
+			// the copies the open project needs: the photograph as large as the camera brings it, the two small ones as they hang
+			big[i] = pic(PROJECTS[i].cover, sizes[i].w * density())
+			const f = $(".pv-b", probe).getBoundingClientRect(), fw = f.width, fh = f.height || f.width
+			small[i] = extras(PROJECTS[i], 2).map(src => pic(src, Math.max(fw, fh * (picRatio(src) || 1)) * density()))
 		})
 		gsap.set(cam, cur === null ? overview : spots[cur])
 		if (cur !== null) fitPic(layers[front], cur)
@@ -147,8 +165,8 @@ function wall(signal) {
 		$(".pv-credits", page).innerHTML = credits(p)
 	}
 	const fill = (page, i) => {
-		const p = PROJECTS[i], [a, b] = extras(p, 2), pic = $(".pv-a img", page)
-		pic.src = p.cover
+		const p = PROJECTS[i], [a, b] = small[i] || extras(p, 2), img = $(".pv-a img", page)
+		img.src = big[i] || p.cover
 		fitPic(page, i)
 		$(".pv-b img", page).src = a
 		$(".pv-c img", page).src = b
@@ -172,17 +190,28 @@ function wall(signal) {
 
 	// the wall → one project: first the other prints go, then the camera arrives, and only then the page around the
 	// photograph appears. Nothing from the wall is left when the text comes in
+	// The print on the wall is a small copy: the camera starts only once the larger one is in the print, so it never blurs
+	// (usually at once: it was fetched after the page loaded, or when the pointer came over the print)
+	const neighbours = (i, dirs) => dirs.forEach(d => { const k = (i + d + N) % N; [big[k], ...small[k]].forEach(src => preload(src)) })
 	const open = i => {
-		if (busy || cur !== null) return
+		if (busy || cur !== null || !ready) return
 		busy = true
-		cur = openAt = i
 		lock(true)
-		fill(layers[front], i)
-		const D = 0.9, to = spots[i]
-		tl = gsap.timeline({ onUpdate: render, onComplete: () => { showPage(true); gsap.fromTo(layers[front], { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out", onComplete: () => { busy = false } }); render() } })
-		tl.to(state, { others: 0, duration: 0.3, ease: "power1.out" }, 0)
-		tl.to(state, { open: 1, duration: D - 0.3, ease: "power2.inOut" }, 0.3)
-		tl.to(cam, { s: to.s, px: to.px, py: to.py, ox: to.ox, oy: to.oy, duration: D, ease: "power2.inOut" }, 0)
+		preload(big[i], "high").then(() => {
+			if (signal.aborted) return
+			imgs[i].src = big[i]
+			return imgs[i].decode().catch(() => {})
+		}).then(() => {
+			if (signal.aborted) return
+			cur = openAt = i
+			fill(layers[front], i)
+			neighbours(i, [1, -1])
+			const D = 0.9, to = spots[i]
+			tl = gsap.timeline({ onUpdate: render, onComplete: () => { showPage(true); gsap.fromTo(layers[front], { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out", onComplete: () => { busy = false } }); render() } })
+			tl.to(state, { others: 0, duration: 0.3, ease: "power1.out" }, 0)
+			tl.to(state, { open: 1, duration: D - 0.3, ease: "power2.inOut" }, 0.3)
+			tl.to(cam, { s: to.s, px: to.px, py: to.py, ox: to.ox, oy: to.oy, duration: D, ease: "power2.inOut" }, 0)
+		})
 	}
 	// one project → the wall, the same steps backwards
 	const close = () => {
@@ -210,6 +239,7 @@ function wall(signal) {
 		clearPage(inn)
 		fill(inn, next)
 		cur = openAt = next
+		neighbours(next, [dir])
 		gsap.set(cam, spots[next]) // the camera is already there for when the X goes back
 		render()
 		tl = changePage(out, inn, dir)
@@ -233,6 +263,7 @@ function wall(signal) {
 	let touchY = 0
 	addEventListener("touchstart", e => { touchY = e.touches[0].clientY }, { signal, passive: true })
 	addEventListener("touchend", e => { const d = touchY - e.changedTouches[0].clientY; if (cur !== null && Math.abs(d) > 40) change(Math.sign(d)) }, { signal, passive: true })
+	tiles.forEach((t, i) => t.addEventListener("pointerenter", () => { if (ready) preload(big[i], "high") }, { signal }))
 	tiles.forEach((t, i) => t.addEventListener("click", e => {
 		e.preventDefault()
 		const y = smoother ? smoother.scrollTop() : window.scrollY
@@ -243,22 +274,33 @@ function wall(signal) {
 	x.addEventListener("click", close, { signal })
 	signal.addEventListener("abort", () => { if (tl) tl.kill(); lock(false) })
 
-	// the photographs' own proportions decide the layout, so it waits for them
-	PROJECTS.forEach(p => extras(p, 2).forEach(src => { new Image().src = src }))
+	// the photographs' own proportions decide the layout. They are known from img/opt/sizes.js, so the prints get their
+	// places at once and nothing moves while they load (13.11.2026; before, the layout waited for the photographs)
+	const known = PROJECTS.every((p, i) => ratio(i))
 	// a project that was open before the window changed is open again at once: no wall, no camera, no fade
 	if (openAt !== null) {
 		cur = openAt
 		state.others = 0
 		state.open = 1
 		lock(true)
+	}
+	// the prints stay unseen until they come in, as before. The layout runs at once, in the page's start: laid out a task
+	// later, the prints first stood in a heap and the move counted as a layout shift (CLS 0.32), unseen as they are
+	let laid = false
+	const place = () => { if (laid) return; laid = true; layout(); gsap.set(tiles, { opacity: 0 }) }
+	if (known) place()
+	if (cur !== null) {
 		fill(layers[front], cur)
 		showPage(true)
 	}
 	const t = dur(1) // read now: the decode may end after a rebuilt page has settled
 	Promise.all(imgs.map(im => im.decode().catch(() => {}))).then(() => {
 		if (signal.aborted) return
-		layout()
+		place()
+		ready = true
 		gsap.fromTo(tiles, { opacity: 0 }, { opacity: 1, duration: t, stagger: 0.05 * t, ease: "power2.out", clearProps: "opacity", onComplete: render })
+		// the larger copies for the open projects, after the page has loaded
+		preloadLater([...big, ...small.flat()])
 	})
 }
 
