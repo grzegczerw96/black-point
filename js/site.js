@@ -184,6 +184,7 @@ function clocks() {
 
 // PAGE ///////////////////////////////////////////////////////////////////////////////////////////////////
 let page = {}, ctx = null, smoother = null
+let touchScroll = null // the script that scrolls the page on touch screens (init), not the one inside ScrollSmoother
 
 function scrollToTarget(target) {
 	if (page.scrollTo && page.scrollTo(target)) return
@@ -220,7 +221,7 @@ function init(rebuilt = false) {
 	// with the browser's own scrolling a pinned scene comes in 11–71 px too far and springs back, and the address bar
 	// changes the window's height. The cost: the address bar stays in view. Full-screen scenes use svh to match
 	if (!smoother && ScrollTrigger.isTouch === 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-		ScrollTrigger.normalizeScroll({ allowNestedScroll: true }) // a row that swipes sideways keeps its own scrolling
+		touchScroll = ScrollTrigger.normalizeScroll({ allowNestedScroll: true }) // a row that swipes sideways keeps its own scrolling
 	}
 	bodyTag.classList.remove("loading")
 	gsap.to(contentTag, { opacity: 1, duration: 0.5, ease: "power3.inOut" })
@@ -317,15 +318,14 @@ function destroy() {
 	gsap.killTweensOf("*")
 	ScrollTrigger.killAll()
 	if (smoother) { smoother.kill(); smoother = null }
-	ScrollTrigger.normalizeScroll(false)
+	if (touchScroll) { ScrollTrigger.normalizeScroll(false); touchScroll = null }
 	ctx = null
 }
 
 // the page held still under an open menu or project: on touch the script that scrolls the page stops too, as
 // overflow: hidden alone does not stop it
 function holdScroll(on) {
-	const n = ScrollTrigger.normalizeScroll()
-	if (n) on ? n.disable() : n.enable()
+	if (touchScroll) on ? touchScroll.disable() : touchScroll.enable()
 	document.documentElement.style.overflow = on ? "hidden" : ""
 }
 
@@ -388,8 +388,9 @@ function menu(signal) {
 	tl.to(links, { yPercent: 0, opacity: 1, duration: 0.35, stagger: { amount: 0.1 }, ease: customEase }, "-=.45")
 
 	let open = false
-	// on touch the page stands still while the menu is open (13.11.2026, as in Hvera); with the mouse nothing changes
-	const touch = !!ScrollTrigger.normalizeScroll()
+	// on touch the page stands still while the menu is open (13.11.2026, as in Hvera); with the mouse nothing changes:
+	// there the page keeps its scrollbar, so it does not widen under the menu
+	const touch = !!touchScroll
 	const show = () => { open = true; hamburger.classList.add("opened"); tl.restart().timeScale(1); navigation.style.pointerEvents = "auto"; if (touch) holdScroll(true) }
 	const hide = () => { open = false; hamburger.classList.remove("opened"); tl.reverse().timeScale(-2); navigation.style.pointerEvents = "none"; if (touch) holdScroll(false) }
 	signal.addEventListener("abort", () => { if (open && touch) holdScroll(false) })

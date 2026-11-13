@@ -354,17 +354,12 @@ body { min-height: 100%; font-family: var(--font-body); }
 	.h-intro { --frame-w: min(83.33vw, 28rem, calc(var(--fit-h) * 0.937)); }
 	.h-intro > .hero-layer { padding: 7.5rem var(--gutter) 2.5rem; } /* beats style.css ".directors > div" */
 	.h-intro > .team-layer { padding: 0; }
-		.hero-lead { width: auto; right: var(--gutter); top: auto; bottom: 3rem; }
+	/* no lead on phones (user, 13.11.2026): the title, photo and "In mono." stand alone, one group in the middle of the screen */
+	.hero-lead { display: none; }
 
 	.h-studios { height: auto; }
 	.studios-frame { flex-direction: column; }
 	.city { flex: none; height: 70svh; }
-
-	/* a phone held sideways is a landscape window: the lead stands as on desktop, under the photo on the left,
-	   so it never runs into "In mono." on the right */
-	@media (orientation: landscape) {
-		.hero-lead { right: auto; width: calc(50% - var(--gutter)); top: calc(50% + var(--frame-h) / 2 + var(--hero-gap)); bottom: auto; }
-	}
 
 	.h-contact { min-height: 100vh; gap: 4rem; } /* a full last screen, so the fixed logo never sits on the section above */
 	.contact-grid { grid-template-columns: 1fr; }
