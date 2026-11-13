@@ -120,7 +120,8 @@ const CONTACT_HTML = cta => `
 	</div>
 	<div class="foot-bar">
 		<span>&copy; 2026 Black Point</span>
-		<span>Photography in mono</span>
+		<span class="foot-mono">Photography in mono</span>
+		<span class="foot-note">Concept project &middot; Fictional photographers &middot; Portraits: Unsplash</span>
 		<a href="#top" class="to-top">Back to top &uarr;</a>
 	</div>`
 

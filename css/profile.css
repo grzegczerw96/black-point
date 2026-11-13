@@ -160,4 +160,6 @@
    about 64, 50 and 10); no screen of its own, so at the very end the logo and menu stand over the last picture */
 .pf[data-mode="phone"] .pf-end { min-height: 0; gap: var(--space-7); padding: var(--space-8) 0 var(--space-3); }
 .pf[data-mode="phone"] .pf-next-group { margin: 0; padding: 0 var(--gutter); }
-.pf[data-mode="phone"] .pf-foot { padding: 0 var(--gutter); }
+.pf[data-mode="phone"] .pf-foot { padding: 0 var(--gutter); flex-wrap: wrap; row-gap: var(--space-2); }
+/* the concept note (user 13.11): on a phone its own line under "← Home" and the copyright */
+.pf[data-mode="phone"] .pf-note { order: 3; flex-basis: 100%; }

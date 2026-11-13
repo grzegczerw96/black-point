@@ -369,3 +369,7 @@ body { min-height: 100%; font-family: var(--font-body); }
 	.cta-row { justify-content: flex-start; }
 	.foot-bar { flex-direction: column; gap: 0.5rem; }
 }
+/* phones, also held sideways: only the copyright and the concept note (user, 13.11.2026) */
+@media only screen and (max-width: 768px), only screen and (max-height: 500px) and (orientation: landscape) {
+	.foot-bar .foot-mono, .foot-bar .to-top { display: none; }
+}

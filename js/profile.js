@@ -114,6 +114,7 @@ function renderProfile() {
 			</div>
 			<footer class="pf-foot">
 				<a href="${p.backHref}" class="pf-home">&larr; ${p.back}</a>
+				<span class="pf-note">Concept project &middot; Fictional photographers &middot; Portraits: Unsplash</span>
 				<span>${titleCaseBrand()} &copy; 2026</span>
 			</footer>`
 	// a phone shows the work in a column; other touch screens swipe the row; pointer screens get the pinned section
