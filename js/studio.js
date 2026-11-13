@@ -265,7 +265,7 @@ function manifesto() {
 	if (k !== KEPT) [frames[k].src, frames[KEPT].src] = [frames[KEPT].src, frames[k].src]
 	const order = frames.slice(0, shown).map((_, i) => i).filter(i => i !== k).sort((a, b) => ((a * 13) % 35) - ((b * 13) % 35))
 	const clip = () => { const r = frames[k].getBoundingClientRect(), p = kept.parentNode.getBoundingClientRect(); return `inset(${r.top - p.top}px ${p.right - r.right}px ${p.bottom - r.bottom}px ${r.left - p.left}px round 3px)` }
-	gsap.set(kept, { clipPath: clip, autoAlpha: 0 })
+	gsap.set(kept, { autoAlpha: 0 })
 	const tl = gsap.timeline({
 		defaults: { ease: "none" },
 		scrollTrigger: {
@@ -276,7 +276,10 @@ function manifesto() {
 	words.forEach((w, i) => tl.to(w, { opacity: 1, duration: 0.03 }, i / words.length * 0.62))
 	order.forEach((i, n) => tl.to(frames[i], { opacity: 0.08, duration: 0.03 }, 0.3 + n / order.length * 0.45))
 	tl.set(kept, { autoAlpha: 1 }, 0.78)
-	tl.to(kept, { clipPath: "inset(0px 0px 0px 0px round 0px)", duration: 0.22, ease: "power2.inOut" }, 0.78)
+	// the start is given, not read back from the page: when the kept frame stands in the middle of the strip, the browser
+	// writes its clip with three lengths (left = right), and GSAP then paired the radius with the left edge, so the picture
+	// grew from the screen's left edge instead of from the frame (seen on a phone, 13.11.2026)
+	tl.fromTo(kept, { clipPath: clip }, { clipPath: "inset(0px 0px 0px 0px round 0px)", duration: 0.22, ease: "power2.inOut" }, 0.78)
 	tl.set({}, {}, 1)
 }
 

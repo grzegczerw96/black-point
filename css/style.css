@@ -453,14 +453,33 @@ aside.dir-title h1 {
 	#navigation a span:nth-of-type(2) { display: none; }
 }
 
+/* PHONE MENU — upright phones and phones held sideways (13.11.2026) =========================== */
+/* the menu fills the whole screen: the panel grows from the button to the size of #navigation (site.js menu()), so
+   #navigation is the screen. The links stand in the middle, margin to margin like the logo and the menu button: the
+   longest word ("Projects", 2.79 em) spans the width, fluid between 3 and 9 rem, never taller than the room under the
+   menu button allows (four lines × 0.719) */
+@media only screen and (max-width: 768px), only screen and (hover: none) and (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+	#navigation {
+		width: 100%;
+		height: 100vh;
+		height: 100svh;
+		/* the links stand as one block in the middle of the screen (user, 13.11.2026: version 1): the same room above and
+		   below; "safe" keeps them under the menu button where a low screen has less room than the block needs */
+		align-items: safe center;
+		padding: calc(var(--header-inset) + var(--size-menu-h) + 2rem) var(--header-inset);
+	}
+	#navigation a {
+		font-size: clamp(3rem, min(calc((100vw - 2 * var(--header-inset)) / 2.8), calc((100svh - var(--header-inset) * 2 - var(--size-menu-h) - 2rem) / 2.9)), 9rem);
+		line-height: var(--nav-lh);
+	}
+	#navigation a.active { color: var(--accent); }
+}
+
 /* ≤768 ====================================================================================== */
 @media only screen and (max-width: 768px) {
 	body * { -webkit-tap-highlight-color: rgba(255, 255, 255, 0); }
 
 	#hamburger.opened { pointer-events: auto; }
-	#navigation { height: auto; padding: 9rem 2rem 2rem; }
-	#navigation a { line-height: var(--nav-lh); }
-	#navigation a.active { color: var(--accent); }
 
 	#smooth-content.directors { padding: 0; min-height: 100%; position: relative; height: auto; }
 	.directors > div { padding: 20px 0; }

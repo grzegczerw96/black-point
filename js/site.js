@@ -185,6 +185,15 @@ function clocks() {
 // PAGE ///////////////////////////////////////////////////////////////////////////////////////////////////
 let page = {}, ctx = null, smoother = null
 let touchScroll = null // the script that scrolls the page on touch screens (init), not the one inside ScrollSmoother
+// how the page glides on after the finger lifts, to compare on a phone (13.11.2026): ?scroll=a | b | c in the address,
+// remembered for the tab, so every page then scrolls the same way. momentum: seconds the glide lasts (its length
+// grows with it); c is the browser's own scrolling, without the script
+const TOUCH_FEEL = { a: { momentum: 2.8 }, b: { momentum: 1.2 }, c: null }
+const touchFeel = () => {
+	let v = new URLSearchParams(location.search).get("scroll")
+	try { if (v in TOUCH_FEEL) sessionStorage.setItem("bp-scroll", v); else v = sessionStorage.getItem("bp-scroll") } catch (e) {}
+	return v in TOUCH_FEEL ? v : "b" // b chosen by the user on the phone, 13.11.2026
+}
 
 function scrollToTarget(target) {
 	if (page.scrollTo && page.scrollTo(target)) return
@@ -220,8 +229,10 @@ function init(rebuilt = false) {
 	// touch screens (13.11.2026, as in Hvera): the page scrolls by the script, not by the browser. Measured on a phone:
 	// with the browser's own scrolling a pinned scene comes in 11–71 px too far and springs back, and the address bar
 	// changes the window's height. The cost: the address bar stays in view. Full-screen scenes use svh to match
-	if (!smoother && ScrollTrigger.isTouch === 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-		touchScroll = ScrollTrigger.normalizeScroll({ allowNestedScroll: true }) // a row that swipes sideways keeps its own scrolling
+	const feel = TOUCH_FEEL[touchFeel()]
+	if (!smoother && feel && ScrollTrigger.isTouch === 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+		// allowNestedScroll: a row that swipes sideways keeps its own scrolling
+		touchScroll = ScrollTrigger.normalizeScroll({ allowNestedScroll: true, momentum: feel.momentum })
 	}
 	bodyTag.classList.remove("loading")
 	gsap.to(contentTag, { opacity: 1, duration: 0.5, ease: "power3.inOut" })

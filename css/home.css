@@ -76,7 +76,9 @@ body { min-height: 100%; font-family: var(--font-body); }
 .hero-title { margin: 0; line-height: 0.82; color: var(--white); }
 .hero-title .hl { display: block; width: max-content; white-space: nowrap; will-change: transform; }
 /* title, photo and "In mono." are one group around the middle of the screen */
-.hero-title .hl:not(.hl-2) { position: absolute; left: var(--gutter); bottom: calc(50% + var(--frame-h) / 2 + var(--hero-gap)); }
+/* the title's line keeps room for descenders under the capitals (0.135 em): it stands that much lower, so the letters are
+   as far above the photo as "In mono." is below it (user, 13.11.2026; measured on the ink: 34 above / 23 below before) */
+.hero-title .hl:not(.hl-2) { position: absolute; left: var(--gutter); bottom: calc(50% + var(--frame-h) / 2 + var(--hero-gap) - 0.135em); }
 .hero-title .hl-2 { position: absolute; right: var(--gutter); top: calc(50% + var(--frame-h) / 2 + var(--hero-gap)); color: var(--title); }
 .hero-title .line { padding-top: 0.04em; overflow: hidden; }
 .hero-lead {
