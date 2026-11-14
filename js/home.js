@@ -105,11 +105,17 @@ function intro(split, signal, imgs) {
 	// the lead is cut into lines only for its entrance: afterwards it is plain text again, so it re-wraps when the window
 	// changes. A window change during the entrance finishes it at once, and a page rebuilt after one starts finished
 	intro.eventCallback("onComplete", () => lead.revert())
-	// the other eleven frames come once the first is in, so on a slow connection they do not share it (13.11.2026:
-	// PageSpeed on a phone, the first frame 7.4 s with all twelve at once)
-	imgs[0].decode().catch(() => {}).then(() => { if (!signal.aborted) fitPics($(".frame-in"), "later") })
-	if (ctx.rebuilt) intro.progress(1)
-	else Promise.race([imgs[0].decode().catch(() => {}), new Promise(r => setTimeout(r, 1200))]).then(() => { if (!signal.aborted) intro.play() })
+	// the other eleven frames come once the first is on screen, so on a slow connection they do not share it (13.11.2026:
+	// PageSpeed on a phone, the first frame 7.4 s with all twelve at once). Since 14.11 they wait for the opening's first
+	// frame, not for the first photo's decode: started a moment before it, they still counted towards the first frame in
+	// PageSpeed (7.4 s in 2 of 6 runs)
+	const later = () => { if (!signal.aborted) fitPics($(".frame-in"), "later") }
+	if (ctx.rebuilt) { intro.progress(1); later() }
+	else Promise.race([imgs[0].decode().catch(() => {}), new Promise(r => setTimeout(r, 1200))]).then(() => {
+		if (signal.aborted) return
+		intro.play()
+		requestAnimationFrame(() => setTimeout(later, 200))
+	})
 	window.addEventListener("resize", () => { if (intro.progress() < 1) intro.progress(1) }, { signal })
 }
 
