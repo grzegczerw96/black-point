@@ -184,9 +184,28 @@ function fitPics(root = document, key = "pic") {
 		let w = im.offsetWidth, h = im.offsetHeight
 		if (w < 2 || h < 2) { w = window.innerWidth; h = window.innerHeight }
 		delete im.dataset[key]
-		im.src = pic(src, (r ? Math.max(w, h * r) : w) * density())
+		const url = cut(im, src, w, h) || pic(src, (r ? Math.max(w, h * r) : w) * density())
+		// a page may hold its lazy pictures until its layout is final (Home, lazyLate, 14.11.2026): before the pinned scene
+		// makes its room, the studios stand one screen below the top, so the browser fetched them with the first photograph
+		// (113 KB of the 482 KB that came before it in Lighthouse on a phone). Measured here as before, given out in init()
+		if (key === "pic" && page.lazyLate && im.loading === "lazy") im.dataset.held = url
+		else im.src = url
 	})
 }
+// UPRIGHT CUTS (14.11.2026). A wide photograph that fills an upright box shows only its middle, yet the whole file came:
+// Home's first photograph on a phone, 105 KB for the 28% of its width on screen. Where docs/testy/obrazy.py has written
+// cuts of the middle at full height (the 4th entry in sizes.js: their widths), the box gets the narrowest one that still
+// covers it, with 4% to spare. Only where the picture on screen stays the same to the pixel: the box crops the sides
+// (object-fit: cover), around the middle, and would have taken the full-size copy anyway, so the scale is the same
+function cut(im, src, w, h) {
+	const s = PHOTO_SIZES[src]
+	if (!s || !s[3] || !imgFmt || s[2].some(x => x >= h * s[0] / s[1] * density() && x < s[0])) return ""
+	const css = getComputedStyle(im)
+	if (css.objectFit !== "cover" || css.objectPosition.split(" ")[0] !== "50%") return ""
+	const cw = s[3].find(c => c / s[1] >= w / h * 1.04)
+	return cw ? src.replace(/^img\//, "img/opt/").replace(/\.jpg$/, `-cut${cw}.${imgFmt}`) : ""
+}
+const releasePics = () => $$("img[data-held]").forEach(im => { im.src = im.dataset.held; delete im.dataset.held })
 const picRatio = src => (PHOTO_SIZES[src] ? PHOTO_SIZES[src][0] / PHOTO_SIZES[src][1] : 0) // width / height of the original, known before it loads
 // a photograph fetched before it is needed, once per file; resolves when it can be shown at once
 const fetched = new Map()
@@ -319,6 +338,7 @@ function init(rebuilt = false) {
 		clocks()
 		$$("#logo, .to-top, .cta, .cta-disc").forEach(a => a.addEventListener("click", e => follow(a, e), { signal }))
 		ScrollTrigger.refresh()
+		releasePics() // the pinned scenes have made their room: lazy pictures now load when you come near them
 	}
 	if (typeof rest !== "function") return shared()
 	if (rebuilt) { rest(); return shared() }

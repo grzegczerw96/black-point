@@ -24,6 +24,7 @@ let sceneTl = null
 })()
 
 boot({
+	lazyLate: true, // the studios' photographs wait until the pinned scene has pushed them five screens down (site.js fitPics)
 	render() {
 		// one stacked photo per photographer; the first is the hero frame. Where the page's first screen made it already
 		// (window.FIRST, home-lab.html), it stays and the others follow it
