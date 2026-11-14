@@ -30,9 +30,6 @@ boot({
 		const ready = window.FIRST && $(".frame-in img"), html = people.map((p, i) => `<img ${i ? "data-later" : 'fetchpriority="high" data-pic'}="${imageFor(theme, p.name)}"${photoPos(theme, imageFor(theme, p.name))} alt="">`)
 		if (ready) { $$(".frame-in img").slice(1).forEach(im => im.remove()); ready.insertAdjacentHTML("afterend", html.slice(1).join("")) }
 		else $(".frame-in").innerHTML = html.join("")
-		// the studios' photos wait with the intro's other frames (14.11.2026): before the scene is pinned the section stands
-		// just under the first screen, so "lazy" alone fetched them with the first photo
-		$$("#studios img[data-pic]").forEach(im => { im.dataset.later = im.dataset.pic; delete im.dataset.pic })
 		$(".h-intro ul").innerHTML = people.map((p, i) => `
 			<li><h2><a class="f-50" href="${profileUrl(p)}" data-index="${i}">
 				<span class="hero-split chars">${p.name}</span>
@@ -87,7 +84,7 @@ function scene(split, signal) {
 	if (window.FIRST) {
 		fitAll()
 		if (ctx.rebuilt) window.FIRST.finish()
-		imgs[0].decode().catch(() => {}).then(() => { if (!signal.aborted) { fitPics($(".frame-in"), "later"); fitPics($("#studios"), "later") } })
+		imgs[0].decode().catch(() => {}).then(() => { if (!signal.aborted) fitPics($(".frame-in"), "later") })
 	} else intro(split, signal, imgs)
 	sceneRest(split, signal, { section, frame, zoom, shade, imgs, hoverImg, l1, l2, items, links, ball, capWork, capLink, clipAtRest, zoomAtRest })
 }
@@ -112,7 +109,7 @@ function intro(split, signal, imgs) {
 	// PageSpeed on a phone, the first frame 7.4 s with all twelve at once). Since 14.11 they wait for the opening's first
 	// frame, not for the first photo's decode: started a moment before it, they still counted towards the first frame in
 	// PageSpeed (7.4 s in 2 of 6 runs)
-	const later = () => { if (!signal.aborted) { fitPics($(".frame-in"), "later"); fitPics($("#studios"), "later") } }
+	const later = () => { if (!signal.aborted) fitPics($(".frame-in"), "later") }
 	if (ctx.rebuilt) { intro.progress(1); later() }
 	else Promise.race([imgs[0].decode().catch(() => {}), new Promise(r => setTimeout(r, 1200))]).then(() => {
 		if (signal.aborted) return
