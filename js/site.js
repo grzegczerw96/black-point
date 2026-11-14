@@ -282,6 +282,7 @@ const touchFeel = () => {
 }
 
 function scrollToTarget(target) {
+	finishStart?.()
 	if (page.scrollTo && page.scrollTo(target)) return
 	if (target === "top") return smoother ? smoother.scrollTo(0, true) : window.scrollTo({ top: 0, behavior: "smooth" })
 	const el = typeof target === "string" ? document.getElementById(target) : target
@@ -329,12 +330,13 @@ function init(rebuilt = false) {
 	// it runs a task later with the shared sections, so the start is two shorter tasks instead of one long one (TBT in
 	// PageSpeed). A page rebuilt after a window change does it all at once, so it settles in place as before
 	const rest = page.init?.(split, signal)
+	let menuReady = false
 	const shared = () => {
 		studios(split)
 		inView()
 		ctaHover(split, signal)
 		logoHide()
-		menu(signal)
+		if (!menuReady) menu(signal)
 		clocks()
 		$$("#logo, .to-top, .cta, .cta-disc").forEach(a => a.addEventListener("click", e => follow(a, e), { signal }))
 		ScrollTrigger.refresh()
@@ -343,8 +345,30 @@ function init(rebuilt = false) {
 	if (typeof rest !== "function") return shared()
 	if (rebuilt) { rest(); return shared() }
 	const later = fn => setTimeout(() => { if (!signal.aborted) fn() })
-	later(() => { rest(); later(shared) })
+	if (!rest.after) return later(() => { rest(); later(shared) })
+	// TRIAL (14.11.2026, Home). The rest of the start waits for the first screen's entrance (rest.after) instead of running
+	// before it: GSAP holds an entrance back while frames come late, so the first photograph showed only after all of this
+	// work (PageSpeed on a phone: 1.3–2.3 s of real time, Speed Index 2.9–4.3 s). A touch, a key, the wheel or a scroll
+	// that comes sooner gets it at once, in one go, before the page answers; so does a jump to a section (finishStart)
+	// the menu does not wait: with the mouse it opens when the pointer comes over its button, and no event tells that late
+	menu(signal)
+	menuReady = true
+	let started = false
+	const start = now => {
+		if (started || signal.aborted) return
+		started = true
+		finishStart = null
+		rest()
+		now ? shared() : later(shared)
+	}
+	const moved = () => (smoother ? smoother.scrollTop() : window.scrollY) > 0
+	;["pointerdown", "touchstart", "wheel", "keydown"].forEach(t => window.addEventListener(t, () => start(true), { capture: true, passive: true, signal }))
+	window.addEventListener("scroll", () => { if (moved()) start(true) }, { passive: true, signal })
+	finishStart = () => start(true)
+	rest.after.then(() => start(false))
+	setTimeout(() => start(false), 6000) // an entrance that never ends (a tab left in the background) does not hold the page up
 }
+let finishStart = null // set while the rest of a page's start is still waiting (init)
 
 // remembers the place on the page and returns a function that goes back to it after the layout is re-measured:
 // inside a pinned scene the same moment of the scene, elsewhere the same point of the same section

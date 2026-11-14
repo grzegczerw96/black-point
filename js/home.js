@@ -88,16 +88,22 @@ function scene(split, signal) {
 	// first screen plays it without GSAP (window.FIRST, home-lab.html), only the frame is set here, to the same values
 	gsap.set(frame, { clipPath: clipAtRest })
 	gsap.set(zoom, { scale: zoomAtRest, transformOrigin: zoomOrigin })
+	// the list and the scene wait for the end of this entrance (trial, 14.11.2026; site.js init, rest.after)
+	let entered
+	const after = new Promise(r => { entered = r })
 	if (window.FIRST) {
+		entered()
 		fitAll()
 		if (ctx.rebuilt) window.FIRST.finish()
 		imgs[0].decode().catch(() => {}).then(() => { if (!signal.aborted) fitPics($(".frame-in"), "later") })
-	} else intro(split, signal, imgs)
+	} else intro(split, signal, imgs, entered)
 	// the list and the scrubbed scene are not on the first screen: site.js runs them a task later on a fresh load (TBT)
-	return () => sceneRest(split, signal, { section, frame, zoom, shade, imgs, hoverImg, l1, l2, items, links, ball, capWork, capLink, clipAtRest, zoomAtRest })
+	const rest = () => sceneRest(split, signal, { section, frame, zoom, shade, imgs, hoverImg, l1, l2, items, links, ball, capWork, capLink, clipAtRest, zoomAtRest })
+	rest.after = after
+	return rest
 }
 
-function intro(split, signal, imgs) {
+function intro(split, signal, imgs, entered) {
 	const heroChars = split(".hero-title .hl", { type: "chars", charsClass: "char" })
 	fitAll() // split letters lose kerning: re-fit
 	const lead = split(".hero-lead", { type: "lines", linesClass: "line" })
@@ -112,7 +118,7 @@ function intro(split, signal, imgs) {
 	intro.to(leadInner, { yPercent: 0, duration: 1.1, stagger: 0.06, ease: "expo.out" }, 0.5)
 	// the lead is cut into lines only for its entrance: afterwards it is plain text again, so it re-wraps when the window
 	// changes. A window change during the entrance finishes it at once, and a page rebuilt after one starts finished
-	intro.eventCallback("onComplete", () => lead.revert())
+	intro.eventCallback("onComplete", () => { lead.revert(); entered() })
 	// the other eleven frames come once the first is on screen, so on a slow connection they do not share it (13.11.2026:
 	// PageSpeed on a phone, the first frame 7.4 s with all twelve at once). Since 14.11 they wait for the opening's first
 	// frame, not for the first photo's decode: started a moment before it, they still counted towards the first frame in
