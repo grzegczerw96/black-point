@@ -1420,7 +1420,7 @@ body { min-height: 100%; font-family: var(--font-body); }
 			anims.push(frameIn.animate([{ opacity: 0.01, transform: "scale(1.12)" }, { opacity: 1, transform: "scale(1)" }], { duration: 2200, easing: P2OUT, fill: "backwards" }))
 			leadLines().forEach(function (s, i) { anims.push(s.animate([{ transform: "translate(0%, 110%)" }, { transform: "translate(0%, 0%)" }], { duration: 1100, delay: 500 + i * 60, easing: EXPOOUT, fill: "backwards" })) })
 			anims.forEach(function (x) { x.pause() })
-			var go = function () { if (!done) anims.forEach(function (x) { x.play() }) }
+			var go = function () { if (done || window.FIRST.shown) return; anims.forEach(function (x) { x.play() }); window.FIRST.shown = true; dispatchEvent(new Event("first-shown")) }
 			var t = setTimeout(go, 1200)
 			img.decode().catch(function () {}).then(function () { clearTimeout(t); go() })
 			Promise.all(anims.map(function (x) { return x.finished })).then(end, function () {})
@@ -1437,10 +1437,13 @@ body { min-height: 100%; font-family: var(--font-body); }
 	(function () {
 		var s = ["js/vendor/gsap-3.13.0/gsap.min.js", "js/vendor/gsap-3.13.0/ScrollTrigger.min.js", "js/vendor/gsap-3.13.0/ScrollSmoother.min.js", "js/vendor/gsap-3.13.0/SplitText.min.js", "js/vendor/gsap-3.13.0/CustomEase.min.js", "js/themes.js", "img/opt/sizes.js", "js/site.js", "js/home.js"]
 		function go() { if (!document.getElementById("fonts-text")) { var t = document.createElement("link"); t.rel = "stylesheet"; t.href = "css/fonts-text.css"; t.id = "fonts-text"; document.head.appendChild(t) } s.forEach(function (u) { var e = document.createElement("script"); e.src = u; e.async = false; document.body.appendChild(e) }) }
-		var started = false, painted = false, loaded = document.readyState === "complete"
-		function once() { if (!started && painted && loaded) { started = true; setTimeout(go, 0) } }
-		try { new PerformanceObserver(function () { painted = true; once() }).observe({ type: "largest-contentful-paint", buffered: true }) } catch (e) { painted = true }
-		setTimeout(function () { painted = loaded = true; once() }, 2500)
+		// not on the first "largest paint" the browser reports (the logo, long before the photo): the scripts and the fonts
+		// they bring counted towards the photo then (PageSpeed LCP 7.6 s in 2 of 5 runs, 14.11.2026). They wait until the
+		// photo has started to come in (window.FIRST, "first-shown") and a moment more; at most 4 s
+		var started = false, painted = !!(window.FIRST && window.FIRST.shown), loaded = document.readyState === "complete"
+		function once() { if (!started && painted && loaded) { started = true; setTimeout(go, 300) } }
+		addEventListener("first-shown", function () { painted = true; once() })
+		setTimeout(function () { painted = loaded = true; once() }, 4000)
 		if (!loaded) addEventListener("load", function () { loaded = true; once() }); else once()
 	})()
 	</script>
