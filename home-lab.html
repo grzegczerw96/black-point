@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Black Point - Photographers in mono</title>
+	<meta name="description" content="Black Point is a collective of twelve photographers working in mono: portraits, campaigns and long-form documentary.">
+	<!-- fonts and GSAP from this site, not from Google and jsdelivr (13.11.2026): one server less to wait for. No font preload: measured, it held up the scripts and the first paint (FCP 1.3 → 2.1–2.5 s) -->
+	<link rel="stylesheet" href="css/fonts-home.css">
+	<link rel="stylesheet" href="css/style.css" />
+	<link rel="stylesheet" href="css/tokens.css" />
+	<link rel="stylesheet" href="css/home.css" />
+</head>
+<body class="loading">
+
+	<div id="pageOverlay"></div>
+
+	<div id="page-to-page">
+		<div class="red-bg"></div>
+		<div class="grey-bg"></div>
+	</div>
+
+	<a href="#top" id="logo" class="page-link" aria-label="Black Point"><i class="letter-first">B</i><i>L</i><i>A</i><i>C</i><i>K</i><i class="space"></i><i>P</i><i>O</i><i>I</i><i>N</i><i>T</i></a>
+
+	<div id="hamburger">
+		<span><span>Close</span></span>
+		<i><b></b><b></b><b></b></i>
+	</div>
+	<div id="nav-bg"></div>
+	<nav id="navigation" class="op-xl-10 op-lg-10 op-sm-24"><div></div></nav>
+
+	<main id="smooth-wrapper">
+		<div id="smooth-content" class="home">
+
+			<!-- 01 + 02 ONE PINNED SCENE: the hero frame opens into the photographers list ==================== -->
+			<section id="intro" class="h-intro">
+				<figure class="intro-frame" aria-hidden="true">
+					<div class="frame-zoom">
+						<div class="frame-in"></div>
+						<div class="frame-hover"><img alt=""></div>
+					</div>
+					<div class="frame-shade"></div>
+				</figure>
+
+				<div class="hero-layer">
+					<h1 class="hero-title" aria-label="We photograph in mono">
+						<span class="hl hl-1" aria-hidden="true" aria-label="We photograph"><div class="char" aria-hidden="true" style="position:relative;display:inline-block">W</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">e</div> <div class="char" aria-hidden="true" style="position:relative;display:inline-block">p</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">h</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">o</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">t</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">o</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">g</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">r</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">a</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">p</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">h</div></span>
+						<span class="hl hl-2" aria-hidden="true" aria-label="In mono."><div class="char" aria-hidden="true" style="position:relative;display:inline-block">I</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">n</div> <div class="char" aria-hidden="true" style="position:relative;display:inline-block">m</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">o</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">n</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">o</div><div class="char" aria-hidden="true" style="position:relative;display:inline-block">.</div></span>
+					</h1>
+					<p class="hero-lead">A collective of twelve photographers. Portraits, campaigns and long-form documentary, shot and printed in black and white.</p>
+				</div>
+
+				<div id="team" class="team-layer">
+					<div class="team-list">
+						<div class="track"><i></i></div>
+						<ul></ul>
+					</div>
+					<div class="team-cap">
+						<p class="cap-work"><span><span></span></span></p>
+						<a class="cap-link" href="#">View profile &rarr;</a>
+					</div>
+				</div>
+			</section>
+
+			<!-- 03 TWO STUDIOS + 04 GET IN TOUCH — shared with the Contact page, rendered by js/site.js ======= -->
+			<section id="studios" class="h-studios" data-include="studios"></section>
+			<footer id="contact" class="h-contact" data-include="contact"></footer>
+
+		</div>
+	</main>
+
+	<script>
+	// THE FIRST SCREEN WITHOUT GSAP (13.11.2026, a trial on Home, after Hvera). This script lays out and plays the opening on
+	// its own, with the browser's own animations, so the photograph is on screen before GSAP and the page scripts load. It
+	// does what js/home.js scene() did for the opening: fit the title, frame the photo, the same entrance (times and curves
+	// sampled from GSAP). js/home.js finds window.FIRST and leaves the opening to it. The scripts come after the page's load
+	// event and its largest picture (the loader below).
+	(function () {
+		var $ = function (q) { return document.querySelector(q) }, $$ = function (q) { return [].slice.call(document.querySelectorAll(q)) }
+		// the same sizes as js/site.js: the unit, the measure, the fit
+		var FR = { phone: [375, 812, 375 / 1440], tablet: [834, 1080, 1], desktop: [1440, 900, 1] }
+		function unitFor(W, H) {
+			var frame = function (f) { return f[2] * Math.min(W / f[0], H / f[1]) }
+			var band = function (lo, hi, x) { var t = Math.min(1, Math.max(0, (x - lo) / (hi - lo))); return t * t * (3 - 2 * t) }
+			var p = band(0.48, 0.69, W / H) * band(480, 600, W), d = band(0.85, 1.25, W / H)
+			var portrait = frame(FR.phone) * (1 - p) + frame(FR.tablet) * p
+			return Math.min(2, Math.max(0.2, portrait * (1 - d) + frame(FR.desktop) * d))
+		}
+		var u = 1
+		function setUnit() { u = unitFor(innerWidth, innerHeight); document.documentElement.style.setProperty("--u", u + "px") }
+		function measure() { var W = innerWidth, m = Math.min(32, Math.max(16, W / 45)); return W - 2 * Math.max(m, Math.min(W * 64 / 1440, W * 0.07 - 36.8)) }
+		function fitWidth(el, width) { el.style.fontSize = "100px"; var w = el.scrollWidth; el.style.fontSize = (100 * width / w) + "px" }
+		var small = function () { return innerWidth <= 768 }
+		var section = $(".h-intro"), frame = $(".intro-frame"), zoom = $(".frame-zoom"), frameIn = $(".frame-in"), content = $("#smooth-content"),
+			l1 = $(".hero-title .hl-1"), l2 = $(".hero-title .hl-2"), chars = $$(".hero-title .char"), lead = $(".hero-lead")
+		// js/home.js fit()
+		function fit() {
+			var H = innerHeight, gap = Math.min(Math.max(Math.min(Math.max(32 * u, 24), 0.04 * H), 16), 48), room = 1.1127 * (H - 120 - 4 * gap)
+			fitWidth(l1, small() ? Math.min(measure(), 443, room) : Math.min(Math.max(665 * u, 443), 665 / 900 * H, room))
+			l2.style.fontSize = l1.style.fontSize
+		}
+		// js/home.js rect(), clipAtRest(), zoomAtRest(), zoomOrigin()
+		function rect() {
+			var p = document.createElement("div"); p.style.cssText = "position:absolute;width:var(--frame-w);height:var(--frame-h)"; section.appendChild(p)
+			var w = p.offsetWidth, h = p.offsetHeight; p.remove()
+			var vw = section.offsetWidth, vh = section.offsetHeight, cy = vh * parseFloat(getComputedStyle(section).getPropertyValue("--frame-y")) / 100
+			return { top: cy - h / 2, right: (vw - w) / 2, bottom: vh - cy - h / 2, left: (vw - w) / 2, w: w, h: h, vw: vw, vh: vh, cy: cy }
+		}
+		function place() {
+			var r = rect()
+			frame.style.clipPath = "inset(" + r.top + "px " + r.right + "px " + r.bottom + "px " + r.left + "px round 6px)"
+			zoom.style.transformOrigin = "50% " + (r.cy / r.vh) * 100 + "%"
+			zoom.style.transform = "scale(" + Math.max(r.w / r.vw, r.h / (2 * Math.min(r.cy, r.vh - r.cy))) + ")"
+		}
+		// the first photograph, the copy js/site.js pic() would pick (img/opt/sizes.js, this one picture)
+		var HERO = "img/rex-calloway-low-season.jpg", SIZES = [1800,1012,[320,480,640,960,1280,1800]]
+		var img = document.createElement("img")
+		img.alt = ""
+		img.setAttribute("fetchpriority", "high")
+		var can = function (src, ok) { var t = new Image(); t.onload = function () { ok(t.width > 0) }; t.onerror = function () { ok(false) }; t.src = src }
+		can("data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUEAAAD3bWV0YQAAAAAAAAAvaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAFBpY3R1cmVIYW5kbGVyAAAAAA5waXRtAAAAAAABAAAAHmlsb2MAAAAARAAAAQABAAAAAQAAAR8AAAASAAAAKGlpbmYAAAAAAAEAAAAaaW5mZQIAAAAAAQAAYXYwMUNvbG9yAAAAAGhpcHJwAAAASWlwY28AAAAUaXNwZQAAAAAAAAACAAAAAgAAAA5waXhpAAAAAAEIAAAADGF2MUOBABwAAAAAE2NvbHJuY2x4AAEADQABgAAAABdpcG1hAAAAAAAAAAEAAQQBAoMEAAAAGm1kYXQKBxgANtgIaA0yBxyAAAFhJHs=", function (avif) {
+			var fmt = avif ? "avif" : "webp", density = Math.max(1.5, Math.min(3, devicePixelRatio || 1))
+			var need = Math.max(frameIn.offsetWidth, frameIn.offsetHeight * SIZES[0] / SIZES[1]) * density
+			var w = SIZES[2].filter(function (x) { return x >= need })[0] || SIZES[0]
+			img.src = HERO.replace(/^img\//, "img/opt/").replace(/\.jpg$/, "-" + w + "." + fmt)
+			frameIn.insertBefore(img, frameIn.firstChild)
+			ready()
+		})
+		// THE OPENING, as js/home.js intro: the letters rise (1.5 s, staggered over 0.3 s), the photo comes out of the page's
+		// colour (2.2 s), the lead's lines rise (from 0.5 s, 1.1 s each, 0.06 s apart); before it the page fades in (0.5 s)
+		var CUSTOM = "linear(0, 0, 0, 0, 0, 0.0001, 0.0003, 0.0006, 0.0009, 0.0012, 0.0019, 0.0028, 0.0042, 0.0062, 0.0086, 0.012, 0.0165, 0.0224, 0.0298, 0.039, 0.0501, 0.0627, 0.0767, 0.0919, 0.1081, 0.1264, 0.1512, 0.1846, 0.2311, 0.2983, 0.4014, 0.544, 0.6751, 0.764, 0.8223, 0.8623, 0.8914, 0.9153, 0.934, 0.9485, 0.9593, 0.9675, 0.9739, 0.979, 0.983, 0.9863, 0.9888, 0.9911, 0.9928, 0.9944, 0.9956, 0.9967, 0.9975, 0.9981, 0.9987, 0.9991, 0.9994, 0.9997, 0.9998, 0.9999, 1)", P2OUT = "linear(0, 0.0492, 0.0967, 0.1426, 0.187, 0.2297, 0.271, 0.3108, 0.349, 0.3859, 0.4213, 0.4553, 0.488, 0.5193, 0.5494, 0.5781, 0.6056, 0.6319, 0.657, 0.6809, 0.7037, 0.7254, 0.746, 0.7655, 0.784, 0.8015, 0.818, 0.8336, 0.8483, 0.8621, 0.875, 0.8871, 0.8984, 0.9089, 0.9186, 0.9277, 0.936, 0.9437, 0.9507, 0.9571, 0.963, 0.9682, 0.973, 0.9773, 0.981, 0.9844, 0.9873, 0.9898, 0.992, 0.9938, 0.9954, 0.9966, 0.9976, 0.9984, 0.999, 0.9994, 0.9997, 0.9999, 1, 1, 1)", EXPOOUT = "linear(0, 0.1089, 0.2056, 0.2915, 0.368, 0.4361, 0.4969, 0.5511, 0.5996, 0.6429, 0.6817, 0.7164, 0.7476, 0.7755, 0.8005, 0.8229, 0.843, 0.8611, 0.8772, 0.8917, 0.9046, 0.9162, 0.9265, 0.9357, 0.9438, 0.9511, 0.9575, 0.9632, 0.9683, 0.9727, 0.9766, 0.98, 0.9829, 0.9855, 0.9877, 0.9896, 0.9913, 0.9927, 0.9939, 0.9949, 0.9958, 0.9965, 0.9971, 0.9977, 0.9981, 0.9984, 0.9987, 0.999, 0.9992, 0.9993, 0.9995, 0.9996, 0.9997, 0.9997, 0.9998, 0.9999, 0.9999, 0.9999, 1, 1, 1)", P3INOUT = "linear(0, 0, 0, 0.0001, 0.0002, 0.0004, 0.0008, 0.0015, 0.0025, 0.004, 0.0062, 0.009, 0.0128, 0.0176, 0.0237, 0.0313, 0.0405, 0.0516, 0.0648, 0.0804, 0.0988, 0.12, 0.1446, 0.1727, 0.2048, 0.2411, 0.2821, 0.3281, 0.3794, 0.4366, 0.5, 0.5634, 0.6206, 0.672, 0.7179, 0.7589, 0.7952, 0.8273, 0.8554, 0.88, 0.9012, 0.9196, 0.9352, 0.9484, 0.9595, 0.9688, 0.9763, 0.9824, 0.9872, 0.991, 0.9938, 0.996, 0.9975, 0.9985, 0.9992, 0.9996, 0.9998, 1, 1, 1, 1)"
+		var anims = [], leadText = lead.innerHTML, done = false
+		// .frame-in: opacity 0 → 1 and scale 1.12 → 1 over 2.2 s, power2.out; it answers to play / pause / finish / cancel
+		var fade = (function () {
+			var start = null, running = false, over = false, resolve, f = { finished: new Promise(function (r) { resolve = r }) }
+			function set(e) { frameIn.style.opacity = e; frameIn.style.transform = "scale(" + (1.12 - 0.12 * e) + ")" }
+			function step(now) {
+				if (!running || over) return
+				if (start === null) start = now
+				var t = Math.min(1, (now - start) / 2200), e = 1 - (1 - t) * (1 - t)
+				set(e)
+				if (t < 1) requestAnimationFrame(step); else f.finish()
+			}
+			f.play = function () { if (!running && !over) { running = true; requestAnimationFrame(step) } }
+			f.pause = function () {}
+			f.finish = function () { if (over) return; over = true; set(1); resolve() }
+			f.cancel = function () { over = true; frameIn.style.opacity = ""; frameIn.style.transform = ""; resolve() }
+			return f
+		})()
+		function leadLines() {
+			// lines as SplitText makes them: the words that share a row, each row a block whose inside rises
+			if (getComputedStyle(lead).display === "none") return []
+			var words = lead.textContent.trim().split(/\s+/)
+			lead.innerHTML = words.map(function (w) { return "<span>" + w + "</span>" }).join(" ")
+			var rows = []
+			;[].slice.call(lead.children).forEach(function (s, i) { var top = s.offsetTop; if (!rows.length || rows[rows.length - 1].top !== top) rows.push({ top: top, words: [] }); rows[rows.length - 1].words.push(words[i]) })
+			lead.innerHTML = rows.map(function (r) { return '<div class="line" aria-hidden="true" style="position:relative;display:block;text-align:start"><span style="display:block">' + r.words.join(" ") + " </span></div>" }).join("")
+			return [].slice.call(lead.querySelectorAll(".line > span"))
+		}
+		function end() {
+			if (done) return
+			done = true
+			anims.forEach(function (a) { a.cancel() })
+			content.style.opacity = "1"
+			lead.innerHTML = leadText
+			window.FIRST.done = true
+		}
+		window.FIRST = {
+			done: false,
+			// a window change during the opening finishes it at once (js/home.js did the same)
+			finish: function () { if (played) end() }
+		}
+		var fontsIn = false, played = false
+		function ready() {
+			if (!fontsIn || !img.src || played) return
+			played = true
+			// as init(): the page fades in; the opening waits for the photo (at most 1.2 s, as before)
+			var a = content.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, easing: P3INOUT, fill: "forwards" })
+			a.onfinish = function () { content.style.opacity = "1"; a.cancel() }
+			var n = chars.length
+			chars.forEach(function (c, i) {
+				c.style.transformOrigin = "0% 0%"
+				anims.push(c.animate([{ transform: "translate(0px, -30%) scale(1, 0)" }, { transform: "translate(0px, 0px) scale(1, 1)" }], { duration: 1500, delay: i * 300 / (n - 1), easing: CUSTOM, fill: "backwards" }))
+			})
+			// the photo starts at opacity 0.01, not 0: from 0 the browser counted it on screen only at the end of its rise (LCP
+			// 3.6 s instead of 2.0 s on a phone). Stepped on the page instead, it stalled while the page's scripts started
+			anims.push(frameIn.animate([{ opacity: 0.01, transform: "scale(1.12)" }, { opacity: 1, transform: "scale(1)" }], { duration: 2200, easing: P2OUT, fill: "backwards" }))
+			leadLines().forEach(function (s, i) { anims.push(s.animate([{ transform: "translate(0%, 110%)" }, { transform: "translate(0%, 0%)" }], { duration: 1100, delay: 500 + i * 60, easing: EXPOOUT, fill: "backwards" })) })
+			anims.forEach(function (x) { x.pause() })
+			var go = function () { if (!done) anims.forEach(function (x) { x.play() }) }
+			var t = setTimeout(go, 1200)
+			img.decode().catch(function () {}).then(function () { clearTimeout(t); go() })
+			Promise.all(anims.map(function (x) { return x.finished })).then(end, function () {})
+		}
+		addEventListener("resize", function () { window.FIRST.finish() })
+		setUnit()
+		Promise.all([
+			document.fonts.load('900 100px "Anybody"'), document.fonts.load('700 100px "Anybody"'), document.fonts.load('800 30px "Archivo"'),
+			document.fonts.load('400 16px "Instrument Sans"'), document.fonts.load('600 16px "Instrument Sans"')
+		]).catch(function () {}).then(function () { fit(); place(); fontsIn = true; ready() })
+	})()
+	</script>
+	<!-- the motion and page scripts load after the page's load event and its largest picture, in order (as Hvera) -->
+	<script>
+	(function () {
+		var s = ["js/vendor/gsap-3.13.0/gsap.min.js", "js/vendor/gsap-3.13.0/ScrollTrigger.min.js", "js/vendor/gsap-3.13.0/ScrollSmoother.min.js", "js/vendor/gsap-3.13.0/SplitText.min.js", "js/vendor/gsap-3.13.0/CustomEase.min.js", "js/themes.js", "img/opt/sizes.js", "js/site.js", "js/home.js"]
+		function go() { s.forEach(function (u) { var e = document.createElement("script"); e.src = u; e.async = false; document.body.appendChild(e) }) }
+		var started = false, painted = false, loaded = document.readyState === "complete"
+		function once() { if (!started && painted && loaded) { started = true; setTimeout(go, 0) } }
+		try { new PerformanceObserver(function () { painted = true; once() }).observe({ type: "largest-contentful-paint", buffered: true }) } catch (e) { painted = true }
+		setTimeout(function () { painted = loaded = true; once() }, 2500)
+		if (!loaded) addEventListener("load", function () { loaded = true; once() }); else once()
+	})()
+	</script>
+</body>
+</html>

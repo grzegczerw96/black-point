@@ -25,8 +25,11 @@ let sceneTl = null
 
 boot({
 	render() {
-		// one stacked photo per photographer; the first is the hero frame
-		$(".frame-in").innerHTML = people.map((p, i) => `<img ${i ? "data-later" : 'fetchpriority="high" data-pic'}="${imageFor(theme, p.name)}"${photoPos(theme, imageFor(theme, p.name))} alt="">`).join("")
+		// one stacked photo per photographer; the first is the hero frame. Where the page's first screen made it already
+		// (window.FIRST, home-lab.html), it stays and the others follow it
+		const ready = window.FIRST && $(".frame-in img"), html = people.map((p, i) => `<img ${i ? "data-later" : 'fetchpriority="high" data-pic'}="${imageFor(theme, p.name)}"${photoPos(theme, imageFor(theme, p.name))} alt="">`)
+		if (ready) { $$(".frame-in img").slice(1).forEach(im => im.remove()); ready.insertAdjacentHTML("afterend", html.slice(1).join("")) }
+		else $(".frame-in").innerHTML = html.join("")
 		$(".h-intro ul").innerHTML = people.map((p, i) => `
 			<li><h2><a class="f-50" href="${profileUrl(p)}" data-index="${i}">
 				<span class="hero-split chars">${p.name}</span>
@@ -74,15 +77,25 @@ function scene(split, signal) {
 	const zoomAtRest = () => { const r = rect(); return Math.max(r.w / r.vw, r.h / (2 * Math.min(r.cy, r.vh - r.cy))) }
 	const zoomOrigin = () => { const r = rect(); return `50% ${(r.cy / r.vh) * 100}%` }
 
-	// INTRO on load: title letters rise while the photo emerges from the page's own background colour
+	// INTRO on load: title letters rise while the photo emerges from the page's own background colour. Where the page's
+	// first screen plays it without GSAP (window.FIRST, home-lab.html), only the frame is set here, to the same values
+	gsap.set(frame, { clipPath: clipAtRest })
+	gsap.set(zoom, { scale: zoomAtRest, transformOrigin: zoomOrigin })
+	if (window.FIRST) {
+		fitAll()
+		if (ctx.rebuilt) window.FIRST.finish()
+		imgs[0].decode().catch(() => {}).then(() => { if (!signal.aborted) fitPics($(".frame-in"), "later") })
+	} else intro(split, signal, imgs)
+	sceneRest(split, signal, { section, frame, zoom, shade, imgs, hoverImg, l1, l2, items, links, ball, capWork, capLink, clipAtRest, zoomAtRest })
+}
+
+function intro(split, signal, imgs) {
 	const heroChars = split(".hero-title .hl", { type: "chars", charsClass: "char" })
 	fitAll() // split letters lose kerning: re-fit
 	const lead = split(".hero-lead", { type: "lines", linesClass: "line" })
 	const leadInner = lead.lines.map(l => { const s = document.createElement("span"); s.style.display = "block"; while (l.firstChild) s.appendChild(l.firstChild); l.appendChild(s); return s })
 	gsap.set(heroChars.chars, { transformOrigin: "top left", y: "-30%", scaleY: 0 })
 	gsap.set(leadInner, { yPercent: 110 })
-	gsap.set(frame, { clipPath: clipAtRest })
-	gsap.set(zoom, { scale: zoomAtRest, transformOrigin: zoomOrigin })
 	// the fade runs on .frame-in, which the scrubbed scene never touches, so scrolling during it is safe.
 	// It starts once the photo is decoded (or after a moment on a slow connection), so it never fades in nothing
 	const intro = gsap.timeline({ paused: true })
@@ -98,7 +111,10 @@ function scene(split, signal) {
 	if (ctx.rebuilt) intro.progress(1)
 	else Promise.race([imgs[0].decode().catch(() => {}), new Promise(r => setTimeout(r, 1200))]).then(() => { if (!signal.aborted) intro.play() })
 	window.addEventListener("resize", () => { if (intro.progress() < 1) intro.progress(1) }, { signal })
+}
 
+// the rest of the scene: the list, the scrubbed opening, the hover previews
+function sceneRest(split, signal, { section, frame, zoom, shade, imgs, hoverImg, l1, l2, items, links, ball, capWork, capLink, clipAtRest, zoomAtRest }) {
 	// LIST: names grow from their top edge (as in the original), the dot and caption follow
 	const nameSplit = split(".h-intro .hero-split.chars", { type: "lines, words, chars", linesClass: "line", wordsClass: "word", charsClass: "char" })
 	gsap.set(nameSplit.chars, { transformOrigin: "top left", y: "-30%", scaleY: 0 })
