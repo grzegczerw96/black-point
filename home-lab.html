@@ -6,13 +6,1243 @@
 	<title>Black Point - Photographers in mono</title>
 	<meta name="description" content="Black Point is a collective of twelve photographers working in mono: portraits, campaigns and long-form documentary.">
 	<!-- fonts and GSAP from this site, not from Google and jsdelivr (13.11.2026): one server less to wait for. No font preload: measured, it held up the scripts and the first paint (FCP 1.3 → 2.1–2.5 s) -->
-	<link rel="stylesheet" href="css/fonts-home-display.css">
 	<!-- Instrument Sans now only where the first screen shows text in it (the lead, wider than 768 px); elsewhere it comes
 	     with the page scripts, after the photo (the loader at the end) -->
 	<script>(function () { if (innerWidth > 768) { var t = document.createElement("link"); t.rel = "stylesheet"; t.href = "css/fonts-text.css"; t.id = "fonts-text"; document.head.appendChild(t) } })()</script>
-	<link rel="stylesheet" href="css/style.css" />
-	<link rel="stylesheet" href="css/tokens.css" />
-	<link rel="stylesheet" href="css/home.css" />
+	<style>
+/* Home's display fonts only (Anybody 50–60, Archivo), from css/fonts-home.css: the first screen needs nothing else (home-lab.html, 14.11.2026) */
+/* vietnamese */
+@font-face {
+  font-family: 'Anybody';
+  font-style: normal;
+  font-weight: 700 900;
+  font-stretch: 50% 60%;
+  font-display: swap;
+  src: url(fonts/anybody-v13-VuJxdNvK2Ib2ppdWSK7dObFn.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Anybody';
+  font-style: normal;
+  font-weight: 700 900;
+  font-stretch: 50% 60%;
+  font-display: swap;
+  src: url(fonts/anybody-v13-VuJxdNvK2Ib2ppdWSK_dObFn.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Anybody';
+  font-style: normal;
+  font-weight: 700 900;
+  font-stretch: 50% 60%;
+  font-display: swap;
+  src: url(fonts/anybody-v13-VuJxdNvK2Ib2ppdWSKHdOQ.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 800;
+  font-stretch: 112%;
+  font-display: swap;
+  src: url(fonts/archivo-v25-k3kPo8UDI-1M0wlSV9XA35FckqWY8Q-2trySOxK-vA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 800;
+  font-stretch: 112%;
+  font-display: swap;
+  src: url(fonts/archivo-v25-k3kPo8UDI-1M0wlSV9XA35FckqWY8Q-2tryTOxK-vA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 800;
+  font-stretch: 112%;
+  font-display: swap;
+  src: url(fonts/archivo-v25-k3kPo8UDI-1M0wlSV9XA35FckqWY8Q-2trydOxI.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ==========================================================================================
+   DESIGN TOKENS — measured from the original (1440×900):
+   bg #131212 · panel #2A2929 · accent #F93434 (per theme here) · white text
+   24-col fluid grid: 1 col = 4.1666vw · gutters 30px
+   Display:  Thunder Black (h1 28.7vw, nav 9.7222vw / lh .74)
+   Roster:   Thunder Bold  (clamp(36px, 3.4722vw, 90px), 40px row = 10px pad + .6em line)
+   Body:     Neue Montreal 16px / 1.375
+   Licensed fonts: drop Thunder-BlackLC / Thunder-BoldLC / PPNeueMontreal woff2 into /fonts and
+   uncomment the @font-face block below — the stacks pick them up first.
+   ========================================================================================== */
+
+/*
+@font-face { font-family: "Thunder Black"; src: url("fonts/Thunder-BlackLC.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Thunder Bold"; src: url("fonts/Thunder-BoldLC.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Neue Montreal"; src: url("fonts/PPNeueMontreal-Regular.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Neue Montreal Bold"; src: url("fonts/PPNeueMontreal-Bold.woff2") format("woff2"); font-display: swap; }
+*/
+
+:root {
+	--bg: #131212;
+	--panel: #2A2929;
+	--accent: #F93434;
+	--title: var(--accent); /* giant listing title; a theme may give it its own colour (titleColor) */
+	--white: #fff;
+	--col: 4.1666vw;
+	/* Free stand-ins, matched by measurement against the originals:
+	   Thunder Black → Anybody wdth 50 / wght 900 (same width per cap height ±2%, same stem)
+	   Thunder Bold  → Anybody wdth 60 / wght 700 (same width ±1%, same stem .193 of cap)
+	   Neue Montreal → General Sans (Fontshare) */
+	--font-black: "Thunder Black", "Anybody", "Impact", sans-serif;
+	--font-bold: "Thunder Bold", "Anybody", "Impact", sans-serif;
+	--fvs-black: "wdth" 50, "wght" 900;
+	--fvs-bold: "wdth" 60, "wght" 700;
+	/* section headings get a touch more air than the giant title: same family, a hair wider, open tracking */
+	--fvs-heading: "wdth" 62, "wght" 800;
+	--track-heading: 0.03em;
+	--font-body: "Neue Montreal", "General Sans", "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+	--font-body-bold: "Neue Montreal Bold", "General Sans", "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+	--font-logo: "Archivo", "General Sans", sans-serif;
+	/* Vertical metrics: Thunder asc .72 / desc .24 / cap .70 — Anybody asc .80 / desc .24 / cap .68.
+	   Values below put Anybody's caps on the exact pixels Thunder's occupy (row 40px, caps 2→37px).
+	   With licensed Thunder: --fvs-*: normal; --roster-scale: 1; --roster-lh: .6em; --roster-pad: 10px;
+	   --nav-scale: 1; --nav-lh: .74; --nav-shift: 15% */
+	--roster-scale: 1.0294;
+	--roster-lh: 0.6765em;
+	--roster-pad: calc(10px - 0.0964 * clamp(36px, 3.4722vw, 90px));
+	--nav-scale: 1.0294;
+	--nav-lh: 0.719;
+	--nav-shift: 8.5%;
+	--nav-fit: 1;
+	--ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+	--ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+	--ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+/* RESET ==================================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html, body, h1, h2, ul, li, figure { margin: 0; padding: 0; }
+ul { list-style: none; }
+a { text-decoration: none; }
+img { display: block; max-width: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+::selection { color: var(--bg); background: var(--accent); }
+
+html { background-color: var(--bg); }
+body {
+	background-color: var(--bg);
+	color: var(--white);
+	font-family: var(--font-body);
+	font-size: 1em;
+	line-height: 1.375;
+	overflow-x: hidden !important;
+	-webkit-font-smoothing: antialiased;
+}
+
+h1, h2 { font-family: var(--font-black); font-variation-settings: var(--fvs-black); text-transform: uppercase; font-weight: normal; color: var(--white); }
+a { color: var(--white); transition: all 400ms var(--ease-out-cubic); }
+
+/* TYPE SCALE (original names) =============================================================== */
+.f-14 { font-size: clamp(0.875rem, 0.972vw, 1.25rem); text-transform: uppercase; line-height: 1.14em; }
+.f-50 { font-size: clamp(36px, 3.4722vw, 90px); line-height: 0.833em; }
+.f-140 { font-size: clamp(40px, 9.7222vw, 180px); line-height: 0.888em; }
+.f-180 { font-size: clamp(60px, 12.5vw, 240px); line-height: 0.9em; }
+.FontTitleBlack { font-family: var(--font-black); font-variation-settings: var(--fvs-black); text-transform: uppercase; }
+.lightGrey { color: var(--panel); }
+.white { color: var(--white); }
+
+/* GRID ====================================================================================== */
+.op-xl-6 { width: 24.9996vw; }
+.op-xl-10 { width: 41.666vw; }
+.op-xl-22 { width: 91.6652vw; }
+.op-xl-os-16 { margin-left: 66.6656vw; }
+@media only screen and (max-width: 1024px) {
+	.op-sm-24 { width: 99.9984vw; }
+}
+@media only screen and (max-width: 768px) {
+	.op-xs-22 { width: 91.6652vw; }
+	.op-xs-os-1 { margin-left: 4.1666vw; }
+}
+
+/* SPLIT TEXT ================================================================================ */
+.hero-split.chars .line,
+.split.chars .line { padding-top: 10px; perspective: 300px; overflow: hidden; }
+.hero-split .char { will-change: transform; }
+
+/* LOGO ====================================================================================== */
+/* logo and menu grow from their phone size at 768 to their full size at 1024, so nothing jumps where the layout changes */
+:root {
+	/* the same values as css/tokens.css (Figma names); here too because index.html loads only this file */
+	--header-inset: clamp(1rem, calc(6.25vw - 2rem), 2rem);
+	--size-menu-w: clamp(5rem, calc(6.25vw + 2rem), 6rem);
+	--size-menu-h: clamp(3.5rem, calc(9.375vw - 1rem), 5rem);
+}
+#logo {
+	z-index: 100;
+	position: fixed;
+	top: clamp(1.875rem, calc(0.78vw + 1.5rem), 2rem);
+	left: var(--header-inset);
+	height: 1.75rem;
+	display: flex;
+	align-items: center;
+	font-family: var(--font-logo);
+	font-weight: 800;
+	font-stretch: 112%;
+	font-variation-settings: "wdth" 112, "wght" 800;
+	font-size: clamp(1rem, 1.389vw, 1.75rem);
+	line-height: 1;
+	letter-spacing: 0.05em;
+	white-space: nowrap;
+	overflow: visible;
+}
+#logo i { font-style: normal; display: inline-block; }
+#logo i.space { width: 0.32em; }
+/* the first letter plays the original "O": on scroll it grows ×2 while the rest folds away */
+#logo .letter-first { transition: color 400ms var(--ease-out-cubic); }
+#logo:hover .letter-first { color: var(--accent); }
+
+/* HAMBURGER + NAV =========================================================================== */
+#pageOverlay {
+	position: fixed;
+	z-index: 20;
+	inset: 0;
+	background-color: #000;
+	opacity: 0;
+	pointer-events: none;
+}
+
+#nav-bg {
+	background-color: var(--panel);
+	position: fixed;
+	top: var(--header-inset);
+	right: var(--header-inset);
+	height: var(--size-menu-h);
+	width: var(--size-menu-w);
+	z-index: 100;
+	border-radius: 5px;
+}
+
+#hamburger {
+	cursor: pointer;
+	position: fixed;
+	top: var(--header-inset);
+	right: var(--header-inset);
+	height: var(--size-menu-h);
+	width: var(--size-menu-w);
+	z-index: 110;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+#hamburger > span {
+	display: block;
+	overflow: hidden;
+	position: absolute;
+	top: 50%;
+	left: 0;
+	font-family: var(--font-body-bold);
+	font-weight: 700;
+	text-transform: uppercase;
+	font-size: 0.75rem;
+	line-height: 1rem;
+	transform: translateY(-50%);
+}
+#hamburger > span span { display: inline-block; transform: translateY(-100%); }
+#hamburger i {
+	height: 40px;
+	width: 40px;
+	flex: 0 0 40px;
+	position: relative;
+	display: block;
+}
+/* three bars, vertical when closed → horizontal when open (replaces the original Lottie) */
+#hamburger i b {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 2px;
+	height: 14px;
+	margin: -7px 0 0 -1px;
+	background: var(--white);
+	border-radius: 1px;
+}
+#hamburger i b:nth-child(1) { transform: translateX(-4px); }
+#hamburger i b:nth-child(3) { transform: translateX(4px); }
+#hamburger.opened { pointer-events: none; }
+
+#navigation {
+	z-index: 105;
+	position: fixed;
+	top: 0;
+	right: 0;
+	padding: 10rem 4.444vw 4.444vw;
+	pointer-events: none;
+	height: 100vh;
+	display: flex;
+	align-items: flex-end;
+	flex-wrap: wrap;
+}
+#navigation > div { width: 100%; }
+#navigation a {
+	display: block;
+	font-family: var(--font-black);
+	font-variation-settings: var(--fvs-black);
+	/* one rule at every window: width sets it, it rests at 100px between phone and desktop, and four links always fit the height */
+	font-size: calc(clamp(40px, min(18vw, max(100px, 9.7222vw), calc((100svh - 14rem) / 3)), 180px) * var(--nav-scale) * var(--nav-fit));
+	text-transform: uppercase;
+	line-height: var(--nav-lh);
+	opacity: 0;
+	position: relative;
+	overflow: hidden;
+	white-space: nowrap;
+	transition: color 400ms var(--ease-out-cubic); /* not "all": a font-size transition would break fitNav */
+}
+#navigation a span { display: block; transform: translateY(var(--nav-shift)); }
+#navigation a span:nth-of-type(2) { position: absolute; top: 0; left: 0; color: var(--title); }
+#navigation a.active { color: rgba(255, 255, 255, 0.15); pointer-events: none; }
+#navigation a.active span:nth-of-type(2) { visibility: hidden; }
+
+/* PAGE TO PAGE ============================================================================== */
+#page-to-page {
+	z-index: 90;
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	opacity: 0;
+}
+#page-to-page .red-bg,
+#page-to-page .grey-bg {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 150%;
+	height: 100%;
+	background-color: var(--accent);
+	z-index: 1;
+	transform-origin: bottom left;
+	transform: translateY(-100%) rotate(-45deg);
+}
+#page-to-page .grey-bg { z-index: 2; background-color: var(--bg); }
+
+/* LISTING PAGE ============================================================================== */
+#smooth-content.directors { min-height: 100vh; padding-top: 30px; }
+
+.bg-images {
+	width: 100vw;
+	height: 100vh;
+	position: absolute;
+	top: 0;
+	left: 0;
+	line-height: 0;
+	z-index: -1;
+	overflow: hidden;
+	margin: 0;
+}
+.bg-images img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: 0;
+	z-index: 1;
+}
+
+aside.dir-title {
+	position: fixed;
+	bottom: -10.4165vw;
+	left: 4.1666vw;
+}
+aside.dir-title h1 {
+	font-size: 28.7vw; /* refit to the 22-col width in JS for titles of other lengths */
+	line-height: 1.375;
+	color: var(--title);
+	text-align: center;
+	letter-spacing: 0.005em;
+	white-space: nowrap;
+}
+
+.dir-listing { position: relative; }
+
+.directors #track {
+	position: absolute;
+	top: 0;
+	width: 2.55vw;
+	aspect-ratio: 1;
+	z-index: 10;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	transform: translateX(-100%);
+	transition: transform 0.05s linear;
+}
+.directors #track i {
+	display: block;
+	background-color: var(--accent);
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+}
+
+.directors li { position: relative; }
+.directors li h2 { line-height: 1; }
+.directors li a {
+	font-family: var(--font-bold);
+	font-variation-settings: var(--fvs-bold);
+	font-size: calc(clamp(36px, 3.4722vw, 90px) * var(--roster-scale));
+	text-transform: uppercase;
+	line-height: var(--roster-lh);
+	overflow: hidden;
+	position: relative;
+	display: block;
+	color: var(--white);
+	white-space: nowrap;
+}
+.directors li a span { display: block; }
+.directors li a .hero-split.chars .line { padding-top: var(--roster-pad); }
+.directors li a span.title-hover {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	padding-top: var(--roster-pad);
+	line-height: var(--roster-lh);
+	color: var(--accent);
+}
+.directors li a.active { opacity: 1 !important; }
+.directors li a > div { display: none; }
+
+.directors #footer { display: none; }
+
+/* FOOTER (mobile only on this page, as in the original) ===================================== */
+#footer { border-top: 1px solid rgba(255, 255, 255, 0.2); }
+#footer .footer-links {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 3em;
+	padding-top: 8vh;
+}
+#footer .footer-links a { padding: 0.5em 0; transition: transform 600ms var(--ease-out-quart); }
+#footer .social { display: flex; justify-content: center; line-height: 0; padding: 5vh 0 10vh; }
+#footer .social a {
+	margin: 0 0.4em;
+	width: calc(80px + 2.5vw);
+	height: calc(80px + 2.5vw);
+	position: relative;
+	background-color: var(--panel);
+	display: inline-block;
+	border-radius: 50%;
+	overflow: hidden;
+}
+#footer .social a span {
+	position: absolute;
+	inset: 0;
+	background-color: var(--accent);
+	border-radius: 50%;
+	transform: translateY(102%);
+	transition: transform 600ms var(--ease-out-quint);
+}
+#footer .social a svg {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 30%;
+	transform: translate(-50%, -50%);
+	transition: transform 600ms var(--ease-out-quint);
+}
+#footer .social a:hover span { transform: translateY(0); }
+#footer .social a:hover svg { transform: translate(-50%, -50%) scale(0.75); }
+#footer .footer-main { padding-bottom: 8vh; text-align: center; }
+#footer .double-hover { position: relative; overflow: hidden; display: inline-block; font-size: 23vw; color: var(--accent); }
+#footer .double-hover span { display: block; padding-top: 0.05em; }
+#footer .double-hover span:nth-of-type(2) { display: none; }
+#footer .footer-bottom {
+	display: flex;
+	justify-content: space-between;
+	padding: 2em 0;
+	border-top: 1px solid rgba(255, 255, 255, 0.2);
+	font-size: 11px;
+}
+
+/* THEME SWITCHER (prototype helper) ========================================================= */
+#themeSwitch {
+	position: fixed;
+	z-index: 120;
+	left: 30px;
+	bottom: 30px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	height: 36px;
+	padding: 0 6px;
+	border-radius: 5px;
+	background: rgba(42, 41, 41, 0.85);
+	backdrop-filter: blur(8px);
+	font-family: var(--font-body-bold);
+	font-weight: 700;
+	font-size: 11px;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	opacity: 0.35;
+	transition: opacity 400ms var(--ease-out-cubic);
+}
+#themeSwitch:hover { opacity: 1; }
+#themeSwitch button { width: 24px; height: 24px; border-radius: 3px; }
+#themeSwitch button:hover { background: var(--accent); color: var(--bg); }
+#themeSwitch .count { color: var(--accent); }
+#themeSwitch .palette { width: auto; padding: 0 8px 0 22px; position: relative; }
+#themeSwitch .palette::before {
+	content: "";
+	position: absolute;
+	left: 7px;
+	top: 50%;
+	width: 9px;
+	height: 9px;
+	margin-top: -4.5px;
+	border-radius: 50%;
+	background: var(--accent);
+}
+
+/* palette swap (P) — colours glide instead of snapping */
+.palette-anim body,
+.palette-anim #nav-bg,
+.palette-anim .dir-title h1,
+.palette-anim #track i,
+.palette-anim .title-hover { transition: background-color 600ms var(--ease-out-cubic), color 600ms var(--ease-out-cubic); }
+
+/* ≤1024 ===================================================================================== */
+@media only screen and (max-width: 1024px) {
+	#logo { z-index: 110; }
+	#hamburger.opened { pointer-events: auto; }
+	#hamburger > span { left: -50%; }
+	#navigation a span:nth-of-type(2) { display: none; }
+}
+
+/* PHONE MENU — upright phones and phones held sideways (13.11.2026) =========================== */
+/* the menu fills the whole screen: the panel grows from the button to the size of #navigation (site.js menu()), so
+   #navigation is the screen. The links stand in the middle, margin to margin like the logo and the menu button: the
+   longest word ("Projects", 2.79 em) spans the width, fluid between 3 and 9 rem, never taller than the room under the
+   menu button allows (four lines × 0.719) */
+@media only screen and (max-width: 768px), only screen and (hover: none) and (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+	#navigation {
+		width: 100%;
+		height: 100vh;
+		height: 100svh;
+		/* the links stand as one block in the middle of the screen (user, 13.11.2026: version 1): the same room above and
+		   below; "safe" keeps them under the menu button where a low screen has less room than the block needs */
+		align-items: safe center;
+		padding: calc(var(--header-inset) + var(--size-menu-h) + 2rem) var(--header-inset);
+	}
+	#navigation a {
+		font-size: clamp(3rem, min(calc((100vw - 2 * var(--header-inset)) / 2.8), calc((100svh - var(--header-inset) * 2 - var(--size-menu-h) - 2rem) / 2.9)), 9rem);
+		line-height: var(--nav-lh);
+	}
+	#navigation a.active { color: var(--accent); }
+}
+
+/* ≤768 ====================================================================================== */
+@media only screen and (max-width: 768px) {
+	body * { -webkit-tap-highlight-color: rgba(255, 255, 255, 0); }
+
+	#hamburger.opened { pointer-events: auto; }
+
+	#smooth-content.directors { padding: 0; min-height: 100%; position: relative; height: auto; }
+	.directors > div { padding: 20px 0; }
+
+	aside.dir-title { position: relative; overflow: hidden; display: block; padding-top: 5vh; bottom: auto; margin: 33px 0 -33px; }
+	aside.dir-title h1 { font-size: 28vw; line-height: 1.375; text-align: left; }
+
+	.bg-images { display: none; }
+	.directors #track { display: none; }
+
+	.directors ul { padding-top: 5vh; padding-bottom: 20px; position: relative; }
+	.directors li {
+		background-color: var(--panel);
+		border-radius: 5px;
+		padding: 4.1666vw 4.1666vw 2.70829vw;
+		margin-bottom: 20px;
+	}
+	.directors li a { display: flex; line-height: 1em; font-size: calc(14vw * var(--roster-scale)); padding-top: 0.2em; overflow: hidden; }
+	.directors li a > div {
+		line-height: 0;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 29.1662vw;
+		height: 100%;
+		overflow: hidden;
+		border-radius: 5px;
+		display: block;
+	}
+	.directors li a > div img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+	.directors li a span { padding-left: 33.3328vw; line-height: 0.8; white-space: normal; }
+	.directors li a .line { white-space: nowrap; }
+	.directors li a { white-space: normal; }
+	.directors li a span.title-hover { display: none; }
+	.hero-split.chars .line { padding-top: 0; overflow: visible !important; }
+
+	.directors #footer { display: block; padding: 0 4.1666vw; }
+	#footer .footer-links { padding-top: 5vh; margin-bottom: 0; }
+	#footer .footer-links a { padding: 0 0.5em; font-size: 14px; }
+
+	#themeSwitch { left: auto; right: 10px; bottom: 10px; opacity: 0.9; }
+	#themeSwitch .name { display: none; }
+}
+
+/* ==========================================================================================
+   PROFILE PAGE (click a name) — motion and proportions follow the original director-detail:
+   tilted card −15° → −7° on enter, → +10° while the hero scrolls out; 24-col grid throughout
+   ========================================================================================== */
+#smooth-content.director-detail { min-height: 100vh; }
+
+.dir-hero { position: relative; height: 100vh; overflow: hidden; }
+.dir-hero .back-link { position: absolute; top: 6rem; z-index: 3; }
+.dir-hero .back-link { left: 2rem; }
+.dir-hero .back-link:hover { color: var(--accent); }
+
+.dir-img {
+	position: absolute;
+	top: 46%;
+	left: 50%;
+	width: min(24.9996vw, 52vh); /* the tilted card always stays whole inside the hero */
+	transform: translate(-50%, -50%);
+	z-index: 1;
+}
+.dir-img figure { margin: 0; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 5px; will-change: transform; }
+.dir-img img { width: 100%; height: 100%; object-fit: cover; }
+
+/* magazine-cover layering: the tilted photo sits on top of the name, so the name is always white
+   on the dark backdrop and simply disappears where the print covers it — no colour patches */
+.dir-name {
+	position: absolute;
+	left: 4.444vw;
+	bottom: 2.222vw;
+	z-index: 0;
+	margin: 0;
+	color: #fff;
+	line-height: 0.82;
+	letter-spacing: 0.01em;
+	white-space: nowrap;
+}
+.dir-img figure { box-shadow: 0 1vw 2.5vw rgba(0, 0, 0, 0.3); }
+.dir-name .line { padding-top: 0.06em; overflow: hidden; }
+
+.dir-bio { display: flex; padding: 17.778vw 4.444vw 13.333vw; }
+.dir-bio .label { width: 29.1662vw; flex: 0 0 29.1662vw; color: var(--accent); padding-top: 0.6em; }
+.bio-body { width: 58.3324vw; }
+.bio-text {
+	margin: 0;
+	font-family: var(--font-body);
+	font-size: clamp(1.5rem, 2.222vw, 3rem);
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+}
+.bio-text .line { overflow: hidden; }
+.facts { display: flex; gap: 4.444vw; margin: 4.444vw 0 0; }
+.facts dt { opacity: 0.45; margin-bottom: 0.6em; }
+.facts dd { margin: 0; }
+
+.dir-work { padding-bottom: 6.667vw; }
+.dir-work.is-pinned { display: flex; flex-direction: column; justify-content: center; min-height: 100vh; min-height: 100svh; padding-bottom: 0; }
+.work-head { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 4.444vw 2.222vw; }
+/* the size of "Who shoots" on Team */
+.work-head h2 { margin: 0; font-size: min(6.944vw, 15vh); line-height: 0.82; font-variation-settings: var(--fvs-bold); }
+.work-head .f-14 { padding-bottom: 0.4em; }
+
+/* scrolling moves the row sideways while the section is pinned; the height also answers to the window, so the
+   whole section fits one screen. Touch screens swipe the row instead (.swipe, set in gallery()) */
+.gallery { --gallery-h: min(33.333vw, 52vh); overflow: hidden; }
+.gallery.swipe { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.gallery.swipe::-webkit-scrollbar { display: none; }
+.gallery .track { display: flex; gap: 2.222vw; padding: 0 4.444vw; width: max-content; margin: 0; will-change: transform; }
+.gallery li { flex: 0 0 auto; }
+.gallery .port { width: calc(var(--gallery-h) * 0.8); }
+.gallery .land { width: calc(var(--gallery-h) * 1.6); }
+.gallery figure { margin: 0; height: var(--gallery-h); overflow: hidden; border-radius: 5px; background: var(--panel); }
+.gallery img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; user-select: none; transform: scale(1.06); }
+.gallery p { display: flex; gap: 1.5em; margin: 1.2em 0 0; }
+.gallery p span:first-child { color: var(--accent); }
+.gallery p span:last-child { margin-left: auto; opacity: 0.45; }
+
+.dir-back { padding: 22.222vw 4.444vw 4.444vw; }
+.dir-back > span { display: block; margin-bottom: 2em; opacity: 0.6; }
+.dir-back .next-link { display: flex; align-items: center; justify-content: space-between; gap: 4.444vw; }
+.dir-back h2 { margin: 0; line-height: 0.85; font-variation-settings: var(--fvs-bold); }
+.dir-back h2 span { white-space: nowrap; }
+.double-hover { position: relative; overflow: hidden; }
+.double-hover span { display: block; padding-top: 0.05em; }
+.double-hover span:nth-of-type(2) { position: absolute; top: 0; left: 0; color: var(--accent); }
+.dir-back .double-hover span:nth-of-type(2) { color: var(--title); } /* large type hovers bronze, as the menu and Get in touch */
+.arrow-btn {
+	flex: 0 0 17.778vw;
+	height: 17.778vw;
+	border-radius: 50%;
+	background: var(--accent);
+	color: var(--bg);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: transform 600ms var(--ease-out-quint);
+}
+.arrow-btn svg { width: 28%; transition: transform 600ms var(--ease-out-quint); }
+.next-link:hover .arrow-btn { transform: scale(0.92); }
+.next-link:hover .arrow-btn svg { transform: translateX(18%); }
+
+.dir-foot { display: flex; justify-content: space-between; padding: 2em 4.444vw; }
+.dir-foot a:hover { color: var(--accent); }
+
+@media only screen and (max-width: 768px) {
+	.dir-hero { height: 100svh; min-height: 35rem; }
+	.dir-hero .back-link { top: 5.5rem; left: 1rem; }
+	.dir-img { width: 62vw; top: 44%; }
+	.dir-name { bottom: 6vw; left: 1rem; }
+
+	.dir-bio { display: block; padding: 24vw 1rem 18vw; }
+	.dir-bio .label { display: block; width: auto; margin-bottom: 1.5em; }
+	.bio-body { width: auto; }
+	.bio-text { font-size: 1.5rem; }
+	.facts { flex-direction: column; gap: 1.4em; margin-top: 10vw; }
+
+	.work-head { padding: 0 1rem 5vw; }
+	.work-head h2 { font-size: 20vw; }
+	.gallery { --gallery-h: 72vw; }
+	.gallery .land { width: 86vw; }
+	.gallery .track { gap: 0.75rem; padding: 0 1rem; }
+	.gallery p { flex-wrap: wrap; gap: 0.6em 1em; font-size: 0.75rem; }
+
+	.dir-back { padding: 30vw 1rem 8vw; }
+	.arrow-btn { flex-basis: 20.833vw; height: 20.833vw; }
+	.dir-foot { font-size: 0.75rem; padding: 2em 1rem; }
+}
+
+/* the theme switcher is a prototype helper for the listing only */
+.is-profile #themeSwitch { display: none; }
+
+/* ==========================================================================================
+   BLACK POINT — TOKENS. One file for every page, with the same names as the Figma variables
+   (each variable's "Code syntax" in Figma gives its name here, e.g. layout/col → --gutter).
+
+   How a size is written:
+   - Fixed values (the spacing scale, radii) in rem: 1rem = 16px.
+   - Fluid sizes (type, gaps, pictures) grow with the window: --u is one Figma pixel, so a Figma value N at 1440 is
+     calc(var(--u) * N), with a lower and an upper limit (clamp, max, min). js/site.js sets --u (SIZE UNIT): the
+     smaller of window width / frame width and window height / frame height, the frame picked by the window's shape
+     (desktop 1440 × 900, tablet upright 834 × 1080, phone 375 × 812) and blended between shapes, so nothing jumps.
+     At 1440 × 900 and at 375 × 812 it is 100vw / 1440, so they give the values of the Figma modes 1440 and 375.
+   - Positions and widths of the grid follow the width alone: --u-width, the margin and the gutter.
+   - A token that the code does not use yet is not written here: it is added, with its own rule,
+     when the page that uses it is built. The list of Figma tokens is in docs/figma-design-system.md.
+   Load order on every page: style.css, tokens.css, then the page's own CSS.
+   ========================================================================================== */
+
+:root {
+	/* COLOUR — collection "Black Point" */
+	--bg: #131212;                                   /* color/bg */
+	--panel: #2A2929;                                /* color/panel */
+	--accent: #E8DCC4;                               /* color/accent */
+	--white: #fff;                                   /* color/text */
+	--title: #99855D;                                /* color/title */
+	--dim: rgba(255, 255, 255, 0.58);                /* color/text-dim */
+	--name-dim: rgba(255, 255, 255, 0.42);           /* color/text-faint */
+	--text-ghost: rgba(255, 255, 255, 0.2);          /* color/text-ghost */
+	--text-closed: rgba(255, 255, 255, 0.4);         /* color/text-closed */
+	--overlay-soft: rgba(19, 18, 18, 0.35);          /* color/overlay-soft */
+	--overlay-strong: rgba(19, 18, 18, 0.75);        /* color/overlay-strong */
+	--overlay-shade: rgba(19, 18, 18, 0.55);         /* color/overlay-shade */
+	--overlay-dim: rgba(0, 0, 0, 0.45);              /* color/overlay-dim */
+	--overlay-menu: rgba(0, 0, 0, 0.6);              /* color/overlay-menu */
+	--film: #000;                                    /* color/film */
+	--film-sub: rgba(0, 0, 0, 0.8);                  /* color/film-sub */
+	--film-fade-top: rgba(0, 0, 0, 0.62);            /* color/film-fade-top */
+	--film-fade-bottom: rgba(0, 0, 0, 0.72);         /* color/film-fade-bottom */
+
+	/* SPACING SCALE — space/1 … space/11: 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 160 */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.5rem;
+	--space-6: 2rem;
+	--space-7: 3rem;
+	--space-8: 4rem;
+	--space-9: 6rem;
+	--space-10: 8rem;
+	--space-11: 10rem;
+
+	/* RADII — radius/s, radius/m, radius/full */
+	--radius-s: 5px;
+	--radius-m: 6px;
+	--radius-full: 999px;
+
+	/* GRID */
+	--u: calc(100vw / 1440);      /* one Figma pixel; js/site.js replaces it with the size unit (this is only its first value) */
+	--u-width: calc(100vw / 1440);                                                /* one Figma pixel of the width: the grid only */
+	--margin: clamp(1rem, calc(var(--u-width) * 32), 2rem);                       /* layout/margin: 16 → 32 */
+	/* layout/col: the margin up to 768, then it opens evenly to one grid column at 1440 and follows the column from there */
+	--gutter: max(var(--margin), min(calc(var(--u-width) * 64), calc(7vw - 2.3rem)));  /* 16 → 64 */
+
+	/* LOGO AND MENU — they grow from their phone size at 768 to their full size at 1024 */
+	--header-inset: clamp(1rem, calc(6.25vw - 2rem), 2rem);                       /* layout/header-inset: 16 → 32 */
+	--size-menu-w: clamp(5rem, calc(6.25vw + 2rem), 6rem);                        /* size/menu-w: 80 → 96 */
+	--size-menu-h: clamp(3.5rem, calc(9.375vw - 1rem), 5rem);                     /* size/menu-h: 56 → 80 */
+
+	/* TEXT — Instrument Sans for everything that is not display type */
+	--font-body: "Instrument Sans", "General Sans", "Helvetica Neue", Arial, sans-serif;
+	--fs-label: clamp(0.75rem, calc(var(--u) * 12), 1.125rem);                   /* font/text-12 */
+	--fs-body: clamp(1rem, calc(var(--u) * 16), 1.5rem);                          /* font/text-16 */
+	--fs-lead: clamp(1rem, calc(var(--u) * 20), 2rem);                            /* font/text-20: 16 → 20 */
+	--fs-addr: clamp(1.25rem, calc(var(--u) * 24), 2.5rem);                       /* font/text-24: 20 → 24 */
+
+	/* LINE HEIGHT AND THE GAP INSIDE A GROUP (decision 11.11.2026) */
+	--lh-text: 1.3;                                                               /* text to read: the same on every screen */
+	/* inside a group (a picture and its text, a label and its lines): never less than one line of text, so the lines of a
+	   paragraph always stand closer to each other than the paragraph to its picture */
+	--gap-tight: max(var(--space-4), calc(var(--u) * 32));                        /* 16 → 32 */
+	/* between two groups (a caption and its link): at least 24, so on a phone too it reads clearly larger than the 8 inside a group */
+	--gap-group: max(var(--space-5), calc(var(--u) * 32));                        /* 24 → 32 */
+
+	/* DISPLAY — Display/144: meets the phone size (6rem) where the layout changes at 768 */
+	/* a city name on its half of the screen: at most 15vw, so on a tall tablet it never leaves its picture */
+	--fs-display-144: max(min(calc(var(--u) * 144), 15vw), 6rem);                /* font/display-144 */
+
+	/* SECTIONS SHARED BY EVERY PAGE (Lisbon and Warsaw, Get in touch and the footer) */
+	--layout-top: max(8rem, calc(var(--u-width) * 160));                                /* layout/top: 128 → 160, room under the logo and menu */
+	--layout-grid-gap: calc(var(--u-width) * 48);                                     /* layout/grid-gap: between the contact columns */
+	--layout-label-gap: calc(var(--fs-label) * 0.9);                              /* layout/label-gap: 10.8 under a label */
+	--layout-foot-bottom: calc(var(--u-width) * 48);                                    /* layout/foot-bottom: 12 → 48 */
+	--size-disc: max(7.7rem, min(calc(var(--u) * 160), calc(var(--u-width) * 160))); /* size/disc: the Get in touch circle, beside a word that fills the row, so never larger than the width allows; on phones fitAll() sizes it */
+}
+
+/* CONTACT — the film */
+:root {
+	--fs-text-32: clamp(1.25rem, calc(var(--u) * 32), 2.5rem);                     /* font/text-32: subtitles, 20 → 32 */
+	--fs-display-96-statement: min(max(3rem, calc(var(--u) * 96)), 10.67vh);      /* font/display-96-statement: 48 → 96, never taller than the screen allows */
+	--fs-display-144-compact: min(max(3rem, calc(var(--u) * 144)), 16vh);         /* font/display-144-compact: chapter cards, 48 → 144 */
+}
+
+/* phones: Display/144 is fitted to the width, up to its 768 size */
+@media only screen and (max-width: 768px) {
+	:root { --fs-display-144: min(24vw, 6rem); }
+}
+
+/* ==========================================================================================
+   BLACK POINT — HOME (Figma: "v4 — Desktop pages" → Home, 1440 × 900 frames)
+   Builds on style.css (fonts, grid, nav, logo, listing, motion). Nothing here is a fixed pixel
+   layout: --u is one Figma pixel (the size unit from js/site.js, see css/tokens.css), so a Figma value N is written
+   calc(var(--u) * N) and scales with the window; positions in the grid use --u-width. Heights of full-screen scenes use vh/svh, type
+   uses clamp() so it never gets unreadably small or absurdly large.
+   ========================================================================================== */
+
+/* the tokens (colours, grid, text sizes) are in css/tokens.css, with the Figma names */
+
+html { scroll-behavior: auto; }
+body { min-height: 100%; font-family: var(--font-body); }
+#smooth-content.home { opacity: 0; }
+.home section,
+.home footer { position: relative; }
+.home .lbl,
+.home .label-caps {
+	font-size: var(--fs-label);
+	line-height: 1.5;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--dim);
+}
+
+/* 01 + 02 THE SCENE ===========================================================================
+   One 100vh stage, pinned while you scroll. Layers, bottom to top: the photo frame (full-bleed,
+   clipped down to the 560 × 350 Figma frame at rest), the hero type, the photographers list.  */
+.h-intro {
+	height: 100vh;
+	height: 100svh;
+	overflow: hidden;
+	isolation: isolate;
+	/* the Figma frame: 560 × 350 at 1440 × 900, centred at 50% / 52.8% — 16:10, never taller than
+	   ~39% of the screen so it cannot swallow the title on short windows */
+	/* the gap gives way only on low windows (4svh), so 1440 × 900 and 1024 keep their 32 and 24 */
+	--hero-gap: clamp(1rem, min(max(calc(var(--u) * 32), 1.5rem), 4svh), 3rem); /* the same above and below the photo */
+	/* the room the title and photo may fill: the screen less the logo (3.75rem) above and its mirror below, and the
+	   four gaps. On low windows (844 × 390) this is what limits them, so the logo never sits on the title.
+	   js/home.js fit() caps the title by the same room (× 1.1127 for the title, × 0.937 for the photo) */
+	--fit-h: calc(100svh - 7.5rem - 4 * var(--hero-gap));
+	--frame-w: min(max(calc(var(--u) * 560), 28rem), 62.2vh, calc(var(--fit-h) * 0.937));
+	--frame-h: calc(var(--frame-w) * 0.625);
+	--frame-y: 50%;
+}
+.intro-frame {
+	position: absolute;
+	inset: 0;
+	margin: 0;
+	z-index: 2;
+	overflow: hidden;
+	will-change: clip-path;
+}
+.frame-zoom { position: absolute; inset: 0; will-change: transform; }
+.frame-in,
+.frame-hover { position: absolute; inset: 0; }
+.frame-in img,
+.frame-hover img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.frame-in img + img { opacity: 0; }
+.frame-hover { opacity: 0; }
+/* under the names: a darker shade over the whole photo, 75% (user, 13.11.2026, version C; was 55%). The versions not chosen
+   stay to compare on phones: ?tlo=a gradient from the names' side, ?tlo=b blur + 55% (js/home.js) */
+.frame-shade { position: absolute; inset: 0; background: rgba(19, 18, 18, 0.75); opacity: 0; pointer-events: none; }
+
+/* hero type: title top-left, "In mono." bottom-right, lead bottom-left (Figma y 150 / 680 / 682) */
+.hero-layer {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	padding: 17.78vh var(--gutter) 10.1vh;
+	pointer-events: none;
+}
+.hero-title { margin: 0; line-height: 0.82; color: var(--white); }
+.hero-title .hl { display: block; width: max-content; white-space: nowrap; will-change: transform; }
+/* title, photo and "In mono." are one group around the middle of the screen */
+/* the title's line keeps room for descenders under the capitals (0.135 em): it stands that much lower, so the letters are
+   as far above the photo as "In mono." is below it (user, 13.11.2026; measured on the ink: 34 above / 23 below before) */
+.hero-title .hl:not(.hl-2) { position: absolute; left: var(--gutter); bottom: calc(50% + var(--frame-h) / 2 + var(--hero-gap) - 0.135em); }
+.hero-title .hl-2 { position: absolute; right: var(--gutter); top: calc(50% + var(--frame-h) / 2 + var(--hero-gap)); color: var(--title); }
+.hero-title .line { padding-top: 0.04em; overflow: hidden; }
+.hero-lead {
+	position: absolute;
+	left: var(--gutter);
+	top: calc(50% + var(--frame-h) / 2 + var(--hero-gap));
+	width: min(calc(var(--u) * 416), calc(var(--u-width) * 416)); /* a column beside the title: never wider than the grid allows */
+	min-width: 17.5rem;
+	margin: 0;
+	font-size: var(--fs-lead);
+	line-height: var(--lh-text);
+}
+.hero-lead .line { overflow: hidden; }
+
+/* list: names from col 17 (Figma x 960), caption bottom-left (Figma y 640) */
+.team-layer { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+/* the same roster type and metrics as the listing page (style.css .directors), owned here so the
+   listing's phone "cards" do not apply — on the home page the list stays a list at every width */
+/* One rule at every window: the side follows the window's shape (upright: left, landscape: on column 9), the list always
+   starts below the menu, and the size comes from whichever of width and height is tighter, so all twelve names fit and nothing
+   jumps where the layout changes. The two formulas meet at a square window (5.2vw = 5.2svh). 15rem and 7.5 keep the list on
+   screen in low windows: there it starts at 7rem, leaves 0.5rem below, and twelve rows are 7.5em + 7.5rem. */
+.team-list {
+	position: absolute;
+	top: clamp(7rem, 16svh, 8rem); /* clear of the menu; only low windows give up the extra air */
+	left: 66.667%;
+	pointer-events: auto;
+}
+@media (orientation: portrait) {
+	.team-list { left: calc(var(--gutter) + 1.5rem); }
+}
+.team-list li { position: relative; }
+.team-list h2 { line-height: 1; }
+.team-list a {
+	display: block;
+	position: relative;
+	overflow: hidden;
+	font-family: var(--font-bold);
+	font-variation-settings: var(--fvs-bold);
+	--roster-lh: 0.72em;
+	--roster-pad: calc(0.625rem - 0.0964em); /* follows this list's own size, not the listing page's */
+	font-size: max(0.875rem, min(5.2vw, 6svh, calc((100svh - 15rem) / 7.5), 5.5rem));
+	line-height: var(--roster-lh);
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: var(--white);
+	transition: color 0.4s var(--ease-out-cubic);
+}
+/* upright windows: 40 at 375 wide (10.67vw, was 9.6vw: a little larger, user 13.11.2026). The height decides by the room
+   the list has, centred on phones, between the menu and the caption (--list-room: 12 rows are 7.5em + 7.5rem tall, and 15rem
+   more is twice the caption with a group gap above it; the caption is lower than the menu, so it decides). Up to 52 px that
+   room may be used even where 5.2svh is less (phones, the address bar showing); above it tablets keep 5.2svh as before.
+   One rule for every upright window, so nothing jumps at 768/769 */
+@media (orientation: portrait) {
+	.team-list a {
+		--list-room: calc((100svh - 22.5rem) / 7.5);
+		font-size: min(10.67vw, max(5.2svh, min(var(--list-room), 3.25rem)), var(--list-room), 5.5rem);
+	}
+}
+.team-list li:not(.on) a { color: var(--name-dim); }
+.team-list a span { display: block; }
+.team-list a .hero-split.chars .line { padding-top: var(--roster-pad); overflow: hidden !important; }
+.team-list a .title-hover {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	padding-top: var(--roster-pad);
+	color: var(--accent);
+}
+.team-list .track {
+	position: absolute;
+	top: 0;
+	width: max(1.5rem, 2.55vw);
+	aspect-ratio: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transform: translateX(-100%);
+}
+.team-list .track i { display: block; width: 0.625rem; height: 0.625rem; border-radius: 50%; background: var(--accent); transform: scale(0); }
+/* the caption (user, 13.11.2026, from the phone sketch in Figma, on every window): no "01 / 12 — name" label any more; the project
+   with a dot, then the link 8 under it — one group. The dot has its own column, as the list's dot (.track: 1.5rem on phones), so
+   on phones the project stands on the names' edge; the link starts at the dot's edge (the sketch) */
+.team-cap {
+	position: absolute;
+	left: var(--gutter);
+	bottom: 3rem;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--space-2); /* the sketch: about 6 */
+	pointer-events: auto;
+}
+.team-cap p { margin: 0; overflow: hidden; }
+.team-cap p > span { display: block; }
+.team-cap p > span > span { display: inline-block; }
+.cap-work { position: relative; padding-left: 1.5rem; font-size: var(--fs-body); line-height: var(--lh-text); }
+.cap-work::before {
+	content: "";
+	position: absolute;
+	left: 0.5625rem; /* centred in the column, as the list's dot */
+	top: 50%;
+	width: 0.375rem;
+	height: 0.375rem;
+	margin-top: -0.1875rem;
+	border-radius: 50%;
+	background: var(--accent);
+}
+.cap-link {
+	display: inline-block;
+	margin-left: 0.5625rem;
+	font-size: var(--fs-label);
+	line-height: 1.5;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	transition: color 400ms var(--ease-out-cubic); /* not "all": it races GSAP's entrance and can leave the link hidden on a first visit */
+}
+.cap-link:hover { color: var(--accent); }
+.team-cap,
+.team-list { visibility: hidden; }
+
+/* 03 TWO STUDIOS =============================================================================
+   Figma "03 Studios": layout/margin all round, layout/gap-1 under the header (30 + 80 + 30),
+   both cities in one frame with radius/m so the photos never touch the list photo above. */
+.h-studios {
+	height: 100vh;
+	height: 100svh;
+	padding: calc(var(--header-inset) + var(--size-menu-h) + max(var(--margin), 1.5rem)) var(--margin) var(--margin); /* under the logo and menu */
+}
+.studios-frame {
+	display: flex;
+	height: 100%;
+	overflow: hidden;
+	border-radius: var(--radius-m);
+	isolation: isolate;
+}
+.city {
+	position: relative;
+	flex: 50 1 0;
+	min-width: 0;
+	overflow: hidden;
+	color: var(--white);
+	background: var(--panel);
+	transition: flex-grow 0.9s var(--ease-out-quint);
+}
+.city figure { position: absolute; inset: 0; margin: 0; }
+.city img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transform: scale(1.06);
+	transition: transform 1.2s var(--ease-out-quint), filter 0.9s var(--ease-out-quint);
+}
+.city::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(to bottom, var(--overlay-soft), var(--overlay-strong));
+	transition: background-color 0.9s var(--ease-out-quint);
+}
+.city-txt {
+	position: absolute;
+	z-index: 1;
+	left: var(--margin);
+	bottom: var(--margin);
+	display: flex;
+	flex-direction: column;
+	gap: calc(var(--fs-display-144) * 0.07); /* name, then its details */
+}
+.city h2 {
+	margin: 0;
+	font-size: var(--fs-display-144);
+	line-height: 0.82;
+	white-space: nowrap;
+}
+.city h2 .line { padding-top: 0.04em; overflow: hidden; }
+.city p { margin: 0; overflow: hidden; line-height: 1.5; }
+.city p span { display: block; transition: transform 0.7s var(--ease-out-quint), opacity 0.7s var(--ease-out-quint); }
+.city .addr { font-size: var(--fs-addr); font-weight: 600; }
+.city .tel { font-size: var(--fs-body); }
+@media (hover: hover) {
+	.h-studios:hover .city { flex-grow: 35; }
+	.h-studios .city:hover { flex-grow: 65; }
+	.city:hover img { transform: scale(1); }
+	.h-studios:hover .city:not(:hover) img { filter: brightness(0.55); }
+	/* the dimmed city keeps only its name; the address and phone of the other slide back up */
+	.h-studios:hover .city:not(:hover) p span { transform: translateY(105%); opacity: 0; }
+	.h-studios .city:hover p span { animation: slideUp 0.7s var(--ease-out-quint) both; }
+	.h-studios .city:hover .tel span { animation-delay: 0.06s; }
+}
+@keyframes slideUp { from { transform: translateY(105%); } to { transform: translateY(0); } }
+
+/* 04 GET IN TOUCH + FOOTER (Figma 1440 × 760) ================================================== */
+.h-contact {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between; /* contacts at the top, the footer bar at the bottom, Get in touch in the middle */
+	gap: calc(var(--u) * 64);       /* the least room around Get in touch */
+	min-height: max(calc(var(--u-width) * 760), 100vh); /* a full last screen, so the fixed logo never sits on the section above */
+	padding: var(--layout-top) var(--gutter) var(--layout-foot-bottom);
+}
+.contact-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr 1.2fr;
+	gap: var(--layout-grid-gap);
+	font-size: var(--fs-body);
+	line-height: 1.5;
+}
+.contact-grid > div { display: flex; flex-direction: column; align-items: flex-start; gap: var(--layout-label-gap); } /* label, then its lines */
+.contact-grid > div.right { align-items: flex-end; text-align: right; }
+.contact-grid .lines { display: flex; flex-direction: column; align-items: inherit; }
+.local-time b { font-weight: inherit; font-variant-numeric: tabular-nums; }
+.u-link { position: relative; width: fit-content; }
+.u-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0.05em;
+	height: 1px;
+	background: currentColor;
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 600ms var(--ease-out-quint);
+}
+.u-link:hover { color: var(--accent); }
+.u-link:hover::after { transform: scaleX(1); transform-origin: left; }
+
+.cta-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem; /* the smallest gap; fitAll() sizes the word so the rest of the row is the real gap */
+}
+.cta {
+	display: block;
+	position: relative;
+	overflow: hidden;
+	font-family: var(--font-black);
+	font-variation-settings: var(--fvs-black);
+	text-transform: uppercase;
+	line-height: 0.82;
+	white-space: nowrap;
+	color: var(--white);
+	width: max-content;
+}
+.cta span { display: block; width: max-content; padding-top: 0.04em; }
+.cta span:nth-of-type(2) { position: absolute; inset: 0; color: var(--title); }
+.cta-disc {
+	flex: none;
+	display: grid;
+	place-items: center;
+	width: var(--size-disc); /* 7.7rem is its size at 768, where fitAll() hands over to this rule */
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: var(--accent);
+	color: var(--bg);
+	transition: transform 0.6s var(--ease-out-quint);
+}
+.cta-disc svg { width: clamp(22%, calc(36% - (100vw - 48rem) / 30), 36%); height: auto; } /* 36% at 768 down to 22% at 1440 */
+.cta-disc:hover { transform: rotate(45deg) scale(1.06); }
+.foot-bar {
+	display: flex;
+	justify-content: space-between;
+	gap: 1em;
+	font-size: var(--fs-label);
+	line-height: 1.5;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--dim);
+}
+.foot-bar a { color: var(--dim); }
+.foot-bar a:hover { color: var(--accent); }
+
+/* ≤1024 ======================================================================================= */
+@media only screen and (max-width: 1024px) {
+	.contact-grid { grid-template-columns: 1fr 1fr; row-gap: 2.5em; }
+	.contact-grid > div.right { align-items: flex-start; text-align: left; }
+}
+
+/* ≤768 — phones: the same scene, stacked for a tall screen ======================================= */
+@media only screen and (max-width: 768px) {
+	.h-intro { --frame-w: min(83.33vw, 28rem, calc(var(--fit-h) * 0.937)); }
+	.h-intro > .hero-layer { padding: 7.5rem var(--gutter) 2.5rem; } /* beats style.css ".directors > div" */
+	.h-intro > .team-layer { padding: 0; }
+	/* no lead on phones (user, 13.11.2026): the title, photo and "In mono." stand alone, one group in the middle of the screen */
+	.hero-lead { display: none; }
+
+	.h-studios { height: auto; }
+	.studios-frame { flex-direction: column; }
+	.city { flex: none; height: 70svh; }
+
+	.h-contact { min-height: 100vh; gap: 4rem; } /* a full last screen, so the fixed logo never sits on the section above */
+	.contact-grid { grid-template-columns: 1fr; }
+	/* the word and its button share one line; fitAll() sizes both */
+	.cta-row { justify-content: flex-start; }
+	.foot-bar { flex-direction: column; gap: 0.5rem; }
+}
+/* phones held upright: the names stand in the middle of the room between the menu and the caption, as far from the menu's
+   bottom as from the caption's top (user, 13.11.2026) */
+@media only screen and (max-width: 768px) and (orientation: portrait) {
+	.team-list {
+		--menu-bottom: calc(var(--header-inset) + var(--size-menu-h));
+		--cap-top: calc(100% - 3rem - var(--fs-label) * 1.5 - var(--space-2) - var(--fs-body) * var(--lh-text));
+		top: calc((var(--menu-bottom) + var(--cap-top)) / 2);
+		transform: translateY(calc(-50% + 0.125rem)); /* measured on the letters: the names' ink sits 2 px high in their box */
+	}
+}
+@media only screen and (max-width: 768px) {
+	[data-tlo="a"] .frame-shade { background: linear-gradient(to right, rgba(19, 18, 18, 0.85), rgba(19, 18, 18, 0.72) 70%, rgba(19, 18, 18, 0.45)); }
+	[data-tlo="b"] .frame-shade { background: rgba(19, 18, 18, 0.55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+}
+/* phones, also held sideways: only the copyright and the concept note (user, 13.11.2026) */
+@media only screen and (max-width: 768px), only screen and (max-height: 500px) and (orientation: landscape) {
+	.foot-bar .foot-mono, .foot-bar .to-top { display: none; }
+}
+
+	</style>
+	<script>(function () {
+		var S = [1800,1012,[320,480,640,960,1280,1800]], d = Math.max(1.5, Math.min(3, devicePixelRatio || 1)), need = Math.max(innerWidth, innerHeight * S[0] / S[1]) * d
+		var w = S[2].filter(function (x) { return x >= need })[0] || S[0], l = document.createElement("link")
+		window.HERO_AVIF = "img/opt/rex-calloway-low-season-" + w + ".avif"
+		l.rel = "preload"; l.as = "image"; l.type = "image/avif"; l.href = window.HERO_AVIF; l.setAttribute("fetchpriority", "high")
+		document.head.appendChild(l)
+	})()</script>
 </head>
 <body class="loading">
 
@@ -125,7 +1355,7 @@
 			var fmt = avif ? "avif" : "webp", density = Math.max(1.5, Math.min(3, devicePixelRatio || 1))
 			var need = Math.max(frameIn.offsetWidth, frameIn.offsetHeight * SIZES[0] / SIZES[1]) * density
 			var w = SIZES[2].filter(function (x) { return x >= need })[0] || SIZES[0]
-			img.src = HERO.replace(/^img\//, "img/opt/").replace(/\.jpg$/, "-" + w + "." + fmt)
+			img.src = (avif && window.HERO_AVIF) || HERO.replace(/^img\//, "img/opt/").replace(/\.jpg$/, "-" + w + "." + fmt) // the copy the head already asked for
 			frameIn.insertBefore(img, frameIn.firstChild)
 			ready()
 		})
