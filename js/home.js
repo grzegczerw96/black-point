@@ -66,10 +66,16 @@ function scene(split, signal) {
 
 	// the frame rectangle at rest, resolved from the CSS custom properties (--frame-w / -h / -y)
 	const frameSize = () => { const p = document.createElement("div"); p.style.cssText = "position:absolute;width:var(--frame-w);height:var(--frame-h)"; section.appendChild(p); const r = [p.offsetWidth, p.offsetHeight]; p.remove(); return r }
+	// measured once per task (14.11.2026): clipAtRest, zoomAtRest and zoomOrigin each asked for it, and every measure forced
+	// the page to lay out again
+	let measured = null
 	const rect = () => {
+		if (measured) return measured
 		const [w, h] = frameSize(), vw = section.offsetWidth, vh = section.offsetHeight,
 			cy = vh * parseFloat(getComputedStyle(section).getPropertyValue("--frame-y")) / 100
-		return { top: cy - h / 2, right: (vw - w) / 2, bottom: vh - cy - h / 2, left: (vw - w) / 2, w, h, vw, vh, cy }
+		measured = { top: cy - h / 2, right: (vw - w) / 2, bottom: vh - cy - h / 2, left: (vw - w) / 2, w, h, vw, vh, cy }
+		queueMicrotask(() => { measured = null })
+		return measured
 	}
 	const clipAtRest = () => { const r = rect(); return `inset(${r.top}px ${r.right}px ${r.bottom}px ${r.left}px round 6px)` }
 	// the photo scales around the frame's centre, which sits below the middle of the screen: measured from
@@ -86,7 +92,8 @@ function scene(split, signal) {
 		if (ctx.rebuilt) window.FIRST.finish()
 		imgs[0].decode().catch(() => {}).then(() => { if (!signal.aborted) fitPics($(".frame-in"), "later") })
 	} else intro(split, signal, imgs)
-	sceneRest(split, signal, { section, frame, zoom, shade, imgs, hoverImg, l1, l2, items, links, ball, capWork, capLink, clipAtRest, zoomAtRest })
+	// the list and the scrubbed scene are not on the first screen: site.js runs them a task later on a fresh load (TBT)
+	return () => sceneRest(split, signal, { section, frame, zoom, shade, imgs, hoverImg, l1, l2, items, links, ball, capWork, capLink, clipAtRest, zoomAtRest })
 }
 
 function intro(split, signal, imgs) {

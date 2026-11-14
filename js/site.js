@@ -306,16 +306,24 @@ function init(rebuilt = false) {
 
 	const split = (target, vars) => { const s = new SplitText(target, vars); ctx.splits.push(s); return s }
 
-	page.init?.(split, signal)
-	studios(split)
-	inView()
-	ctaHover(split, signal)
-	logoHide()
-	menu(signal)
-	clocks()
-
-	$$("#logo, .to-top, .cta, .cta-disc").forEach(a => a.addEventListener("click", e => follow(a, e), { signal }))
-	ScrollTrigger.refresh()
+	// a page may hand back the part of its start that the first screen does not need (Home, 14.11.2026): on a fresh load
+	// it runs a task later with the shared sections, so the start is two shorter tasks instead of one long one (TBT in
+	// PageSpeed). A page rebuilt after a window change does it all at once, so it settles in place as before
+	const rest = page.init?.(split, signal)
+	const shared = () => {
+		studios(split)
+		inView()
+		ctaHover(split, signal)
+		logoHide()
+		menu(signal)
+		clocks()
+		$$("#logo, .to-top, .cta, .cta-disc").forEach(a => a.addEventListener("click", e => follow(a, e), { signal }))
+		ScrollTrigger.refresh()
+	}
+	if (typeof rest !== "function") return shared()
+	if (rebuilt) { rest(); return shared() }
+	const later = fn => setTimeout(() => { if (!signal.aborted) fn() })
+	later(() => { rest(); later(shared) })
 }
 
 // remembers the place on the page and returns a function that goes back to it after the layout is re-measured:
