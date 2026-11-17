@@ -101,8 +101,8 @@ body { min-height: 100%; font-family: var(--font-body); }
    listing's phone "cards" do not apply — on the home page the list stays a list at every width */
 /* One rule at every window: the side follows the window's shape (upright: left, landscape: on column 9), the list always
    starts below the menu, and the size comes from whichever of width and height is tighter, so all twelve names fit and nothing
-   jumps where the layout changes. The two formulas meet at a square window (5.2vw = 5.2svh). 15rem and 7.5 keep the list on
-   screen in low windows: there it starts at 7rem, leaves 0.5rem below, and twelve rows are 7.5em + 7.5rem. */
+   jumps where the layout changes. The two formulas meet at a square window (5.2vw = 5.2svh). In landscape windows the list
+   always ends on the caption's bottom line (see .team-list a and the landscape block below). */
 .team-list {
 	position: absolute;
 	top: clamp(7rem, 16svh, 8rem); /* clear of the menu; only low windows give up the extra air */
@@ -111,6 +111,12 @@ body { min-height: 100%; font-family: var(--font-body); }
 }
 @media (orientation: portrait) {
 	.team-list { left: calc(var(--gutter) + 1.5rem); }
+}
+/* landscape windows: the list runs from its top to the caption's bottom line (user 17.11.2026, version B): the names keep their
+   size from the scale and the rows share whatever room is left, as in low windows where the size itself fills the height */
+@media (orientation: landscape) {
+	.team-list { bottom: 3rem; display: flex; flex-direction: column; }
+	.team-list ul { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
 }
 .team-list li { position: relative; }
 .team-list h2 { line-height: 1; }
@@ -121,12 +127,14 @@ body { min-height: 100%; font-family: var(--font-body); }
 	font-family: var(--font-bold);
 	font-variation-settings: var(--fvs-bold);
 	--roster-lh: calc(var(--lh-display) * 1em); /* 85% like all display type (was 72%, 15.11.2026) */
-	--roster-pad: calc(0.625rem - 0.0964em); /* follows this list's own size, not the listing page's */
+	/* the gap above each row grows with the names (user 17.11.2026, version Y; was 0.625rem - 0.0964em, a fixed 10 px that left
+	   phones held sideways with 12 px names): 0.06em is the same 3.8 px at 64, so 1440 × 900 does not change */
+	--roster-pad: 0.06em;
 	/* 64 at 1440 × 900 (scale, decision 17.11.2026; was 54 = 6svh), growing with the size unit; still never more than the
-	   room on the screen allows. Floor 12 (was 14): at 0.85 the rows are taller, so the lowest windows keep the list where it was */
-	/* the list never ends lower than the caption's bottom line (general rule, user 17.11.2026): it starts at the list's
-	   top (clamp(7rem, 16svh, 8rem)), the caption ends 3rem above the window's bottom, and twelve rows are 9.04em + 7.5rem */
-	font-size: max(0.75rem, min(5.2vw, calc(var(--u) * 64), calc((100svh - clamp(7rem, 16svh, 8rem) - 10.5rem) / 9.04), 5.5rem));
+	   room on the screen allows. Floor 12 */
+	/* the list never ends lower than the caption's bottom line (a rule for this list only, user 17.11.2026): it starts at the list's
+	   top (clamp(7rem, 16svh, 8rem)), the caption ends 3rem above the window's bottom, and twelve rows are 12 × 0.91em = 10.92em */
+	font-size: max(0.75rem, min(5.2vw, calc(var(--u) * 64), calc((100svh - clamp(7rem, 16svh, 8rem) - 3rem) / 10.92), 5.5rem));
 	line-height: var(--roster-lh);
 	text-transform: uppercase;
 	white-space: nowrap;
@@ -140,6 +148,7 @@ body { min-height: 100%; font-family: var(--font-body); }
    One rule for every upright window, so nothing jumps at 768/769 */
 @media (orientation: portrait) {
 	.team-list a {
+		--roster-pad: calc(0.625rem - 0.0964em); /* upright windows keep the fixed gap (their formula below counts on it) */
 		--list-room: calc((100svh - 22.5rem) / 9.04);
 		font-size: min(10.67vw, max(5.2svh, min(var(--list-room), 3.25rem)), var(--list-room), 5.5rem);
 	}
@@ -397,6 +406,11 @@ body { min-height: 100%; font-family: var(--font-body); }
 @media only screen and (max-width: 768px) {
 	[data-tlo="a"] .frame-shade { background: linear-gradient(to right, rgba(19, 18, 18, 0.85), rgba(19, 18, 18, 0.72) 70%, rgba(19, 18, 18, 0.45)); }
 	[data-tlo="b"] .frame-shade { background: rgba(19, 18, 18, 0.55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+}
+/* phones held sideways: the project under the list one step lower on the scale, 14 (user 17.11.2026, version A): at 16 it took
+   almost half of a 568 × 320 screen and stood larger than the names; the link stays 12 */
+@media only screen and (max-height: 500px) and (orientation: landscape) {
+	.cap-work { font-size: 0.875rem; }
 }
 /* phones, also held sideways: only the copyright and the concept note (user, 13.11.2026) */
 @media only screen and (max-width: 768px), only screen and (max-height: 500px) and (orientation: landscape) {
