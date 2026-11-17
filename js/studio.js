@@ -197,13 +197,15 @@ function opening(split) {
 function how() {
 	const root = $(".st-how"), pin = $(".hw", root), mode = pin.dataset.mode, label = $(".hw-label", root),
 		rows = $$(".hw-row", root), words = $$(".hw-word", root), bodies = $$(".hw-body", root), figs = $$(".hw-body figure", root), texts = $$(".hw-body p", root)
-	let top, size, open, figTop
+	let top, size, step, open, figTop
 	const sizes = () => {
 		const W = pin.offsetWidth, H = pin.offsetHeight, U = W / 1440, gutter = (W - measure()) / 2
-		top = Math.max(112, 192 * U)
+		const k = Math.min(1, Math.max(0, (u() - 0.2604167) / 0.7395833)) // 0 at 375, 1 at 1440 (as --ku)
+		top = label.offsetTop + label.offsetHeight + 8 + 8 * k // the first row 8 (phone) to 16 (desktop) under its label, on the scale (was 6 and 14)
 		const bottom = Math.max(32, 64 * U) // the margin below the last row
 		size = Math.max(isSmall() ? 40 : 0, Math.min(64 * u(), H * 0.09)) // a size: the size unit; the positions above follow the width (U)
 		pin.style.setProperty("--hw-size", size + "px")
+		step = size * (parseFloat(getComputedStyle(pin).getPropertyValue("--lh-display")) || 0.85) // a row is one line of display type (--lh-display)
 		const cs = getComputedStyle(bodies[0]), PAD = parseFloat(cs.paddingTop), AFTER = parseFloat(cs.paddingBottom), gap = parseFloat(cs.rowGap) || 16 // the body's paddings (css/studio.css per mode); --gap-tight
 		const textH = () => Math.max(...texts.map(p => p.offsetHeight))
 		if (mode === "side") {
@@ -216,7 +218,7 @@ function how() {
 			return
 		}
 		// the rows take what they need, the open one gets the rest
-		open = Math.max(100, H - top - bottom - size * rows.length)
+		open = Math.max(100, H - top - bottom - step * rows.length)
 		if (mode === "column") {
 			// the picture across the measure, the text under it, a group's gap before the next row
 			const fh = Math.max(60, open - PAD - gap - textH() - AFTER)
@@ -238,10 +240,10 @@ function how() {
 				// open one, which stays whole under it, so two pictures never show through each other
 				texts[i].style.clipPath = `inset(0 0 ${(1 - o) * 100}% 0)`
 				const shown = i === i0 ? 1 : i === i0 + 1 ? f : 0
-				figs[i].style.top = figTop - y - size + "px"
+				figs[i].style.top = figTop - y - step + "px"
 				figs[i].style.clipPath = `inset(0 0 ${(1 - shown) * 100}% 0)`
 			} else bodies[i].style.clipPath = `inset(0 0 ${(1 - o) * 100}% 0)`
-			y += size + open * o
+			y += step + open * o
 		})
 	}
 	const units = rows.length - 1

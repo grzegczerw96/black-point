@@ -29,9 +29,9 @@
    The cut of the client list: at width 50 / weight 900 the counters close up and the words stop reading */
 .hw-label { position: absolute; z-index: 2; left: var(--gutter); top: var(--st-label-top); }
 .hw-row { position: absolute; left: 0; right: 0; top: 0; padding: 0 var(--gutter); will-change: transform; }
-.hw-word { display: flex; gap: calc(var(--u) * 32); align-items: baseline; font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); text-transform: uppercase; line-height: 1; font-size: var(--hw-size); opacity: 0.38; white-space: nowrap; }
+.hw-word { display: flex; gap: calc(0.5rem + var(--ku) * 24); align-items: baseline; font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); text-transform: uppercase; line-height: var(--lh-display); font-size: var(--hw-size); opacity: 0.38; white-space: nowrap; } /* gap 8 → 32 */
 .hw-word b { font-weight: normal; }
-.hw-body { position: absolute; left: var(--gutter); top: var(--hw-size); padding-top: 0.75rem; display: flex; align-items: flex-end; gap: var(--gap-tight); will-change: clip-path; }
+.hw-body { position: absolute; left: var(--gutter); top: calc(var(--hw-size) * var(--lh-display)); padding-top: 0.75rem; display: flex; align-items: flex-end; gap: var(--gap-tight); will-change: clip-path; }
 .hw-body figure { margin: 0 0 0 calc(var(--u-width) * 128); overflow: hidden; border-radius: 6px; }
 .hw-body img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .hw-body p { width: min(calc(var(--u) * 416), calc(var(--u-width) * 416)); min-width: 15rem; margin: 0; font-size: var(--fs-body); line-height: var(--lh-text); }
@@ -69,7 +69,7 @@
 /* 04 VALUES — the words in fixed rows, at 60 / 700 (readable on a phone too). fit() picks the size from the window's shape
    (a taller window gets larger words) and the fewest rows in which every word still fits with its picture open */
 .val-label { position: absolute; z-index: 3; left: var(--gutter); top: var(--st-label-top); }
-.vd-text { position: absolute; z-index: 2; left: var(--gutter); right: var(--gutter); top: 50%; display: grid; font-size: 6rem; transform: translateY(-50%); font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); line-height: 0.875; letter-spacing: -0.008em; font-weight: normal; text-transform: uppercase; color: var(--white); }
+.vd-text { position: absolute; z-index: 2; left: var(--gutter); right: var(--gutter); top: 50%; display: grid; font-size: 6rem; transform: translateY(-50%); font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); line-height: var(--lh-display); letter-spacing: -0.008em; font-weight: normal; text-transform: uppercase; color: var(--white); }
 .vd-row { display: flex; align-items: center; gap: 0.17em; white-space: nowrap; }
 .vd-word { opacity: 0.2; will-change: opacity; }
 .vd-pic { display: block; flex: none; width: 0; height: 0.74em; overflow: hidden; border-radius: 6px; will-change: width; }
@@ -86,7 +86,7 @@
 .cc-view { position: relative; flex: 1 1 0; min-height: 0; overflow: hidden; container-type: inline-size; -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); }
 .cc-roll { position: absolute; top: 0; left: 0; right: 0; will-change: transform; }
 .cc-row { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 1.5rem; padding: 0.75rem 0; color: rgba(255, 255, 255, 0.2); transition: color 0.35s; }
-.cc-row b { font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); font-weight: normal; text-transform: uppercase; font-size: clamp(2rem, calc(var(--u) * 48), 3.5rem); line-height: 1; }
+.cc-row b { font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); font-weight: normal; text-transform: uppercase; font-size: clamp(2.5rem, calc(var(--u) * 48), 3.5rem); line-height: var(--lh-display); /* H5 like the Team names: 48 at 1440, 40 on phones (was 32, 16.11.2026) */ }
 .cc-row span { font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; }
 .cc-row span:nth-child(2) { display: none; }
 .cc-row span:last-child { text-align: right; }

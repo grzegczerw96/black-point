@@ -44,7 +44,7 @@ const pjMode = () => {
 }
 const ROWS = { desk: [4, 4, 4], phone: [2, 2, 2, 2, 2, 2], tall: [3, 3, 3, 3], low: [6, 6], flat: [6, 6] }
 function placeTiles(vw, vh, asp) {
-	const top = Math.max(84, vh * 0.125), bottom = Math.max(52, vh * 0.085), side = (window.innerWidth - measure()) / 2, gap = Math.max(10, vw * 0.012), capH = isSmall() ? 20 : 26
+	const top = Math.max(84, vh * 0.125), bottom = Math.max(52, vh * 0.085), side = (window.innerWidth - measure()) / 2, gap = Math.max(8, 8 + 8 * (vw - 375) / 1065) /* 8 at 375, 16 at 1440 (was 1.2% of the width: 10 and 17.3) */, capH = isSmall() ? 20 : 26
 	const rows = ROWS[pjMode()]
 	const room = vh - top - bottom - rows.length * capH - (rows.length - 1) * gap
 	let n = 0

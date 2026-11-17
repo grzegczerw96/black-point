@@ -25,10 +25,8 @@
 	--dim: rgba(255, 255, 255, 0.58);                /* color/text-dim */
 	--name-dim: rgba(255, 255, 255, 0.42);           /* color/text-faint */
 	--text-ghost: rgba(255, 255, 255, 0.2);          /* color/text-ghost */
-	--text-closed: rgba(255, 255, 255, 0.4);         /* color/text-closed */
 	--overlay-soft: rgba(19, 18, 18, 0.35);          /* color/overlay-soft */
 	--overlay-strong: rgba(19, 18, 18, 0.75);        /* color/overlay-strong */
-	--overlay-shade: rgba(19, 18, 18, 0.55);         /* color/overlay-shade */
 	--overlay-dim: rgba(0, 0, 0, 0.45);              /* color/overlay-dim */
 	--overlay-menu: rgba(0, 0, 0, 0.6);              /* color/overlay-menu */
 	--film: #000;                                    /* color/film */
@@ -80,6 +78,14 @@
 	--gap-tight: max(var(--space-4), calc(var(--u) * 32));                        /* 16 → 32 */
 	/* between two groups (a caption and its link): at least 24, so on a phone too it reads clearly larger than the 8 inside a group */
 	--gap-group: max(var(--space-5), calc(var(--u) * 32));                        /* 24 → 32 */
+	/* display type: about 85% on every screen (CLAUDE.md scale, decision 15.11.2026: no 100% or 72% left) */
+	--lh-display: 0.85;
+
+	/* FROM THE PHONE VALUE TO THE DESKTOP VALUE (15.11.2026): a value on the scale at 375 and at 1440, fluid between.
+	   calc(A + var(--ku) * (B - A)) gives A at 375 × 812 and B at 1440 × 900 (size unit), --kw does the same with the width
+	   alone (grid). A plain calc(var(--u) * B) lands off the scale at 375 (48 → 12.5, 32 → 8.33). */
+	--ku: calc((var(--u) - 0.2604167px) / 0.7395833);                             /* 0 at 375, 1px at 1440 */
+	--kw: calc((100vw - 375px) / 1065);                                           /* the same along the width */
 
 	/* DISPLAY — Display/144: meets the phone size (6rem) where the layout changes at 768 */
 	/* a city name on its half of the screen: at most 15vw, so on a tall tablet it never leaves its picture */
@@ -87,9 +93,9 @@
 
 	/* SECTIONS SHARED BY EVERY PAGE (Lisbon and Warsaw, Get in touch and the footer) */
 	--layout-top: max(8rem, calc(var(--u-width) * 160));                                /* layout/top: 128 → 160, room under the logo and menu */
-	--layout-grid-gap: calc(var(--u-width) * 48);                                     /* layout/grid-gap: between the contact columns */
+	--layout-grid-gap: calc(0.75rem + var(--kw) * 36);                                /* layout/grid-gap: between the contact columns, 12 → 48 */
 	--layout-label-gap: calc(var(--fs-label) * 0.9);                              /* layout/label-gap: 10.8 under a label */
-	--layout-foot-bottom: calc(var(--u-width) * 48);                                    /* layout/foot-bottom: 12 → 48 */
+	--layout-foot-bottom: calc(0.75rem + var(--kw) * 36);                               /* layout/foot-bottom: 12 → 48 */
 	--size-disc: max(7.7rem, min(calc(var(--u) * 160), calc(var(--u-width) * 160))); /* size/disc: the Get in touch circle, beside a word that fills the row, so never larger than the width allows; on phones fitAll() sizes it */
 }
 

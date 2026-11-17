@@ -120,9 +120,13 @@ body { min-height: 100%; font-family: var(--font-body); }
 	overflow: hidden;
 	font-family: var(--font-bold);
 	font-variation-settings: var(--fvs-bold);
-	--roster-lh: 0.72em;
+	--roster-lh: calc(var(--lh-display) * 1em); /* 85% like all display type (was 72%, 15.11.2026) */
 	--roster-pad: calc(0.625rem - 0.0964em); /* follows this list's own size, not the listing page's */
-	font-size: max(0.875rem, min(5.2vw, 6svh, calc((100svh - 15rem) / 7.5), 5.5rem));
+	/* 64 at 1440 × 900 (scale, decision 17.11.2026; was 54 = 6svh), growing with the size unit; still never more than the
+	   room on the screen allows. Floor 12 (was 14): at 0.85 the rows are taller, so the lowest windows keep the list where it was */
+	/* the list never ends lower than the caption's bottom line (general rule, user 17.11.2026): it starts at the list's
+	   top (clamp(7rem, 16svh, 8rem)), the caption ends 3rem above the window's bottom, and twelve rows are 9.04em + 7.5rem */
+	font-size: max(0.75rem, min(5.2vw, calc(var(--u) * 64), calc((100svh - clamp(7rem, 16svh, 8rem) - 10.5rem) / 9.04), 5.5rem));
 	line-height: var(--roster-lh);
 	text-transform: uppercase;
 	white-space: nowrap;
@@ -130,13 +134,13 @@ body { min-height: 100%; font-family: var(--font-body); }
 	transition: color 0.4s var(--ease-out-cubic);
 }
 /* upright windows: 40 at 375 wide (10.67vw, was 9.6vw: a little larger, user 13.11.2026). The height decides by the room
-   the list has, centred on phones, between the menu and the caption (--list-room: 12 rows are 7.5em + 7.5rem tall, and 15rem
+   the list has, centred on phones, between the menu and the caption (--list-room: 12 rows are 9.04em + 7.5rem tall at line-height 0.85, and 15rem
    more is twice the caption with a group gap above it; the caption is lower than the menu, so it decides). Up to 52 px that
    room may be used even where 5.2svh is less (phones, the address bar showing); above it tablets keep 5.2svh as before.
    One rule for every upright window, so nothing jumps at 768/769 */
 @media (orientation: portrait) {
 	.team-list a {
-		--list-room: calc((100svh - 22.5rem) / 7.5);
+		--list-room: calc((100svh - 22.5rem) / 9.04);
 		font-size: min(10.67vw, max(5.2svh, min(var(--list-room), 3.25rem)), var(--list-room), 5.5rem);
 	}
 }

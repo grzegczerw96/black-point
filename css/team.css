@@ -13,14 +13,14 @@
 /* THE PAGE: a column that stays and two columns of portraits, the second set lower ================ */
 .ca { display: flex; gap: calc(var(--u-width) * 96); align-items: flex-start; min-height: 100vh; padding: 0 var(--gutter); }
 .ca-side { flex: none; width: max(20rem, calc(var(--u-width) * 416)); height: 100vh; box-sizing: border-box; padding: max(5.5rem, calc(var(--u-width) * 96)) 0 var(--margin); display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-6); }
-.tm .ca-q { margin: 0; min-width: 0; font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); font-size: 6rem; }
+.tm .ca-q { margin: 0; min-width: 0; font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); font-size: 6rem; line-height: var(--lh-display); } /* 85% like all display type (was 0.82, 16.11.2026) */
 .ca-q > span { display: block; width: max-content; }
 .ca-q > span:not(.ca-first):not(.ca-clip) { position: absolute; visibility: hidden; white-space: nowrap; } /* the fit probe */
 .ca-clip { overflow: hidden; padding-top: 0.04em; }
 .ca-word { display: inline-block; white-space: nowrap; will-change: transform; }
 
 /* the portraits: --cols comes from js/team.js where it is not 2 (low windows, phones) */
-.ca-grid { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: max(var(--space-9), calc(var(--u) * 160)) var(--margin); padding: max(5.5rem, calc(var(--u-width) * 96)) 0 max(var(--space-11), calc(var(--u) * 256)); }
+.ca-grid { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: max(var(--space-9), calc(var(--u) * 160)) var(--margin); padding: max(5.5rem, calc(var(--u-width) * 96)) 0 max(var(--space-11), calc(var(--u) * 256)); } /* bottom: 160 under the lowest card at 1440 (the right column is 96 lower), as in Figma (user 17.11.2026) */
 /* a card: the portrait and its text (--gap-tight); in the text the name with its line (--space-2), then the bio */
 .ca-card { display: flex; flex-direction: column; gap: var(--gap-tight); min-width: 0; }
 .ca-text { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
@@ -32,7 +32,7 @@
 .ca-go { position: absolute; right: var(--space-4); bottom: var(--space-4); display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: var(--panel); color: var(--white); transition: background-color 0.3s, color 0.3s; }
 .ca-go svg { width: 36%; height: auto; transition: transform 0.6s var(--ease-out-quint); }
 @media (hover: hover) { .ca-main:hover .ca-go { background: var(--accent); color: var(--bg); } .ca-main:hover .ca-go svg { transform: rotate(45deg); } }
-.ca-name { margin: 0; width: max-content; white-space: nowrap; font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); font-weight: normal; text-transform: uppercase; line-height: 1; color: var(--white); }
+.ca-name { margin: 0; width: max-content; white-space: nowrap; font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); font-weight: normal; text-transform: uppercase; line-height: var(--lh-display); color: var(--white); }
 .ca-bio { margin: 0; font-size: var(--fs-body); line-height: var(--lh-text); }
 
 /* the foot of the column: label, list, then the count and the brief as the next group */
@@ -57,7 +57,7 @@
 .ca-tags button.on i { background: var(--accent); }
 
 /* the way back to the filter, only where the column is not beside the cards */
-.ca-back { all: unset; position: fixed; z-index: 8; left: 50%; bottom: var(--space-4); transform: translate(-50%, 0.75rem); box-sizing: border-box; max-width: calc(100vw - 2rem); padding: var(--space-3) var(--space-4); border-radius: var(--radius-s); background: var(--panel); color: var(--white); font-family: var(--font-body); font-size: var(--fs-label); line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; }
+.ca-back { all: unset; position: fixed; z-index: 8; left: 50%; bottom: var(--space-4); transform: translate(-50%, 0.75rem); box-sizing: border-box; max-width: calc(100vw - 2rem); padding: var(--space-3) var(--space-4); border-radius: var(--radius-s); background: var(--panel); color: var(--white); font-family: var(--font-body); font-size: var(--fs-label); line-height: 1.5; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; }
 .ca-back.on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
 
 /* STACKED: tablets, narrow windows and low ones. The column stops standing beside the cards: the title and the

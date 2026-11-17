@@ -45,7 +45,7 @@
 	--roster-lh: 0.6765em;
 	--roster-pad: calc(10px - 0.0964 * clamp(36px, 3.4722vw, 90px));
 	--nav-scale: 1.0294;
-	--nav-lh: 0.719;
+	--nav-lh: var(--lh-display, 0.85); /* 85% like all display type (was 0.719, 15.11.2026) */
 	--nav-shift: 8.5%;
 	--nav-fit: 1;
 	--ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
@@ -223,7 +223,7 @@ a { color: var(--white); transition: all 400ms var(--ease-out-cubic); }
 	font-family: var(--font-black);
 	font-variation-settings: var(--fvs-black);
 	/* one rule at every window: width sets it, it rests at 100px between phone and desktop, and four links always fit the height */
-	font-size: calc(clamp(40px, min(18vw, max(100px, 9.7222vw), calc((100svh - 14rem) / 3)), 180px) * var(--nav-scale) * var(--nav-fit));
+	font-size: calc(clamp(40px, min(18vw, max(100px, 9.7222vw), calc((100svh - 14rem) / 3.55)), 180px) * var(--nav-scale) * var(--nav-fit));
 	text-transform: uppercase;
 	line-height: var(--nav-lh);
 	opacity: 0;
@@ -457,7 +457,7 @@ aside.dir-title h1 {
 /* the menu fills the whole screen: the panel grows from the button to the size of #navigation (site.js menu()), so
    #navigation is the screen. The links stand in the middle, margin to margin like the logo and the menu button: the
    longest word ("Projects", 2.79 em) spans the width, fluid between 3 and 9 rem, never taller than the room under the
-   menu button allows (four lines × 0.719) */
+   menu button allows (four lines × 0.85, --lh-display) */
 @media only screen and (max-width: 768px), only screen and (hover: none) and (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
 	#navigation {
 		width: 100%;
@@ -469,7 +469,7 @@ aside.dir-title h1 {
 		padding: calc(var(--header-inset) + var(--size-menu-h) + 2rem) var(--header-inset);
 	}
 	#navigation a {
-		font-size: clamp(3rem, min(calc((100vw - 2 * var(--header-inset)) / 2.8), calc((100svh - var(--header-inset) * 2 - var(--size-menu-h) - 2rem) / 2.9)), 9rem);
+		font-size: clamp(3rem, min(calc((100vw - 2 * var(--header-inset)) / 2.8), calc((100svh - var(--header-inset) * 2 - var(--size-menu-h) - 2rem) / 3.43)), 9rem);
 		line-height: var(--nav-lh);
 	}
 	#navigation a.active { color: var(--accent); }

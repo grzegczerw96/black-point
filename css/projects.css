@@ -14,12 +14,12 @@
 .t { position: absolute; inset: 0; display: block; pointer-events: none; }
 .t-box { position: absolute; overflow: hidden; pointer-events: auto; }
 .t-box img { display: block; width: 100%; height: 100%; object-fit: cover; transition: filter 0.3s; }
-.t-cap { position: absolute; display: flex; gap: 0.5rem; align-items: baseline; overflow: hidden; white-space: nowrap; pointer-events: none; font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); text-transform: uppercase; line-height: 1; font-size: clamp(0.75rem, 1.78vh, 1rem); color: var(--white); transition: color 0.3s; }
+.t-cap { position: absolute; display: flex; gap: 0.5rem; align-items: baseline; overflow: hidden; white-space: nowrap; pointer-events: none; font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); text-transform: uppercase; line-height: var(--lh-display); font-size: clamp(0.75rem, calc(0.875rem + (100vh - 812px) * 0.022727), 1rem); /* 14 at 812 high, 16 at 900 (was 1.78vh: 14.45) */ color: var(--white); transition: color 0.3s; }
 .t-cap b { font-weight: normal; opacity: 0.5; }
 .is-wall .t-box { cursor: zoom-in; }
 .is-wall .t:hover .t-cap { color: var(--accent); }
 .is-wall .t:hover .t-box img { filter: brightness(1.12); }
-.wl-cap { position: absolute; z-index: 3; left: var(--gutter); bottom: 2vh; margin: 0; font-size: var(--fs-label); line-height: 1.5; color: var(--dim); pointer-events: none; transition: opacity 0.2s; }
+.wl-cap { position: absolute; z-index: 3; left: var(--gutter); bottom: var(--space-4); margin: 0; font-size: var(--fs-label); line-height: 1.5; color: var(--dim); pointer-events: none; transition: opacity 0.2s; }
 .wl-cap .caps { margin-right: 0.75rem; color: var(--white) !important; }
 .pj-pin:not(.is-wall) .wl-cap { opacity: 0; }
 
