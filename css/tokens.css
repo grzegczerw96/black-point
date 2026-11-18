@@ -34,7 +34,7 @@
 	--film-fade-top: rgba(0, 0, 0, 0.62);            /* color/film-fade-top */
 	--film-fade-bottom: rgba(0, 0, 0, 0.72);         /* color/film-fade-bottom */
 
-	/* SPACING SCALE — space/1 … space/11: 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 160 */
+	/* SPACING SCALE — space/1 … space/13: 4, 8, 12, 16, 24, 32, 48, 64, 96, 128, 160, 192, 256 (192 and 256 added 18.11.2026) */
 	--space-1: 0.25rem;
 	--space-2: 0.5rem;
 	--space-3: 0.75rem;
@@ -46,6 +46,8 @@
 	--space-9: 6rem;
 	--space-10: 8rem;
 	--space-11: 10rem;
+	--space-12: 12rem;
+	--space-13: 16rem;
 
 	/* RADII — radius/s, radius/m, radius/full */
 	--radius-s: 5px;
@@ -94,7 +96,7 @@
 	/* SECTIONS SHARED BY EVERY PAGE (Lisbon and Warsaw, Get in touch and the footer) */
 	--layout-top: max(8rem, calc(var(--u-width) * 160));                                /* layout/top: 128 → 160, room under the logo and menu */
 	--layout-grid-gap: calc(0.75rem + var(--kw) * 36);                                /* layout/grid-gap: between the contact columns, 12 → 48 */
-	--layout-label-gap: calc(var(--fs-label) * 0.9);                              /* layout/label-gap: 10.8 under a label */
+	--layout-label-gap: var(--space-3);                                            /* layout/label-gap: 12 under a label (scale, card 10, user 18.11.2026; was 0.9 × 12 = 10.8) */
 	--layout-foot-bottom: calc(0.75rem + var(--kw) * 36);                               /* layout/foot-bottom: 12 → 48 */
 	--size-disc: max(7.7rem, min(calc(var(--u) * 160), calc(var(--u-width) * 160))); /* size/disc: the Get in touch circle, beside a word that fills the row, so never larger than the width allows; on phones fitAll() sizes it */
 }

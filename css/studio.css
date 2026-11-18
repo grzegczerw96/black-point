@@ -70,19 +70,19 @@
    (a taller window gets larger words) and the fewest rows in which every word still fits with its picture open */
 .val-label { position: absolute; z-index: 3; left: var(--gutter); top: var(--st-label-top); }
 .vd-text { position: absolute; z-index: 2; left: var(--gutter); right: var(--gutter); top: 50%; display: grid; font-size: 6rem; transform: translateY(-50%); font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); line-height: var(--lh-display); letter-spacing: -0.008em; font-weight: normal; text-transform: uppercase; color: var(--white); }
-.vd-row { display: flex; align-items: center; gap: 0.17em; white-space: nowrap; }
+.vd-row { display: flex; align-items: baseline; /* the picture sits on the letters' baseline (user 18.11.2026; was centred in the row) */ gap: max(0.75rem, calc(0.75rem + var(--ku) * 12)); white-space: nowrap; } /* word → picture → word 12 → 24 (scale, card 12, user 18.11.2026; was 0.17em = 13.08 / 24.48); fitValues() reads it */
 .vd-word { opacity: 0.2; will-change: opacity; }
-.vd-pic { display: block; flex: none; width: 0; height: 0.74em; overflow: hidden; border-radius: 6px; will-change: width; }
+.vd-pic { display: block; flex: none; width: 0; height: 0.68em; height: 1cap; /* as tall as the capitals, from their top to the baseline, at every window (user 18.11.2026; was 0.74em, centred) */ overflow: hidden; border-radius: 6px; will-change: width; }
 .vd-pic img { display: block; width: 1.3em; height: 100%; object-fit: cover; }
 /* the text grows with the words; its top edge stays put whatever the length: two lines' room is kept above the bottom margin */
-.vd-desc { --vd-desc: min(max(var(--fs-body), calc(var(--vd-size, 144px) * 0.14)), 2rem); position: absolute; z-index: 3; left: var(--gutter); top: calc(100% - max(1rem, calc(var(--u) * 60)) - var(--vd-desc) * 2.7); width: min(24em, 100% - 2 * var(--gutter)); margin: 0; font-size: var(--vd-desc); line-height: var(--lh-text); }
+.vd-desc { --vd-desc: var(--fs-lead); /* 16 → 20, text-20 (card 13, user 18.11.2026; was 0.14 × the words' size = 20.16 at 1440) */ position: absolute; z-index: 3; left: var(--gutter); top: calc(100% - max(1rem, calc(var(--u) * 60)) - var(--vd-desc) * 2.7); width: min(24em, 100% - 2 * var(--gutter)); margin: 0; font-size: var(--vd-desc); line-height: var(--lh-text); }
 
 /* 05 CLIENTS — the credits roll in a window under the menu; the count stands below it, or beside it on a wide screen */
 .cc-pin { position: relative; height: 100vh; height: 100svh; overflow: hidden; }
 .cc-in { position: absolute; inset: var(--st-bar) var(--gutter) 0; display: flex; flex-direction: column-reverse; }
-.cc-count { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 1rem; padding-bottom: var(--space-5); }
-.cc-num { font-size: clamp(3.5rem, calc(var(--u) * 144), 9rem); font-variant-numeric: tabular-nums; }
-.cc-count .caps { padding-bottom: 0.6em; }
+.cc-count { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 0.75rem; padding-bottom: var(--space-5); } /* number → caption 12 everywhere (user 18.11.2026; was 16) */
+.cc-num { font-size: clamp(3rem, calc(var(--u) * 144), 9rem); font-variant-numeric: tabular-nums; } /* 144 at 1440, 48 on phones (scale, card 04, user 18.11.2026; was 56) */
+.cc-count .caps { padding-bottom: var(--space-2); } /* 8 (card 14, user 18.11.2026; was 0.6em = 7.2) */
 .cc-view { position: relative; flex: 1 1 0; min-height: 0; overflow: hidden; container-type: inline-size; -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); }
 .cc-roll { position: absolute; top: 0; left: 0; right: 0; will-change: transform; }
 .cc-row { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 1.5rem; padding: 0.75rem 0; color: rgba(255, 255, 255, 0.2); transition: color 0.35s; }

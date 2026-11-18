@@ -47,6 +47,7 @@ boot({
 			room = 1.1127 * (H - 120 - 4 * gap)
 		fitWidth(l1, isSmall() ? Math.min(measure(), floor, room) : Math.min(Math.max(665 * u(), floor), 665 / 900 * H, room))
 		l2.style.fontSize = l1.style.fontSize
+		l2.closest(".hero-layer").style.setProperty("--mono", l1.style.fontSize) // the lead stands on "In mono."'s line (css)
 	},
 	// the list lives inside the pinned scene: "team" jumps to the first photographer's turn
 	scrollTo(target) {

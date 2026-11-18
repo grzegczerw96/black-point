@@ -83,12 +83,16 @@ body { min-height: 100%; font-family: var(--font-body); }
 .hero-title .hl:not(.hl-2) { position: absolute; left: var(--gutter); bottom: calc(50% + var(--frame-h) / 2 + var(--hero-gap) - 0.135em); }
 .hero-title .hl-2 { position: absolute; right: var(--gutter); top: calc(50% + var(--frame-h) / 2 + var(--hero-gap)); color: var(--title); }
 .hero-title .line { padding-top: 0.04em; overflow: hidden; }
+/* the lead (user 18.11.2026, from the Figma proposal: two lines, a shorter text): its last line ends on the bottom of
+   "In mono." (the box of that line: its top + its 0.82em line, --mono = the title size from js/home.js fit()),
+   so the lead and the accent word share one bottom edge. Was: the lead's top on "In mono."'s top, a 416 column */
 .hero-lead {
 	position: absolute;
 	left: var(--gutter);
-	top: calc(50% + var(--frame-h) / 2 + var(--hero-gap));
-	width: min(calc(var(--u) * 416), calc(var(--u-width) * 416)); /* a column beside the title: never wider than the grid allows */
-	min-width: 17.5rem;
+	bottom: calc(50% - var(--frame-h) / 2 - var(--hero-gap) - var(--mono, 144px) * 0.82);
+	width: max-content;
+	/* never on "In mono." (2.79em wide at the title size), 32 clear of it: narrower windows wrap the lead into more lines */
+	max-width: calc(100% - 2 * var(--gutter) - var(--mono, 144px) * 2.79 - var(--space-6));
 	margin: 0;
 	font-size: var(--fs-lead);
 	line-height: var(--lh-text);
@@ -371,7 +375,7 @@ body { min-height: 100%; font-family: var(--font-body); }
 
 /* ≤1024 ======================================================================================= */
 @media only screen and (max-width: 1024px) {
-	.contact-grid { grid-template-columns: 1fr 1fr; row-gap: 2.5em; }
+	.contact-grid { grid-template-columns: 1fr 1fr; row-gap: var(--space-7); } /* 48 between the rows of blocks (scale, card 11, user 18.11.2026; was 2.5em = 40) */
 	.contact-grid > div.right { align-items: flex-start; text-align: left; }
 }
 

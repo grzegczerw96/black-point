@@ -73,14 +73,15 @@ function fitValues() {
 	const W = window.innerWidth, H = window.innerHeight, base = 100
 	box.style.fontSize = base + "px"
 	const words = $$(".vd-word", box), pics = $$(".vd-pic", box), widths = words.map(w => w.getBoundingClientRect().width)
-	const gap = base * 0.17, room = box.offsetWidth
-	const runW = ([a, b]) => widths.slice(a, b).reduce((s, w) => s + w, 0) + base * PIC_WIDTH + gap * ((b - a) * 2 - 1)
-	const fits = VALUE_ROWS.map(rows => base * room / Math.max(...rows.map(runW)))
+	// the gap between word and picture is a fixed length from the scale (12 → 24, css), so only the words and pictures scale
+	const gap = parseFloat(getComputedStyle(box.firstElementChild || box).columnGap) || 0, room = box.offsetWidth
+	const fitRow = ([a, b]) => base * (room - gap * ((b - a) * 2 - 1)) / (widths.slice(a, b).reduce((s, w) => s + w, 0) + base * PIC_WIDTH)
+	const fits = VALUE_ROWS.map(rows => Math.min(...rows.map(fitRow)))
 	const want = Math.min(W * 0.1 + Math.max(0, H - 0.9 * W) * 0.2, H * 0.26)
 	let size = clamp(Math.min(want, Math.max(fits[1], 92), fits[2]), 48, 288)
 	const pick = Math.max(0, fits.findIndex(f => f >= size - 0.5)), rows = VALUE_ROWS[pick]
 	// the rows stay clear of the label above and of the text below (two lines at most)
-	const label = $(".val-label", root), descSize = Math.min(32, Math.max(parseFloat(getComputedStyle($(".vd-desc", root)).fontSize) || 16, size * 0.14))
+	const label = $(".val-label", root), descSize = parseFloat(getComputedStyle($(".vd-desc", root)).fontSize) || 16
 	const above = label.offsetTop + label.offsetHeight, below = Math.max(16, 60 * u()) + descSize * 2.7
 	size = Math.max(Math.min(size, (H - 2 * (Math.max(above, below) + 16)) / (rows.length * 0.875)), Math.min(size, 48))
 	// the same word and picture elements move into their rows, so the scene keeps hold of them

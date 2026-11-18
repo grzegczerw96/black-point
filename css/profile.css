@@ -87,7 +87,7 @@
 /* the split lines keep only the room the capitals need (style.css gives split lines 10px), so two lines of the title stand
    close, as one title (user 13.11: too much space between the lines) */
 .pf .pf-work-title .line { padding-top: 0.04em; }
-.pf-work-head .pf-small { padding-bottom: 0.4em; }
+.pf-work-head .pf-small { padding-bottom: var(--space-2); } /* 8 above the title's bottom, as the clients' count on Studio (card 15, user 18.11.2026; was 0.4em = 5.6 / 4.8) */
 /* the height of the row: 480 at 1440 (52% of the height at most), 72% of the width on phones; js/profile.js lowers it
    where the pinned section would not fit between the menu and its mirror below (--pf-row-fit) */
 .pf-gallery {
