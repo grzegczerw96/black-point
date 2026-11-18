@@ -98,6 +98,12 @@ body { min-height: 100%; font-family: var(--font-body); }
 	line-height: var(--lh-text);
 }
 .hero-lead .line { overflow: hidden; }
+/* no lead where it falls out of proportion (user 18.11.2026): upright windows (the title, photo and "In mono." fill the width
+   and the lead is squeezed into three lines beside "In mono."), and wherever the title is under 5 × the lead (js/home.js fit()) */
+@media (orientation: portrait) {
+	.hero-lead { display: none; }
+}
+.hero-layer[data-lead="off"] .hero-lead { display: none; }
 
 /* list: names from col 17 (Figma x 960), caption bottom-left (Figma y 640) */
 .team-layer { position: absolute; inset: 0; z-index: 3; pointer-events: none; }

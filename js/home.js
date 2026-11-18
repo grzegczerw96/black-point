@@ -47,7 +47,11 @@ boot({
 			room = 1.1127 * (H - 120 - 4 * gap)
 		fitWidth(l1, isSmall() ? Math.min(measure(), floor, room) : Math.min(Math.max(665 * u(), floor), 665 / 900 * H, room))
 		l2.style.fontSize = l1.style.fontSize
-		l2.closest(".hero-layer").style.setProperty("--mono", l1.style.fontSize) // the lead stands on "In mono."'s line (css)
+		const layer = l2.closest(".hero-layer"), title = parseFloat(l1.style.fontSize)
+		layer.style.setProperty("--mono", title + "px") // the lead stands on "In mono."'s line (css)
+		// the lead only where it stays a quiet note: the title at least 5 times its size (user 18.11.2026: on phones held
+		// sideways the title shrinks, the lead keeps its 16 and the two stop looking in proportion; 3.1–3.6 there, 5.8+ elsewhere)
+		layer.dataset.lead = title >= 5 * parseFloat(getComputedStyle($(".hero-lead")).fontSize) ? "on" : "off"
 	},
 	// the list lives inside the pinned scene: "team" jumps to the first photographer's turn
 	scrollTo(target) {
