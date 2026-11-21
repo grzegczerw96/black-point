@@ -32,7 +32,7 @@ boot({
 			${CHAPTERS.map(c => `<div class="ka-card"><span class="caps">Chapter ${c.no}</span><span class="display">${c.word}</span></div>`).join("")}
 			<div class="film-top"><span class="caps">Black Point — how we work</span><span class="caps film-no"></span></div>
 			<p class="film-sub"></p>
-			<div class="film-end"><span class="caps">New work</span><h3 class="display">Tell us what you are making</h3><a class="mail" href="mailto:studio@blackpoint.studio">studio@blackpoint.studio</a></div>`
+			<div class="film-end"><span class="caps">Chapter IV</span><h3 class="display">Write</h3><a class="mail" href="mailto:studio@blackpoint.studio">studio@blackpoint.studio</a></div>`
 	},
 	init: film
 })

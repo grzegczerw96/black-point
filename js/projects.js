@@ -82,9 +82,11 @@ const pageLayer = (cls = "") => `<div class="pv${cls}">
 </div>`
 function pageHtml() {
 	const src = thumbs()
+	// the prints start unseen (inline, so the entrance's clearProps gives them back): the page is drawn before init() runs
+	// (it waits for the fonts), and with the pictures in the browser's cache the whole wall flashed up and out again (19.11.2026)
 	return `<div class="pj-pin" data-mode="${pjMode()}">
 		<div class="wl">${PROJECTS.map((p, i) => `
-			<a class="t" href="#" aria-label="${p.title}">
+			<a class="t" href="#" aria-label="${p.title}" style="opacity: 0">
 				<div class="t-box"><img src="${src[i]}" alt="" draggable="false"></div>
 				<div class="t-cap"><b>${pad(i + 1)}</b><span>${p.title}</span></div>
 			</a>`).join("")}</div>

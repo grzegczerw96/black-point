@@ -46,11 +46,14 @@
 /* 03 MANIFESTO — the sentence and the strip are one group. The free height goes first into the gap between them, up to
    half the difference of the window's width and height: on a wide screen the text stands at the top and the strip at
    the bottom, on a tall one the group stands in the middle with a small gap */
+/* (user 19.11.2026, from the subagent's version C) the layout decides the gap: the group's free height goes into it up to
+   --mf-gap, the rest above and below. Wide windows: it fills (as space-between), never more than 256; tall ones: 96 → 48
+   from the scale, the group in the middle as before. Never under 24 → 48 (a line of text; was 8 → 32, 14 at 844 × 390) */
 .mf-in {
-	--mf-gap: max(clamp(3rem, calc(var(--u) * 96), 6rem), calc((100vw - 100vh) / 2));
+	--mf-gap: max(clamp(3rem, calc(var(--u) * 96), 6rem), min(calc((100vw - 100vh) / 2), var(--space-13)));
 	position: absolute; inset: 0; z-index: 3; padding-inline: var(--gutter);
 	display: grid; grid-template-columns: minmax(0, 1fr);
-	grid-template-rows: minmax(var(--st-label-top), 1fr) auto minmax(clamp(0.5rem, calc(var(--u) * 32), 2rem), var(--mf-gap)) auto minmax(max(1rem, calc(var(--u-width) * 64)), 1fr);
+	grid-template-rows: minmax(var(--st-label-top), 1fr) auto minmax(clamp(var(--space-5), calc(var(--u) * 48), var(--space-7)), var(--mf-gap)) auto minmax(max(1rem, calc(var(--u-width) * 64)), 1fr);
 }
 .mf-head { grid-row: 2; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
 .mf-text { margin: 0; color: var(--white); font-family: "Instrument Serif", serif; font-size: max(2rem, min(calc(var(--u) * 96), 10.67vh, 9vw)); line-height: 1.08; text-wrap: pretty; }

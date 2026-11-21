@@ -102,7 +102,37 @@ function casting(signal, split) {
 		flow.to(stay.map(i => cards[i]), { opacity: 1, y: 0, duration: 0.22 }, 0)
 		flow.set({}, {}, 0.22)
 	}
-	tags.forEach(b => b.addEventListener("click", () => pick(b.dataset.tag), { signal }))
+	// PHONES (user 20.11.2026, version 2 without the full-screen layer): six disciplines and a button; the button opens the
+	// whole list in place, pushing the portraits down, and a pick closes it again. The pick stands right after Anything,
+	// marked, so the closed list keeps its length and always shows what is chosen
+	const ul = $(".ca-tags"), more = $(".ca-more"), lis = [...ul.children], FIRST = 6
+	const phone = () => tmMode() === "phone"
+	let open = false
+	const arrange = (tag = picked) => {
+		const mine = lis.find(li => li.firstElementChild.dataset.tag === tag)
+		const seq = phone() && tag ? [lis[0], mine, ...lis.slice(1).filter(li => li !== mine)] : lis
+		seq.forEach((li, i) => { ul.appendChild(li); li.classList.toggle("ca-extra", phone() && i >= FIRST) })
+	}
+	const setOpen = on => {
+		const from = ul.offsetHeight
+		open = on
+		ul.classList.toggle("open", on)
+		more.classList.toggle("open", on)
+		$("span", more).textContent = on ? "Fewer disciplines" : "All disciplines"
+		more.setAttribute("aria-expanded", on)
+		const to = ul.offsetHeight
+		gsap.fromTo(ul, { height: from }, { height: to, duration: dur(0.45), ease: "power3.out", clearProps: "height", onComplete: () => ScrollTrigger.refresh() })
+		if (on) gsap.fromTo($$(".ca-extra", ul), { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: dur(0.4), stagger: dur(0.02), ease: "power3.out" })
+	}
+	arrange()
+	more.addEventListener("click", () => setOpen(!open), { signal })
+	tags.forEach(b => b.addEventListener("click", () => {
+		if (phone() && b.dataset.tag !== picked) { // close first, with the pick in its new place, so the page measures the short list
+			arrange(b.dataset.tag)
+			if (open) { open = false; ul.classList.remove("open"); more.classList.remove("open"); $("span", more).textContent = "All disciplines"; more.setAttribute("aria-expanded", false) }
+		}
+		pick(b.dataset.tag)
+	}, { signal }))
 	$$(".ca-main").forEach(a => a.addEventListener("click", e => { e.preventDefault(); leaveTo(a.href) }, { signal }))
 	place(matching(picked))
 }
@@ -151,6 +181,7 @@ boot({
 				<div class="ca-low">
 					<p class="caps ca-label">Filter by discipline</p>
 					<ul class="ca-tags"><li><button type="button" class="on" data-tag=""><i></i><span>${ANY}</span><small>${N}</small></button></li>${TAGS.map(t => `<li><button type="button" data-tag="${t.tag}"><i></i><span>${t.tag}</span><small>${t.n}</small></button></li>`).join("")}</ul>
+					<button type="button" class="ca-more" aria-expanded="false"><b aria-hidden="true"></b><em><span>All disciplines</span><small>${TAGS.length}</small></em></button>
 					<div class="ca-foot"><span class="caps ca-count"></span><a class="ca-brief"></a></div>
 				</div>
 			</aside>

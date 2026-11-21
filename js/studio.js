@@ -132,8 +132,8 @@ boot({
 	render() {
 		$(".st-hero").innerHTML = `<div class="st-pin">
 			<div class="st-photo"><img data-pic="${OPENING_IMG}" fetchpriority="high" alt=""></div>
-			<div class="ha-mask"><h1 class="ha-word display">Studio</h1></div>
-			<p class="h-lead">Twelve photographers. Two cities. <span>One way of looking.</span></p>
+			<div class="ha-mask"><h1 class="ha-word display" style="visibility: hidden">Studio</h1></div>
+			<p class="h-lead" style="opacity: 0">Twelve photographers. Two cities. <span>One way of looking.</span></p>
 		</div>`
 		$(".st-how").innerHTML = `<div class="st-pin hw" data-mode="${hwMode()}"><span class="caps hw-label">How we work</span>${STEPS.map((s, i) => `
 			<div class="hw-row">
@@ -178,6 +178,9 @@ function opening(split) {
 	const chars = split(word, { type: "chars", charsClass: "char" }).chars
 	fitAll() // split letters lose kerning: re-fit
 	gsap.fromTo(chars, { transformOrigin: "top left", y: "-30%", scaleY: 0 }, { scaleY: 1, y: 0, duration: dur(1.5), stagger: { amount: dur(0.3) }, ease: customEase })
+	// the word and the lead start unseen (inline in render()): the page is drawn before this runs (it waits for the fonts),
+	// and with the photo in the browser's cache the whole word and the lead showed and vanished before the entrance (19.11.2026)
+	word.style.visibility = ""
 	gsap.fromTo(".h-lead", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: dur(1.1), delay: dur(0.5), ease: "expo.out" })
 	// the zoom centres on the left stroke of the O, so the screen fills with photo and not with its counter.
 	// The letters are still folded here, so only their x is usable
