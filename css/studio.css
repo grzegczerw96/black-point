@@ -6,7 +6,9 @@
 
 .st {
 	--st-bar: calc(var(--header-inset) + var(--size-menu-h));      /* the bottom edge of the fixed menu */
-	--st-label-top: max(5.5rem, calc(var(--u-width) * 160));       /* a section label: under the logo and menu, 160 at 1440 */
+	/* a section label: under the logo and menu, 160 at 1440, and never less than 24 under the menu's bottom (user 21.11.2026:
+	   at 1024 × 768 it stood 2 under it, at 834 × 1194 11) */
+	--st-label-top: max(5.5rem, calc(var(--u-width) * 160), calc(var(--header-inset) + var(--size-menu-h) + var(--space-5)));
 }
 .st .caps { font-size: var(--fs-label); line-height: 1.5; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
 .st .display { font-family: var(--font-black); font-variation-settings: var(--fvs-black); font-weight: normal; text-transform: uppercase; line-height: 0.82; color: var(--white); }
@@ -71,8 +73,10 @@
 
 /* 04 VALUES — the words in fixed rows, at 60 / 700 (readable on a phone too). fit() picks the size from the window's shape
    (a taller window gets larger words) and the fewest rows in which every word still fits with its picture open */
-.val-label { position: absolute; z-index: 3; left: var(--gutter); top: var(--st-label-top); }
-.vd-text { position: absolute; z-index: 2; left: var(--gutter); right: var(--gutter); top: 50%; display: grid; font-size: 6rem; transform: translateY(-50%); font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); line-height: var(--lh-display); letter-spacing: -0.008em; font-weight: normal; text-transform: uppercase; color: var(--white); }
+/* the label and the words: one group in the middle, the label 12 above the words (js/studio.js fitValues() sets --val-head
+   = label + 12 and --vd-h = the words' height; user 21.11.2026) */
+.val-label { position: absolute; z-index: 3; left: var(--gutter); top: calc(50% - (var(--val-head, 30px) + var(--vd-h, 0px)) / 2); }
+.vd-text { position: absolute; z-index: 2; left: var(--gutter); right: var(--gutter); top: calc(50% + var(--val-head, 30px) / 2); display: grid; font-size: 6rem; transform: translateY(-50%); font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); line-height: var(--lh-display); letter-spacing: -0.008em; font-weight: normal; text-transform: uppercase; color: var(--white); }
 .vd-row { display: flex; align-items: baseline; /* the picture sits on the letters' baseline (user 18.11.2026; was centred in the row) */ gap: max(0.75rem, calc(0.75rem + var(--ku) * 12)); white-space: nowrap; } /* word → picture → word 12 → 24 (scale, card 12, user 18.11.2026; was 0.17em = 13.08 / 24.48); fitValues() reads it */
 .vd-word { opacity: 0.2; will-change: opacity; }
 .vd-pic { display: block; flex: none; width: 0; height: 0.68em; height: 1cap; /* as tall as the capitals, from their top to the baseline, at every window (user 18.11.2026; was 0.74em, centred) */ overflow: hidden; border-radius: 6px; will-change: width; }

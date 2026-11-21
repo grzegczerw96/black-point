@@ -80,10 +80,13 @@ function fitValues() {
 	const want = Math.min(W * 0.1 + Math.max(0, H - 0.9 * W) * 0.2, H * 0.26)
 	let size = clamp(Math.min(want, Math.max(fits[1], 92), fits[2]), 48, 288)
 	const pick = Math.max(0, fits.findIndex(f => f >= size - 0.5)), rows = VALUE_ROWS[pick]
-	// the rows stay clear of the label above and of the text below (two lines at most)
+	// the label and the words are one group in the middle of the screen, the label 12 above the words (user 21.11.2026, as
+	// in the Manifesto; the label stood at the top of the screen and came up against the menu in smaller windows). The
+	// group stays clear of the menu above and of the text below (two lines at most)
 	const label = $(".val-label", root), descSize = parseFloat(getComputedStyle($(".vd-desc", root)).fontSize) || 16
-	const above = label.offsetTop + label.offsetHeight, below = Math.max(16, 60 * u()) + descSize * 2.7
-	size = Math.max(Math.min(size, (H - 2 * (Math.max(above, below) + 16)) / (rows.length * 0.875)), Math.min(size, 48))
+	const head = label.offsetHeight + 12, above = $("#hamburger").getBoundingClientRect().bottom, below = Math.max(16, 60 * u()) + descSize * 2.7
+	size = Math.max(Math.min(size, (H - head - 2 * (Math.max(above, below) + 16)) / (rows.length * 0.875)), Math.min(size, 48))
+	root.style.setProperty("--val-head", head + "px")
 	// the same word and picture elements move into their rows, so the scene keeps hold of them
 	box.replaceChildren(...rows.map(([a, b]) => {
 		const row = document.createElement("div")
@@ -93,6 +96,7 @@ function fitValues() {
 	}))
 	box.style.fontSize = size + "px"
 	root.style.setProperty("--vd-size", size + "px")
+	root.style.setProperty("--vd-h", box.offsetHeight + "px")
 }
 // The opening word (test 2): as wide as the measure, or as wide as the room between the logo and the menu when the screen
 // is low, whichever is larger; in the middle of the screen, never under the menu, never on the lead
