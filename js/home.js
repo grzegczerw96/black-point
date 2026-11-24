@@ -109,7 +109,10 @@ function scene(split, signal) {
 }
 
 function intro(split, signal, imgs, entered) {
-	const heroChars = split(".hero-title .hl", { type: "chars", charsClass: "char" })
+	// split into lines too, as in the original (lines, chars): the line is the mask (css .hero-title .line). Without it the
+	// letters' first frames, squashed to a hairline 30% above their place, showed as a thin bar over the title while the
+	// photograph was still loading (24.11.2026, seen after a hard refresh: the entrance then starts after the page's fade-in)
+	const heroChars = split(".hero-title .hl", { type: "lines, chars", linesClass: "line", charsClass: "char" })
 	fitAll() // split letters lose kerning: re-fit
 	const lead = split(".hero-lead", { type: "lines", linesClass: "line" })
 	const leadInner = lead.lines.map(l => { const s = document.createElement("span"); s.style.display = "block"; while (l.firstChild) s.appendChild(l.firstChild); l.appendChild(s); return s })
@@ -148,23 +151,34 @@ function sceneRest(split, signal, { section, frame, zoom, shade, imgs, hoverImg,
 		gsap.set(s.chars, { transformOrigin: "left bottom", scaleY: 0 })
 		return s.chars
 	})
+	// each name's own letters: the name on stage folds them away under its accent letters (show, as the original's hover)
+	const names = links.map(a => $$(".hero-split .char", a)), owner = new Map()
+	names.forEach((cs, i) => cs.forEach(c => owner.set(c, i)))
+	let shown = -1, onStage = 0, hovering = -1
 	const arrive = gsap.timeline({ paused: true })
 	arrive.set([".team-list", ".team-cap"], { visibility: "visible" })
-	arrive.to(nameSplit.chars, { scaleY: 1, y: 0, duration: 1, stagger: { amount: 0.25 }, ease: "power4" })
+	// the name on stage stays folded: its accent letters are already there (read once, when the list first arrives)
+	arrive.to(nameSplit.chars, { scaleY: (k, c) => (owner.get(c) === shown ? 0 : 1), y: 0, duration: 1, stagger: { amount: 0.25 }, ease: "power4" })
 	arrive.to(".team-list .track i", { scale: 1, duration: 0.5, ease: "power3" }, 0.3)
 	arrive.from(".team-cap p > span, .cap-link", { yPercent: 110, opacity: 0, duration: 0.8, stagger: 0.06, ease: "expo.out" }, 0.3)
 
 	// who is on stage: the active name turns accent letter by letter, the dot slides to it,
 	// the caption (the project only since 13.11.2026: the "01 / 12 — name" label is gone) rolls to the new line
-	let shown = -1, onStage = 0, hovering = -1
 	const caption = i => `${people[i].work[0].title} · ${people[i].work[0].client} · ${people[i].work[0].year}`
 	const show = i => {
 		if (i === shown) return
 		const prev = shown
 		shown = i
 		items.forEach((li, k) => li.classList.toggle("on", k === i))
-		if (prev > -1) gsap.to(hovers[prev], { yPercent: 10, scaleY: 0, stagger: { amount: 0.1 }, duration: 0.45, ease: "expo", overwrite: true })
-		gsap.to(hovers[i], { yPercent: 0, scaleY: 1, stagger: { amount: 0.1 }, duration: 0.5, ease: "expo", overwrite: true })
+		// as the original's list hover (opositivefilms.com/directors, 24.11.2026): the name's own letters fold up into the top of
+		// their line while the accent letters grow from the bottom; leaving, the reverse. All 0.5 s, expo, 0.1 s across the letters
+		const fold = { stagger: { amount: 0.1 }, duration: 0.5, ease: "expo" }
+		if (prev > -1) {
+			gsap.to(names[prev], { yPercent: 0, scaleY: 1, ...fold, overwrite: "auto" })
+			gsap.to(hovers[prev], { yPercent: 10, scaleY: 0, ...fold, overwrite: true })
+		}
+		gsap.to(names[i], { yPercent: -35, scaleY: 0, ...fold, overwrite: "auto" })
+		gsap.to(hovers[i], { yPercent: 0, scaleY: 1, ...fold, overwrite: true })
 		gsap.to(ball, { y: items[i].offsetTop + (items[i].offsetHeight - ball.offsetHeight) / 2, duration: 0.5, ease: "power3", overwrite: true })
 		capLink.href = profileUrl(people[i])
 		if (prev === -1) { capWork.textContent = caption(i); return }

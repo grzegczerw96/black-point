@@ -38,27 +38,66 @@ CLIENTS.sort((a, b) => a.from - b.from || a.name.localeCompare(b.name))
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v))
 const lerp = (a, b, t) => a + (b - a) * t
 const smooth = t => t * t * (3 - 2 * t)
+// How the stepped scenes (How we work, Our values) follow the scroll, to compare (user 24.11.2026: "aggressive, it ends
+// fast and abruptly"): ?snap=a | b | c in the address, remembered for the tab like ?scroll=. a is the way it was.
+//   edge: where the change starts in a stop's length (0.28: the change takes the middle 44 %, the rest is the shelf)
+//   lag: seconds the scene takes to catch up with the scroll, easing out (0: it follows the scroll exactly)
+//   pull: the snap that finishes a change the scroll stopped in
+const FEELS = {
+	a: { edge: 0.28, lag: 0, pull: { delay: 0.4, duration: { min: 0.35, max: 0.8 }, ease: "power1.inOut" } },
+	b: { edge: 0.28, lag: 0.9, pull: { delay: 0.4, duration: { min: 0.35, max: 0.8 }, ease: "power1.inOut" } },
+	c: { edge: 0.15, lag: 0.7, pull: { delay: 0.15, duration: { min: 0.6, max: 1.2 }, ease: "power2.inOut" } }
+}
+const FEEL = FEELS[(() => {
+	let v = new URLSearchParams(location.search).get("snap")
+	try { if (v in FEELS) sessionStorage.setItem("bp-snap", v); else v = sessionStorage.getItem("bp-snap") } catch (e) {}
+	return v in FEELS ? v : "a"
+})()]
 // Scroll progress to a scene's stops. Each stop is a shelf: it holds for most of the way and the change happens in the
 // middle, so the scene is nearly always at rest on a stop
 const shelves = (progress, units) => {
 	const t = clamp(progress * (units + 0.4) - 0.2, 0, units), i = Math.min(units, Math.floor(t))
-	return i + smooth(clamp((t - i - 0.28) / 0.44))
+	return i + smooth(clamp((t - i - FEEL.edge) / (1 - 2 * FEEL.edge)))
 }
 // The gentle pull: only when the scroll has come to rest in the middle of a change, it finishes the change in the
 // direction of travel. On a shelf nothing moves, and any new scroll cancels it, so it never works against the visitor
 const settle = units => ({
 	snapTo: (progress, st) => {
-		const t = progress * (units + 0.4) - 0.2, i = Math.floor(t), f = t - i
-		if (t <= 0 || t >= units || f <= 0.28 || f >= 0.72) return progress
-		return (i + (st.direction > 0 ? 0.73 : 0.27) + 0.2) / (units + 0.4)
+		const t = progress * (units + 0.4) - 0.2, i = Math.floor(t), f = t - i, e = FEEL.edge
+		if (t <= 0 || t >= units || f <= e || f >= 1 - e) return progress
+		return (i + (st.direction > 0 ? 1 - e + 0.01 : e - 0.01) + 0.2) / (units + 0.4)
 	},
-	delay: 0.4, duration: { min: 0.35, max: 0.8 }, ease: "power1.inOut", inertia: false
+	...FEEL.pull, inertia: false
 })
+// The scene catches up with the scroll over FEEL.lag seconds, so a change slows down before it stops even when the
+// scroll got there at once; a rebuild (now) puts it in place at once
+// (an exponential follow on the ticker: a tween started anew on every scroll update never got to run)
+const follower = render => {
+	if (!FEEL.lag) return render
+	let at = null, to = 0
+	const tick = () => {
+		// 95 % of the way in FEEL.lag seconds; while a rebuilt page settles (dur() gives 0) it is in place at once
+		at = dur(1) ? at + (to - at) * (1 - Math.exp(-3 * gsap.ticker.deltaRatio() / 60 / FEEL.lag)) : to
+		if (Math.abs(to - at) < 0.001) { at = to; gsap.ticker.remove(tick) }
+		render(at)
+	}
+	return (t, now) => {
+		to = t
+		if (now || at === null) { at = t; gsap.ticker.remove(tick); return render(t) }
+		gsap.ticker.add(tick)
+	}
+}
 // How we work, by the window's shape (test 2): low or very wide windows put the list beside the picture, tall and
 // square ones put the picture across the measure, the rest the picture with its indent and the text beside it
+// Computer windows all get the picture with its indent now (user 24.11.2026: the long, wide picture beside the list at
+// 1920 × 950, 1536 × 730, 1366 × 650 was not liked); "side" is kept for phones held sideways, where the indent's picture
+// would be a stamp. ?hw=side | indent | column in the address forces a layout, to compare
 const hwMode = () => {
 	const W = pageW(), H = window.innerHeight, ratio = W / H // the composition's shape (1920 at most)
-	return ratio >= 1.9 || (H < 700 && (W >= 600 || ratio >= 1.1)) ? "side" : ratio < 1.1 ? "column" : "indent"
+	const asked = new URLSearchParams(location.search).get("hw")
+	if (["side", "indent", "column"].includes(asked)) return asked
+	// before 24.11.2026: return ratio >= 1.9 || (H < 700 && (W >= 600 || ratio >= 1.1)) ? "side" : ratio < 1.1 ? "column" : "indent"
+	return H < 500 && ratio >= 1.1 ? "side" : ratio < 1.1 ? "column" : "indent"
 }
 const PIC_WIDTH = 1.3 // em
 // the rows the values may stand in; a word slides along its row as a picture opens and never changes row
@@ -254,11 +293,11 @@ function how() {
 			y += step + open * o
 		})
 	}
-	const units = rows.length - 1
+	const units = rows.length - 1, show = follower(render)
 	ScrollTrigger.create({
 		trigger: root, start: "top top", end: () => "+=" + innerHeight * rows.length * 0.6, pin, invalidateOnRefresh: true, snap: settle(units),
-		onRefresh: s => { sizes(); render(shelves(s.progress, units)) },
-		onUpdate: s => render(shelves(s.progress, units))
+		onRefresh: s => { sizes(); show(shelves(s.progress, units), true) },
+		onUpdate: s => show(shelves(s.progress, units))
 	})
 	sizes()
 	render(0)
@@ -306,23 +345,45 @@ function values() {
 		const near = Math.round(t)
 		if (near !== cur) { cur = near; reveal(desc, VALUES[near].text) }
 	}
+	const show = follower(render)
 	ScrollTrigger.create({
 		trigger: root, start: "top top", end: () => "+=" + innerHeight * VALUES.length * 0.65, pin: $(".st-pin", root), invalidateOnRefresh: true, snap: settle(units),
-		onUpdate: s => render(shelves(s.progress, units)),
-		onRefresh: s => render(shelves(s.progress, units))
+		onUpdate: s => show(shelves(s.progress, units)),
+		onRefresh: s => show(shelves(s.progress, units), true)
 	})
 	render(0)
 }
 
-// 05 CLIENTS — closing credits: the row in the middle of the window is lit, the rest fades out above and below //////
+// 05 CLIENTS — closing credits: the lit row stands on the count's line when the two stand side by side (user
+// 24.11.2026; it stood in the middle of the window, the count at the top), in the middle of the list when the count is
+// under it; the rest fades out above and below //////////////////////////////////////////////////////////////////
 function clients() {
-	const root = $(".st-cc"), pin = $(".cc-pin", root), view = $(".cc-view", root), roll = $(".cc-roll", root), rows = $$(".cc-row", root), num = $(".cc-num", root)
+	const root = $(".st-cc"), pin = $(".cc-pin", root), box = $(".cc-in", root), view = $(".cc-view", root), roll = $(".cc-roll", root), rows = $$(".cc-row", root), num = $(".cc-num", root)
 	const mid = r => r.offsetTop + r.offsetHeight / 2
+	// the baseline of an element's first line, from its top: a box of no size stands on it
+	const baseline = el => {
+		const probe = document.createElement("i")
+		probe.style.cssText = "display: inline-block; width: 0; height: 0; vertical-align: baseline"
+		el.append(probe)
+		const y = probe.getBoundingClientRect().top - el.getBoundingClientRect().top
+		probe.remove()
+		return y
+	}
+	const beside = () => getComputedStyle(box).display === "grid" // css/studio.css: the count beside the list
+	// the roll's y that puts a row in its place: beside the count its name stands on the number's baseline
+	const at = r => {
+		if (!beside()) return view.offsetHeight / 2 - mid(r)
+		const name = $("b", r), line = num.getBoundingClientRect().top + baseline(num) - view.getBoundingClientRect().top
+		return line - name.offsetTop - baseline(name)
+	}
+	// the fade above the list ends where the lit row starts, so the lit row is whole (the mask, css/studio.css)
+	const fade = () => beside() ? view.style.setProperty("--cc-fade", Math.max(0, at(rows[0]) + rows[0].offsetTop) + "px") : view.style.removeProperty("--cc-fade")
 	let cur = -1
 	const set = i => { if (i === cur) return; cur = i; rows.forEach((r, k) => r.classList.toggle("on", k === i)); num.textContent = pad(i + 1) }
 	set(0)
-	gsap.fromTo(roll, { y: () => view.offsetHeight / 2 - mid(rows[0]) }, {
-		y: () => view.offsetHeight / 2 - mid(rows[rows.length - 1]), ease: "none",
-		scrollTrigger: { trigger: root, start: "top top", end: () => "+=" + rows.length * innerHeight * 0.16, pin, scrub: true, invalidateOnRefresh: true, onUpdate: s => set(Math.round(s.progress * (rows.length - 1))) }
+	fade()
+	gsap.fromTo(roll, { y: () => at(rows[0]) }, {
+		y: () => at(rows[rows.length - 1]), ease: "none",
+		scrollTrigger: { trigger: root, start: "top top", end: () => "+=" + rows.length * innerHeight * 0.16, pin, scrub: true, invalidateOnRefresh: true, onRefresh: fade, onUpdate: s => set(Math.round(s.progress * (rows.length - 1))) }
 	})
 }

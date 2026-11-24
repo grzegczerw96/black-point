@@ -87,7 +87,9 @@ body { min-height: 100%; font-family: var(--font-body); }
    as far above the photo as "In mono." is below it (user, 13.11.2026; measured on the ink: 34 above / 23 below before) */
 .hero-title .hl:not(.hl-2) { position: absolute; left: var(--gutter); bottom: calc(50% + var(--frame-h) / 2 + var(--hero-gap) - 0.135em); }
 .hero-title .hl-2 { position: absolute; right: var(--gutter); top: calc(50% + var(--frame-h) / 2 + var(--hero-gap)); color: var(--title); }
-.hero-title .line { padding-top: 0.04em; overflow: hidden; }
+/* the mask of the letters' entrance (js/home.js intro, split into lines and chars): the room above the capitals is taken back
+   by the margin, so the title stands exactly where it stood before the mask (24.11.2026) */
+.hero-title .line { padding-top: 0.04em; margin-top: -0.04em; overflow: hidden; }
 /* the lead (user 18.11.2026, from the Figma proposal: two lines, a shorter text): its last line ends on the bottom of
    "In mono." (the box of that line: its top + its 0.82em line, --mono = the title size from js/home.js fit()),
    so the lead and the accent word share one bottom edge. Was: the lead's top on "In mono."'s top, a 416 column */
@@ -154,7 +156,9 @@ body { min-height: 100%; font-family: var(--font-body); }
 	text-transform: uppercase;
 	white-space: nowrap;
 	color: var(--white);
-	transition: color 0.4s var(--ease-out-cubic);
+	/* no colour fade (24.11.2026): the name on stage folds its own letters away under the accent ones (js/home.js show), and the
+	   one it leaves unfolds already dimmed, as in the original; a fade showed it white for a moment */
+	transition: none;
 }
 /* upright windows: 40 at 375 wide (10.67vw, was 9.6vw: a little larger, user 13.11.2026). The height decides by the room
    the list has, centred on phones, between the menu and the caption (--list-room: 12 rows are 9.04em + 7.5rem tall at line-height 0.85, and 15rem

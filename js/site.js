@@ -495,13 +495,15 @@ function ctaHover(split, signal) {
 	a.addEventListener("mouseenter", () => {
 		// the white letters fold up against the top edge and out of the clipped box; the entrance above grew
 		// them from the baseline, so the origin has to move first or a white strip stays across the word
+		// timing as the original's footer "Get in touch" (opositivefilms.com, textDoubleHover): 0.6 s, power3, 0.1 s across the
+		// letters (was 0.15 until 24.11.2026)
 		gsap.set(cur.chars, { transformOrigin: "0% 0%" })
-		gsap.to(cur.chars, { yPercent: -22, scaleY: 0.2, stagger: { amount: 0.15 }, duration: 0.6, ease: "power3", overwrite: true })
-		gsap.to(nxt.chars, { yPercent: 0, scaleY: 1, stagger: { amount: 0.15 }, duration: 0.6, ease: "power3", overwrite: true })
+		gsap.to(cur.chars, { yPercent: -22, scaleY: 0.2, stagger: { amount: 0.1 }, duration: 0.6, ease: "power3", overwrite: true })
+		gsap.to(nxt.chars, { yPercent: 0, scaleY: 1, stagger: { amount: 0.1 }, duration: 0.6, ease: "power3", overwrite: true })
 	}, { signal })
 	a.addEventListener("mouseleave", () => {
-		gsap.to(cur.chars, { yPercent: 0, scaleY: 1, stagger: { amount: 0.15 }, duration: 0.6, ease: "power3", overwrite: true })
-		gsap.to(nxt.chars, { yPercent: 22, scaleY: 0.2, stagger: { amount: 0.15 }, duration: 0.6, ease: "power3", overwrite: true })
+		gsap.to(cur.chars, { yPercent: 0, scaleY: 1, stagger: { amount: 0.1 }, duration: 0.6, ease: "power3", overwrite: true })
+		gsap.to(nxt.chars, { yPercent: 22, scaleY: 0.2, stagger: { amount: 0.1 }, duration: 0.6, ease: "power3", overwrite: true })
 	}, { signal })
 }
 

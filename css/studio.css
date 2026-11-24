@@ -29,8 +29,9 @@
 
 /* 02 HOW WE WORK — always exactly one screen, with a margin below; rows move on transforms only. Three layouts by the
    window's shape (js/studio.js hwMode()): "indent" the picture with its indent and the text beside it, "column" (tall and
-   square windows, phones) the picture across the measure and the text under it, "side" (low and very wide windows) the
-   list on the left with the text opening under its row and the picture on the right.
+   square windows, phones) the picture across the measure and the text under it, "side" (phones held sideways; before
+   24.11.2026 also low and very wide computer windows) the list on the left with the text opening under its row and the
+   picture on the right.
    The cut of the client list: at width 50 / weight 900 the counters close up and the words stop reading */
 .hw-label { position: absolute; z-index: 2; left: var(--gutter); top: var(--st-label-top); }
 .hw-row { position: absolute; left: 0; right: 0; top: 0; padding: 0 var(--gutter); will-change: transform; }
@@ -112,6 +113,9 @@
 	.cc-in { inset: 0 var(--gutter); display: grid; grid-template-columns: 31.9% minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
 	.cc-count { grid-column: 1; grid-row: 1; align-self: start; padding: var(--st-label-top) 1.5rem 0 0; }
 	.cc-view { grid-column: 2; grid-row: 1; margin-top: calc(var(--st-bar) + var(--space-4)); }
+	/* the lit row stands on the count's line, near the top of the list: the fade above ends where it starts (js/studio.js
+	   clients() sets --cc-fade; 24.11.2026, was 22% with the lit row in the middle) */
+	.cc-view { -webkit-mask-image: linear-gradient(transparent, #000 var(--cc-fade, 22%), #000 78%, transparent); mask-image: linear-gradient(transparent, #000 var(--cc-fade, 22%), #000 78%, transparent); }
 }
 
 @media only screen and (max-width: 768px) {
