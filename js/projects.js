@@ -37,14 +37,14 @@ const MIN_TILE = 1.33
 // of height), an upright tablet, a phone or a desktop. It sets the rows of the wall here and the project page in
 // css/projects.css (data-mode)
 const pjMode = () => {
-	const W = window.innerWidth, H = window.innerHeight, ratio = W / H
+	const W = pageW(), H = window.innerHeight, ratio = W / H // the composition's shape (1920 at most)
 	if (ratio >= 1.9 || (H < 700 && (W >= 600 || ratio >= 1.1))) return H < 500 ? "flat" : "low"
 	if (ratio < 1.1 && W > 600) return "tall"
 	return isSmall() ? "phone" : "desk"
 }
 const ROWS = { desk: [4, 4, 4], phone: [2, 2, 2, 2, 2, 2], tall: [3, 3, 3, 3], low: [6, 6], flat: [6, 6] }
 function placeTiles(vw, vh, asp) {
-	const top = Math.max(84, vh * 0.125), bottom = Math.max(52, vh * 0.085), side = (window.innerWidth - measure()) / 2, gap = Math.max(8, 8 + 8 * (vw - 375) / 1065) /* 8 at 375, 16 at 1440 (was 1.2% of the width: 10 and 17.3) */, capH = isSmall() ? 20 : 26
+	const top = Math.max(84, vh * 0.125), bottom = Math.max(52, vh * 0.085), side = (pageW() - measure()) / 2, gap = Math.max(8, 8 + 8 * (vw - 375) / 1065) /* 8 at 375, 16 at 1440 (was 1.2% of the width: 10 and 17.3) */, capH = isSmall() ? 20 : 26
 	const rows = ROWS[pjMode()]
 	const room = vh - top - bottom - rows.length * capH - (rows.length - 1) * gap
 	let n = 0
@@ -67,7 +67,7 @@ function placeTiles(vw, vh, asp) {
 const ratio = i => picRatio(PROJECTS[i].cover)
 function thumbs() {
 	if (!PROJECTS.every((p, i) => ratio(i))) return PROJECTS.map(p => p.cover)
-	const vw = window.innerWidth, vh = window.innerHeight
+	const vw = pageW(), vh = window.innerHeight
 	return placeTiles(vw, vh, PROJECTS.map((p, i) => Math.max(ratio(i), MIN_TILE))).map(({ R }, i) => {
 		const asp = ratio(i), w = asp > R.w / R.h ? R.h * asp : R.w // the whole photograph around the tile, as in layout()
 		return pic(PROJECTS[i].cover, w * density())
@@ -159,10 +159,22 @@ function wall(signal) {
 		page.style.setProperty("--pic-h", sizes[i].h + "px")
 		page.style.setProperty("--pic-dy", sizes[i].dy + "px")
 	}
+	// a title stays on one line: one too long for it shrinks just enough, like the other words fitted to the width
+	// (user 21.11.2026: 64 on phones, where "Common Ground" took two lines at 320 and 360)
+	// Phones only: on larger screens a long title keeps 96 and takes two lines, as designed
+	const fitTitle = t => {
+		t.style.fontSize = ""
+		if (pin.dataset.mode !== "phone") return
+		t.style.whiteSpace = "nowrap"
+		const w = t.scrollWidth, room = t.parentElement.clientWidth
+		if (w > room) t.style.fontSize = parseFloat(getComputedStyle(t).fontSize) * room / w * 0.99 + "px" // 1% spare: no break on a rounding
+		t.style.whiteSpace = ""
+	}
 	const words = (page, i) => {
 		const p = PROJECTS[i]
 		$(".pv-no", page).textContent = `${pad(i + 1)} / ${pad(N)}`
 		$(".pv-title", page).textContent = p.title
+		fitTitle($(".pv-title", page))
 		$(".pv-line", page).textContent = p.line
 		$(".pv-credits", page).innerHTML = credits(p)
 	}

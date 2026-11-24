@@ -75,6 +75,8 @@ body {
 }
 
 h1, h2 { font-family: var(--font-black); font-variation-settings: var(--fvs-black); text-transform: uppercase; font-weight: normal; color: var(--white); }
+/* read by screen readers and Google, not shown: the page heading where the page has no visible title (21.11.2026) */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; text-transform: none; }
 a { color: var(--white); transition: all 400ms var(--ease-out-cubic); }
 
 /* TYPE SCALE (original names) =============================================================== */
@@ -88,7 +90,7 @@ a { color: var(--white); transition: all 400ms var(--ease-out-cubic); }
 
 /* GRID ====================================================================================== */
 .op-xl-6 { width: 24.9996vw; }
-.op-xl-10 { width: 41.666vw; }
+.op-xl-10 { width: calc(var(--vw, 1vw) * 41.666); }
 .op-xl-22 { width: 91.6652vw; }
 .op-xl-os-16 { margin-left: 66.6656vw; }
 @media only screen and (max-width: 1024px) {
@@ -107,6 +109,14 @@ a { color: var(--white); transition: all 400ms var(--ease-out-cubic); }
 /* LOGO ====================================================================================== */
 /* logo and menu grow from their phone size at 768 to their full size at 1024, so nothing jumps where the layout changes */
 :root {
+	/* WIDE WINDOWS (user 24.11.2026): the composition stops growing at 1920 and stands in the middle of the window; only
+	   full-screen photographs fill the window (Home's photographers, Contact's film, the Manifesto's kept frame, the profile's
+	   backdrop). --pw is the composition's width, --vw one hundredth of it (use it where a size followed the window's width),
+	   --side the empty band on each side: js/site.js sets it from the page's real width (without the scrollbar) */
+	--page-max: 1920px;
+	--pw: min(100vw, var(--page-max));
+	--vw: calc(var(--pw) / 100);
+	--side: max(0px, (100vw - var(--page-max)) / 2);
 	/* the same values as css/tokens.css (Figma names); here too because index.html loads only this file */
 	--header-inset: clamp(1rem, calc(6.25vw - 2rem), 2rem);
 	--size-menu-w: clamp(5rem, calc(6.25vw + 2rem), 6rem);
@@ -116,7 +126,7 @@ a { color: var(--white); transition: all 400ms var(--ease-out-cubic); }
 	z-index: 100;
 	position: fixed;
 	top: clamp(1.875rem, calc(0.78vw + 1.5rem), 2rem);
-	left: var(--header-inset);
+	left: calc(var(--header-inset) + var(--side));
 	height: 1.75rem;
 	display: flex;
 	align-items: center;
@@ -124,7 +134,7 @@ a { color: var(--white); transition: all 400ms var(--ease-out-cubic); }
 	font-weight: 800;
 	font-stretch: 112%;
 	font-variation-settings: "wdth" 112, "wght" 800;
-	font-size: clamp(1rem, 1.389vw, 1.75rem);
+	font-size: clamp(1rem, calc(var(--vw) * 1.389), 1.75rem);
 	line-height: 1;
 	letter-spacing: 0.05em;
 	white-space: nowrap;
@@ -150,7 +160,7 @@ a { color: var(--white); transition: all 400ms var(--ease-out-cubic); }
 	background-color: var(--panel);
 	position: fixed;
 	top: var(--header-inset);
-	right: var(--header-inset);
+	right: calc(var(--header-inset) + var(--side));
 	height: var(--size-menu-h);
 	width: var(--size-menu-w);
 	z-index: 100;
@@ -161,7 +171,7 @@ a { color: var(--white); transition: all 400ms var(--ease-out-cubic); }
 	cursor: pointer;
 	position: fixed;
 	top: var(--header-inset);
-	right: var(--header-inset);
+	right: calc(var(--header-inset) + var(--side));
 	height: var(--size-menu-h);
 	width: var(--size-menu-w);
 	z-index: 110;
@@ -209,8 +219,8 @@ a { color: var(--white); transition: all 400ms var(--ease-out-cubic); }
 	z-index: 105;
 	position: fixed;
 	top: 0;
-	right: 0;
-	padding: 10rem 4.444vw 4.444vw;
+	right: var(--side);
+	padding: 10rem calc(var(--vw) * 4.444) calc(var(--vw) * 4.444);
 	pointer-events: none;
 	height: 100vh;
 	display: flex;
@@ -223,7 +233,7 @@ a { color: var(--white); transition: all 400ms var(--ease-out-cubic); }
 	font-family: var(--font-black);
 	font-variation-settings: var(--fvs-black);
 	/* one rule at every window: width sets it, it rests at 100px between phone and desktop, and four links always fit the height */
-	font-size: calc(clamp(40px, min(18vw, max(100px, 9.7222vw), calc((100svh - 14rem) / 3.55)), 180px) * var(--nav-scale) * var(--nav-fit));
+	font-size: calc(clamp(40px, min(calc(var(--vw) * 18), max(100px, calc(var(--vw) * 9.7222)), calc((100svh - 14rem) / 3.55)), 180px) * var(--nav-scale) * var(--nav-fit));
 	text-transform: uppercase;
 	line-height: var(--nav-lh);
 	opacity: 0;

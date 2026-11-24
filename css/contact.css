@@ -15,7 +15,7 @@
 	font-variation-settings: var(--fvs-black);
 	font-weight: normal;
 	text-transform: uppercase;
-	line-height: 0.82;
+	line-height: var(--lh-display); /* 85% like Write and every display word but the Black cut (user 21.11.2026; was 0.82) */
 }
 
 .film-pin { position: relative; height: 100vh; height: 100svh; overflow: hidden; background: var(--film); }
@@ -24,7 +24,7 @@
 /* contrast: labels and subtitles must read on snow and sky too — a deeper shade top and bottom, full
    white type with a soft shadow, and a darker subtitle box */
 .film-shot::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, var(--film-fade-top), transparent 32%, transparent 52%, var(--film-fade-bottom)); }
-.film-top { position: absolute; z-index: 3; top: var(--space-7); left: var(--gutter); right: var(--gutter); display: flex; justify-content: space-between; gap: var(--space-5); }
+.film-top { position: absolute; z-index: 3; top: var(--space-7); left: calc(var(--gutter) + var(--side)); right: calc(var(--gutter) + var(--side)); /* the film fills the window, its labels keep to the composition (1920, user 24.11.2026) */ display: flex; justify-content: space-between; gap: var(--space-5); }
 .film-top .caps { color: var(--white); font-variant-numeric: tabular-nums; text-shadow: 0 1px 0.75rem rgba(0, 0, 0, 0.6); }
 /* 128 from the bottom at 1440 × 900 and 375 × 812 (scale, card 19, user 19.11.2026; was 13vh / 15vh = 117 / 121.8); low windows
    keep 16% of their height, so the line never climbs to the middle of a phone held sideways */
@@ -45,7 +45,7 @@
 /* "Chapter IV" follows the word: 20 beside a 144 word at 1440, down to the chapters' 12 when the word shrinks (phones: 48),
    so the label never outgrows it (user 19.11.2026) */
 .film-end .caps { color: var(--accent); font-size: clamp(var(--fs-label), calc(var(--fs-display-144-compact) * 20 / 144), 1.25rem); }
-.film-pin .film-end h3 {
+.film-pin .film-end h2 {
 	margin: 0;
 	font-family: var(--font-bold);
 	font-variation-settings: var(--fvs-bold);
@@ -53,7 +53,7 @@
 	line-height: var(--lh-display);
 	letter-spacing: 0;
 }
-.film-end .mail { margin-top: var(--space-4); font-size: var(--fs-text-32); font-weight: 500; line-height: var(--lh-text); border-bottom: 1px solid currentColor; } /* H6/Napis, as the subtitles */
+.film-end .mail { margin-top: var(--space-4); font-size: var(--fs-text-32); font-weight: 500; line-height: var(--lh-text); border-bottom: 1px solid currentColor; } /* Figma Text/32 Subtitle, as the subtitles */
 .film-end .mail:hover { color: var(--accent); }
 
 /* A — chapters: title cards between the shots */

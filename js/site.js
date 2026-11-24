@@ -9,6 +9,12 @@ const customEase = CustomEase.create("custom", "M0,0 C0.25,0 0.288,-0.004 0.404,
 const isMobile = () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || matchMedia("(hover: none) and (pointer: coarse)").matches
 const isDesktop = () => !isMobile() && window.innerWidth > 1024
 const isSmall = () => window.innerWidth <= 768
+// WIDE WINDOWS (user 24.11.2026): the composition stops growing at 1920 and stands in the middle of the window (css/style.css
+// --page-max). pageW() is the composition's width: use it wherever a size or a place followed the window's width. Full-screen
+// photographs still fill the window. pageSide() is the empty band on each side (the page without its scrollbar)
+const PAGE_MAX = 1920
+const pageW = () => Math.min(window.innerWidth, PAGE_MAX)
+const pageSide = () => Math.max(0, (document.documentElement.clientWidth - PAGE_MAX) / 2)
 const pad = n => String(n).padStart(2, "0")
 const $ = (s, el = document) => el.querySelector(s)
 const $$ = (s, el = document) => [...el.querySelectorAll(s)]
@@ -36,8 +42,9 @@ function unitFor(W, H) {
 }
 let sizeUnit = 1
 function setUnit() {
-	sizeUnit = unitFor(window.innerWidth, window.innerHeight)
+	sizeUnit = unitFor(pageW(), window.innerHeight)
 	document.documentElement.style.setProperty("--u", sizeUnit + "px")
+	document.documentElement.style.setProperty("--side", pageSide() + "px")
 }
 setUnit()
 
@@ -148,7 +155,7 @@ function fitWidth(el, width, basePx = 100) {
 const u = () => sizeUnit // one Figma pixel of the reference frame (SIZE UNIT, top of this file)
 // the width between the page margins (--gutter in css/home.css, the same formula)
 const measure = () => {
-	const W = window.innerWidth, margin = Math.min(32, Math.max(16, W / 45))
+	const W = pageW(), margin = Math.min(32, Math.max(16, W / 45))
 	return W - 2 * Math.max(margin, Math.min(W * 64 / 1440, W * 0.07 - 36.8))
 }
 
@@ -250,7 +257,7 @@ function fitAll() {
 	} else {
 		// the word fills the row beside the disc; the gap opens from the phone's 12 at 768 to 72 at 1440, where the word is 1080 wide
 		disc.style.width = ""
-		fitWidth(cta, measure() - disc.offsetWidth - Math.min(72 * u(), 12 + (window.innerWidth - 768) * 60 / 672))
+		fitWidth(cta, measure() - disc.offsetWidth - Math.min(72 * u(), 12 + (pageW() - 768) * 60 / 672))
 	}
 	$(".cta span:nth-of-type(2)").style.fontSize = cta.style.fontSize
 }
@@ -513,7 +520,7 @@ function menu(signal) {
 	const tl = gsap.timeline({ paused: true }), desktop = isDesktop()
 	tl.to(overlay, { opacity: 0.6, pointerEvents: "auto", duration: 1, ease: customEase })
 	tl.to(icon, { scale: desktop ? 1.3 : 1, rotate: 90, duration: 1, ease: customEase }, "<")
-	tl.to(navBg, { width: desktop ? navigation.offsetWidth : window.innerWidth, height: navigation.offsetHeight, top: 0, right: 0, borderRadius: 0, duration: 1, ease: customEase }, "<")
+	tl.to(navBg, { width: desktop ? navigation.offsetWidth : window.innerWidth, height: navigation.offsetHeight, top: 0, right: desktop ? pageSide() : 0, borderRadius: 0, duration: 1, ease: customEase }, "<")
 	if (!desktop) tl.to(label, { y: "0%", duration: 1, ease: customEase }, "<")
 	tl.to(links, { yPercent: 0, opacity: 1, duration: 0.35, stagger: { amount: 0.1 }, ease: customEase }, "-=.45")
 

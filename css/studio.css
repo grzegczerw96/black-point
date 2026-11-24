@@ -12,6 +12,9 @@
 }
 .st .caps { font-size: var(--fs-label); line-height: 1.5; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
 .st .display { font-family: var(--font-black); font-variation-settings: var(--fvs-black); font-weight: normal; text-transform: uppercase; line-height: 0.82; color: var(--white); }
+/* the section labels are h2 and the steps and values h3, for screen readers and Google (21.11.2026); they look exactly like the
+   spans they were: no heading look of their own, and any class rule wins over this one */
+:where(.st) :is(h2, h3) { display: inline; margin: 0; font: inherit; font-variation-settings: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
 .st-pin { position: relative; height: 100vh; height: 100svh; overflow: hidden; } /* svh: the whole scene shows with the address bar in view (13.11.2026) */
 
 /* 01 THE OPENING — a dark sheet with a white word, multiplied over the photo: the word is a hole.
@@ -52,18 +55,19 @@
    --mf-gap, the rest above and below. Wide windows: it fills (as space-between), never more than 256; tall ones: 96 → 48
    from the scale, the group in the middle as before. Never under 24 → 48 (a line of text; was 8 → 32, 14 at 844 × 390) */
 .mf-in {
-	--mf-gap: max(clamp(3rem, calc(var(--u) * 96), 6rem), min(calc((100vw - 100vh) / 2), var(--space-13)));
-	position: absolute; inset: 0; z-index: 3; padding-inline: var(--gutter);
+	--mf-gap: max(clamp(3rem, calc(var(--u) * 96), 6rem), min(calc((var(--pw) - 100vh) / 2), var(--space-13)));
+	/* the Manifesto keeps the window's width for its kept frame; the sentence and the strip stay in the composition (1920, 24.11.2026) */
+	position: absolute; inset: 0 var(--side); z-index: 3; padding-inline: var(--gutter);
 	display: grid; grid-template-columns: minmax(0, 1fr);
 	grid-template-rows: minmax(var(--st-label-top), 1fr) auto minmax(clamp(var(--space-5), calc(var(--u) * 48), var(--space-7)), var(--mf-gap)) auto minmax(max(1rem, calc(var(--u-width) * 64)), 1fr);
 }
 .mf-head { grid-row: 2; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
-.mf-text { margin: 0; color: var(--white); font-family: "Instrument Serif", serif; font-size: max(2rem, min(calc(var(--u) * 96), 10.67vh, 9vw)); line-height: 1.08; text-wrap: pretty; }
+.mf-text { margin: 0; color: var(--white); font-family: "Instrument Serif", serif; font-size: max(2rem, min(calc(var(--u) * 96), 10.67vh, calc(var(--vw) * 9))); line-height: 1.08; text-wrap: pretty; }
 .mf-text span { opacity: 0.16; }
 .mf-strip { grid-row: 4; container-type: inline-size; }
 /* one row: as many frames as fit at the desktop's size, the rest are cut (js/studio.js keeps the kept frame among them) */
 .mf-frames { display: grid; grid-template-columns: repeat(auto-fit, minmax(2rem, 1fr)); grid-template-rows: auto; grid-auto-rows: 0; column-gap: clamp(0.125rem, calc(var(--u) * 4), 0.25rem); overflow: hidden; margin-top: clamp(0.5rem, calc(var(--u) * 12), 0.75rem); }
-.mf-frames img { display: block; width: 100%; height: auto; aspect-ratio: 33 / 96; max-height: max(1.5rem, calc(25vh - 4.5rem), min(calc((100vw - 100vh) * 0.14), 13vh)); object-fit: cover; will-change: opacity; }
+.mf-frames img { display: block; width: 100%; height: auto; aspect-ratio: 33 / 96; max-height: max(1.5rem, calc(25vh - 4.5rem), min(calc((var(--pw) - 100vh) * 0.14), 13vh)); object-fit: cover; will-change: opacity; }
 /* when not all 36 show, the last one fades out: the strip goes on */
 @container (max-width: 81rem) {
 	.mf-frames { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 3rem), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 3rem), transparent); }
@@ -76,7 +80,7 @@
 /* the label and the words: one group in the middle, the label 12 above the words (js/studio.js fitValues() sets --val-head
    = label + 12 and --vd-h = the words' height; user 21.11.2026) */
 .val-label { position: absolute; z-index: 3; left: var(--gutter); top: calc(50% - (var(--val-head, 30px) + var(--vd-h, 0px)) / 2); }
-.vd-text { position: absolute; z-index: 2; left: var(--gutter); right: var(--gutter); top: calc(50% + var(--val-head, 30px) / 2); display: grid; font-size: 6rem; transform: translateY(-50%); font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); line-height: var(--lh-display); letter-spacing: -0.008em; font-weight: normal; text-transform: uppercase; color: var(--white); }
+.vd-text { position: absolute; z-index: 2; left: var(--gutter); right: var(--gutter); top: calc(50% + var(--val-head, 30px) / 2); display: grid; font-size: 6rem; transform: translateY(-50%); font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); line-height: var(--lh-display); letter-spacing: 0; /* like the chapter words in the same cut (user 21.11.2026; was -0.008em) */ font-weight: normal; text-transform: uppercase; color: var(--white); }
 .vd-row { display: flex; align-items: baseline; /* the picture sits on the letters' baseline (user 18.11.2026; was centred in the row) */ gap: max(0.75rem, calc(0.75rem + var(--ku) * 12)); white-space: nowrap; } /* word → picture → word 12 → 24 (scale, card 12, user 18.11.2026; was 0.17em = 13.08 / 24.48); fitValues() reads it */
 .vd-word { opacity: 0.2; will-change: opacity; }
 .vd-pic { display: block; flex: none; width: 0; height: 0.68em; height: 1cap; /* as tall as the capitals, from their top to the baseline, at every window (user 18.11.2026; was 0.74em, centred) */ overflow: hidden; border-radius: 6px; will-change: width; }
@@ -93,7 +97,7 @@
 .cc-view { position: relative; flex: 1 1 0; min-height: 0; overflow: hidden; container-type: inline-size; -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); }
 .cc-roll { position: absolute; top: 0; left: 0; right: 0; will-change: transform; }
 .cc-row { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 1.5rem; padding: 0.75rem 0; color: rgba(255, 255, 255, 0.2); transition: color 0.35s; }
-.cc-row b { font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); font-weight: normal; text-transform: uppercase; font-size: clamp(2.5rem, calc(var(--u) * 48), 3.5rem); line-height: var(--lh-display); /* H5 like the Team names: 48 at 1440, 40 on phones (was 32, 16.11.2026) */ }
+.cc-row b { font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); font-weight: normal; text-transform: uppercase; font-size: clamp(2.5rem, calc(var(--u) * 48), 3.5rem); line-height: var(--lh-display); /* Figma Display/48 Name like the Team names: 48 at 1440, 40 on phones (was 32, 16.11.2026) */ }
 .cc-row span { font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; }
 .cc-row span:nth-child(2) { display: none; }
 .cc-row span:last-child { text-align: right; }

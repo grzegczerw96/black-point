@@ -29,10 +29,10 @@ boot({
 	render() {
 		$(".c-story .film-pin").innerHTML = `
 			${STORY.map((s, i) => `<div class="film-shot"><img data-pic="${IMG(s.img)}"${i ? "" : ' fetchpriority="high"'} style="object-position:${s.pos}" alt=""></div>`).join("")}
-			${CHAPTERS.map(c => `<div class="ka-card"><span class="caps">Chapter ${c.no}</span><span class="display">${c.word}</span></div>`).join("")}
+			${CHAPTERS.map(c => `<div class="ka-card"><span class="caps">Chapter ${c.no}</span><h2 class="display">${c.word}</h2></div>`).join("")}
 			<div class="film-top"><span class="caps">Black Point — how we work</span><span class="caps film-no"></span></div>
 			<p class="film-sub"></p>
-			<div class="film-end"><span class="caps">Chapter IV</span><h3 class="display">Write</h3><a class="mail" href="mailto:studio@blackpoint.studio">studio@blackpoint.studio</a></div>`
+			<div class="film-end"><span class="caps">Chapter IV</span><h2 class="display">Write</h2><a class="mail" href="mailto:studio@blackpoint.studio">studio@blackpoint.studio</a></div>`
 	},
 	init: film
 })

@@ -57,7 +57,7 @@ const settle = units => ({
 // How we work, by the window's shape (test 2): low or very wide windows put the list beside the picture, tall and
 // square ones put the picture across the measure, the rest the picture with its indent and the text beside it
 const hwMode = () => {
-	const W = window.innerWidth, H = window.innerHeight, ratio = W / H
+	const W = pageW(), H = window.innerHeight, ratio = W / H // the composition's shape (1920 at most)
 	return ratio >= 1.9 || (H < 700 && (W >= 600 || ratio >= 1.1)) ? "side" : ratio < 1.1 ? "column" : "indent"
 }
 const PIC_WIDTH = 1.3 // em
@@ -70,7 +70,7 @@ const VALUE_ROWS = [[[0, 3], [3, 5]], [[0, 1], [1, 3], [3, 5]], [[0, 1], [1, 2],
 function fitValues() {
 	const box = $(".vd-text"), root = $(".st-val")
 	if (!box) return
-	const W = window.innerWidth, H = window.innerHeight, base = 100
+	const W = pageW(), H = window.innerHeight, base = 100
 	box.style.fontSize = base + "px"
 	const words = $$(".vd-word", box), pics = $$(".vd-pic", box), widths = words.map(w => w.getBoundingClientRect().width)
 	// the gap between word and picture is a fixed length from the scale (12 → 24, css), so only the words and pictures scale
@@ -103,7 +103,7 @@ function fitValues() {
 function fitOpening() {
 	const hero = $(".st-hero"), word = $(".ha-word", hero), lead = $(".h-lead", hero)
 	if (!word) return
-	const W = window.innerWidth, H = window.innerHeight, GAP = 16, menu = $("#hamburger").getBoundingClientRect(), logo = $("#logo")
+	const W = pageW(), H = window.innerHeight, GAP = 16, menu = $("#hamburger").getBoundingClientRect(), logo = $("#logo")
 	// the letters themselves, not their line, must stay clear of the menu and the lead: their height and their place in
 	// the line, from the font (at 100px)
 	const pen = document.createElement("canvas").getContext("2d"), style = getComputedStyle(word)
@@ -118,7 +118,7 @@ function fitOpening() {
 		hero.style.setProperty("--ha-left", (W - w) / 2 + "px")
 		const room = H - lead.offsetHeight - parseFloat(getComputedStyle(lead).bottom) - GAP
 		const across = Math.min(measure(), (room - menu.bottom - GAP) * ratio)
-		const between = Math.min(W - 2 * (logo.offsetLeft + logo.offsetWidth + 48), (room - menu.top - GAP) * ratio)
+		const between = Math.min(W - 2 * (logo.offsetLeft - pageSide() + logo.offsetWidth + 48), (room - menu.top - GAP) * ratio)
 		w = Math.max(across, between)
 		fitWidth(word, w)
 		// the line in the middle of the screen, as long as its letters stay under the menu's top and above the lead
@@ -139,24 +139,24 @@ boot({
 			<div class="ha-mask"><h1 class="ha-word display" style="visibility: hidden">Studio</h1></div>
 			<p class="h-lead" style="opacity: 0">Twelve photographers. Two cities. <span>One way of looking.</span></p>
 		</div>`
-		$(".st-how").innerHTML = `<div class="st-pin hw" data-mode="${hwMode()}"><span class="caps hw-label">How we work</span>${STEPS.map((s, i) => `
+		$(".st-how").innerHTML = `<div class="st-pin hw" data-mode="${hwMode()}"><h2 class="caps hw-label">How we work</h2>${STEPS.map((s, i) => `
 			<div class="hw-row">
-				<div class="hw-word"><b>${pad(i + 1)}</b><b>${s.word}</b></div>
+				<h3 class="hw-word"><b>${pad(i + 1)}</b> <b>${s.word}</b></h3>
 				<div class="hw-body"><figure><img data-pic="${s.img}" loading="lazy" alt=""></figure><p>${s.text}</p></div>
 			</div>`).join("")}</div>`
 		$(".st-mf").innerHTML = `<div class="st-pin">
 			<div class="mf-in">
-				<div class="mf-head"><span class="caps mf-label">Manifesto</span><p class="mf-text">${SENTENCE.split(" ").map(w => `<span>${w}</span>`).join(" ")}</p></div>
+				<div class="mf-head"><h2 class="caps mf-label">Manifesto</h2><p class="mf-text">${SENTENCE.split(" ").map(w => `<span>${w}</span>`).join(" ")}</p></div>
 				<div class="mf-strip"><span class="caps mf-count">36 frames</span><div class="mf-frames">${CONTACT_SHEET.map(src => `<img data-pic="${src}" alt="" loading="lazy">`).join("")}</div></div>
 			</div>
 			<div class="mf-kept"><img data-pic="${CONTACT_SHEET[KEPT]}" loading="lazy" alt=""></div>
 		</div>`
 		$(".st-val").innerHTML = `<div class="st-pin">
-			<span class="caps val-label">Our values</span>
-			<div class="vd-text"><div class="vd-row">${VALUES.map(v => `<span class="vd-word">${v.word}</span><span class="vd-pic"><img data-pic="${v.img}" loading="lazy" alt=""></span>`).join("")}</div></div>
+			<h2 class="caps val-label">Our values</h2>
+			<div class="vd-text"><div class="vd-row">${VALUES.map(v => `<h3 class="vd-word">${v.word}</h3><span class="vd-pic"><img data-pic="${v.img}" loading="lazy" alt=""></span>`).join("")}</div></div>
 			<p class="vd-desc"></p>
 		</div>`
-		$(".st-cc").innerHTML = `<div class="cc-pin">
+		$(".st-cc").innerHTML = `<div class="cc-pin"><h2 class="sr-only">Clients</h2>
 			<div class="cc-in">
 				<div class="cc-count"><span class="cc-num display">01</span><span class="caps">/ ${CLIENTS.length} brands since ${CLIENTS[0].from}</span></div>
 				<div class="cc-view"><div class="cc-roll">${CLIENTS.map(c => `<div class="cc-row"><b>${c.name}</b><span>${[...new Set(c.people)].join(", ")}</span><span>${c.from === c.to ? c.from : c.from + "–" + String(c.to).slice(2)}</span></div>`).join("")}</div></div>

@@ -36,7 +36,7 @@ function widestAt100(el) {
 
 // SIZES THAT ARE FITTED, NOT TAKEN FROM THE SCALE ////////////////////////////////////////////////////////////////
 function fitProfile() {
-	const W = innerWidth, H = innerHeight, top = menuBottom()
+	const W = pageW(), H = innerHeight, top = menuBottom()
 	// the name: 288 at 1440 × 900 (the size unit), 26% of the width on phones; never wider than the page margins allow,
 	// and its two lines never fill more than 62% of the room below the menu, so the card keeps its place above it
 	const name = $(".pf-name")
@@ -69,11 +69,10 @@ function renderProfile() {
 		cover = imageFor(theme, pr.name), phone = pfMode() === "phone"
 	// the sections stay through a rebuild: take #work out of the spacer its pin left around it, with the pin's inline styles
 	$$("#smooth-content > .pin-spacer").forEach(sp => { const kid = sp.firstElementChild; kid.style.cssText = ""; sp.replaceWith(kid) })
-	document.title = `${pr.name} - Black Point`
+	document.title = `${pr.name}, photographer - Black Point`
 	contentTag.dataset.mode = pfMode()
 	$(".pf-backdrop").innerHTML = `<img data-pic="${cover}"${photoPos(theme, cover)} alt="">`
 	$("#hero").innerHTML = `
-			<a href="${p.backHref}" class="pf-back pf-small pf-intro">&larr; ${p.back}</a>
 			<div class="pf-card"><figure><img data-pic="${cover}" fetchpriority="high" alt="${pr.name}"></figure></div>
 			<h1 class="hero-split chars pf-name">${words[0]}<br>${words.slice(1).join(" ")}</h1>`
 	// on a phone About opens with the photographer's portrait, as on Team (stock pictures for now, img/portraits/CREDITS.md)
@@ -125,11 +124,13 @@ function renderProfile() {
 const titleCaseBrand = () => theme.brand.toLowerCase().replace(/(^|\s)\S/g, m => m.toUpperCase())
 
 // THE PHONE HERO (chosen by the user 12.11.2026 in Figma, "Hero B"): a larger card and the name as one group in the middle
-// of the room under "← Home"; the first line of the name lies on the foot of the card, in front of it
+// of the room under the menu (the "← Home" link above it was removed, user 24.11.2026); the first line of the name lies on
+// the foot of the card, in front of it
 function phoneHero() {
-	const back = $(".pf-back"), card = $(".pf-card"), name = $(".pf-name"), W = innerWidth
+	const card = $(".pf-card"), name = $(".pf-name"), W = innerWidth
 	const gap = Math.max(16, 32 * u()) // --gap-tight
-	const top = back.offsetTop + back.offsetHeight + gap, room = $("#hero").offsetHeight - top
+	const menu = $("#hamburger").getBoundingClientRect().bottom
+	const top = menu + gap, room = $("#hero").offsetHeight - top
 	const nameH = name.offsetHeight, over = name.querySelector(".line").offsetHeight // the first line
 	const w = Math.min(0.8 * W, 300, (room - 2 * gap - (nameH - over)) * 0.75), h = w * 4 / 3
 	const y = top + (room - (h + nameH - over)) / 2
@@ -146,6 +147,8 @@ function hero(split, fresh) {
 	gsap.to(img, { opacity: 0.4, filter: "blur(0px)", duration: dur(1.2), ease: "power2" })
 
 	const name = split(".pf-name", { type: "lines, chars", linesClass: "line", charsClass: "char" })
+	// the split names the heading from its text, where the line break leaves no space ("RexCalloway"): name it line by line
+	$(".pf-name").setAttribute("aria-label", name.lines.map(l => l.textContent.trim()).join(" "))
 	// split letters lose their kerning, so the name grows a little: fit it again to the page margins
 	const span = l => { const c = $$(".char", l); return c.length ? c[c.length - 1].getBoundingClientRect().right - c[0].getBoundingClientRect().left : 0 }
 	const wide = Math.max(...name.lines.map(span))
@@ -153,21 +156,18 @@ function hero(split, fresh) {
 	if (pfMode() === "phone") phoneHero()
 	gsap.set(name.chars, { transformOrigin: "top left", y: "-30%", scaleY: 0 })
 	gsap.set(".pf-card figure", { rotate: -15, scale: 0.8, opacity: 0 })
-	gsap.set(".pf-intro", { opacity: 0 })
 	if (smoother && fresh) smoother.paused(true) // the visitor waits for the entrance, as before
 
 	const tl = gsap.timeline()
 	tl.to(name.chars, { duration: dur(1.5), stagger: { amount: dur(0.2) }, scaleY: 1, y: 0, ease: customEase })
 	tl.to(".pf-card figure", { rotate: turned, scale: 1, opacity: 1, duration: dur(1), ease: "power4" }, "-=" + dur(0.8))
-	tl.to(".pf-intro", {
-		opacity: 1, duration: dur(0.75), stagger: { amount: dur(0.2) }, ease: "power4",
-		onComplete: () => {
-			if (smoother) smoother.paused(false)
-			// the card tilts the other way as the hero scrolls out; it does not drift, or the hero's edge would cut it
-			gsap.to(".pf-card figure", { rotate: 10, ease: "none", scrollTrigger: { trigger: "#hero", start: "top top", end: "bottom top", scrub: true } })
-			gsap.fromTo(img, { opacity: 0.4 }, { opacity: 0.1, ease: "none", immediateRender: false, scrollTrigger: { trigger: "#bio", start: "top bottom", end: "top 30%", scrub: true } })
-		}
-	}, "-=" + dur(1))
+	// the same moment the "← Home" link used to finish fading in (removed 24.11.2026)
+	tl.call(() => {
+		if (smoother) smoother.paused(false)
+		// the card tilts the other way as the hero scrolls out; it does not drift, or the hero's edge would cut it
+		gsap.to(".pf-card figure", { rotate: 10, ease: "none", scrollTrigger: { trigger: "#hero", start: "top top", end: "bottom top", scrub: true } })
+		gsap.fromTo(img, { opacity: 0.4 }, { opacity: 0.1, ease: "none", immediateRender: false, scrollTrigger: { trigger: "#bio", start: "top bottom", end: "top 30%", scrub: true } })
+	}, null, "-=" + dur(0.25))
 }
 
 // scroll-in text: chars rise from a squashed baseline, lines slide up; small things fade in

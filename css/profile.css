@@ -13,10 +13,10 @@
 	z-index: 1;
 	/* the bottom of the menu: what stands still on the page stands below it (js/profile.js reads the same, menuBottom()) */
 	--pf-top: calc(var(--header-inset) + var(--size-menu-h));
-	/* small type: one size with the smallest type since 16.11.2026 (Figma Etykieta/14): 14 at 1440, 12 on phones (was 14) */
+	/* small type: one size with the smallest type since 16.11.2026 */
 	--pf-small: var(--pf-tiny);
-	/* the smallest type: 14 at 1440, 12 on phones (captions, the footer) */
-	--pf-tiny: clamp(0.75rem, calc(var(--u) * 14), 1.25rem);
+	/* the smallest type (labels, captions, the footer): Figma Label/12 like every other page (user 21.11.2026; was 14 at 1440) */
+	--pf-tiny: var(--fs-label);
 }
 .pf section { position: relative; }
 .pf .pf-small { font-size: var(--pf-small); line-height: 1.5; text-transform: uppercase; }
@@ -29,8 +29,6 @@
 /* 01 HERO — the card stands in the middle of the room below the menu, the name at the foot, under the card ============ */
 .pf-hero { height: 100vh; height: 100svh; overflow: hidden; }
 .pf[data-mode="phone"] .pf-hero { min-height: 35rem; }
-.pf-back { position: absolute; top: max(5.5rem, calc(var(--u-width) * 96)); left: var(--margin); z-index: 3; }
-.pf-back:hover { color: var(--accent); }
 /* the card: 360 at 1440 × 900, 62% of the width on phones, never taller than the room between the menu and its mirror
    below, so the tilted card is always whole */
 .pf-card {

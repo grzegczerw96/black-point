@@ -55,11 +55,12 @@
 	--radius-full: 999px;
 
 	/* GRID */
-	--u: calc(100vw / 1440);      /* one Figma pixel; js/site.js replaces it with the size unit (this is only its first value) */
-	--u-width: calc(100vw / 1440);                                                /* one Figma pixel of the width: the grid only */
+	--u: calc(var(--pw) / 1440);  /* one Figma pixel; js/site.js replaces it with the size unit (this is only its first value) */
+	/* one Figma pixel of the width: the grid only. The width is the composition's (--pw, css/style.css): it stops at 1920 */
+	--u-width: calc(var(--pw) / 1440);
 	--margin: clamp(1rem, calc(var(--u-width) * 32), 2rem);                       /* layout/margin: 16 → 32 */
 	/* layout/col: the margin up to 768, then it opens evenly to one grid column at 1440 and follows the column from there */
-	--gutter: max(var(--margin), min(calc(var(--u-width) * 64), calc(7vw - 2.3rem)));  /* 16 → 64 */
+	--gutter: max(var(--margin), min(calc(var(--u-width) * 64), calc(var(--vw) * 7 - 2.3rem)));  /* 16 → 64 */
 
 	/* LOGO AND MENU — they grow from their phone size at 768 to their full size at 1024 */
 	--header-inset: clamp(1rem, calc(6.25vw - 2rem), 2rem);                       /* layout/header-inset: 16 → 32 */
@@ -87,11 +88,11 @@
 	   calc(A + var(--ku) * (B - A)) gives A at 375 × 812 and B at 1440 × 900 (size unit), --kw does the same with the width
 	   alone (grid). A plain calc(var(--u) * B) lands off the scale at 375 (48 → 12.5, 32 → 8.33). */
 	--ku: calc((var(--u) - 0.2604167px) / 0.7395833);                             /* 0 at 375, 1px at 1440 */
-	--kw: calc((100vw - 375px) / 1065);                                           /* the same along the width */
+	--kw: calc((var(--pw) - 375px) / 1065);                                       /* the same along the width (of the composition) */
 
 	/* DISPLAY — Display/144: meets the phone size (6rem) where the layout changes at 768 */
 	/* a city name on its half of the screen: at most 15vw, so on a tall tablet it never leaves its picture */
-	--fs-display-144: max(min(calc(var(--u) * 144), 15vw), 6rem);                /* font/display-144 */
+	--fs-display-144: max(min(calc(var(--u) * 144), calc(var(--vw) * 15)), 6rem); /* font/display-144 */
 
 	/* SECTIONS SHARED BY EVERY PAGE (Lisbon and Warsaw, Get in touch and the footer) */
 	--layout-top: max(8rem, calc(var(--u-width) * 160));                                /* layout/top: 128 → 160, room under the logo and menu */

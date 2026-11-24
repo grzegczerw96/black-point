@@ -13,6 +13,11 @@ body { min-height: 100%; font-family: var(--font-body); }
 #smooth-content.home { opacity: 0; }
 .home section,
 .home footer { position: relative; }
+/* WIDE WINDOWS (user 24.11.2026): every section is the composition, at most 1920 wide, in the middle of the window. The
+   full-screen scenes keep the window's width for their photographs and put their type in the composition (--side, the
+   empty band on each side): Home's opening (the photographers' photographs), Contact's film, the Manifesto (its kept frame) */
+#smooth-content.home section:not(#intro, #story, #manifesto),
+#smooth-content.home > footer { max-width: var(--page-max); margin-inline: auto; }
 .home .lbl,
 .home .label-caps {
 	font-size: var(--fs-label);
@@ -70,7 +75,7 @@ body { min-height: 100%; font-family: var(--font-body); }
 /* hero type: title top-left, "In mono." bottom-right, lead bottom-left (Figma y 150 / 680 / 682) */
 .hero-layer {
 	position: absolute;
-	inset: 0;
+	inset: 0 var(--side);
 	z-index: 1;
 	padding: 17.78vh var(--gutter) 10.1vh;
 	pointer-events: none;
@@ -106,7 +111,7 @@ body { min-height: 100%; font-family: var(--font-body); }
 .hero-layer[data-lead="off"] .hero-lead { display: none; }
 
 /* list: names from col 17 (Figma x 960), caption bottom-left (Figma y 640) */
-.team-layer { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.team-layer { position: absolute; inset: 0 var(--side); z-index: 3; pointer-events: none; }
 /* the same roster type and metrics as the listing page (style.css .directors), owned here so the
    listing's phone "cards" do not apply — on the home page the list stays a list at every width */
 /* One rule at every window: the side follows the window's shape (upright: left, landscape: on column 9), the list always
@@ -144,7 +149,7 @@ body { min-height: 100%; font-family: var(--font-body); }
 	   room on the screen allows. Floor 12 */
 	/* the list never ends lower than the caption's bottom line (a rule for this list only, user 17.11.2026): it starts at the list's
 	   top (clamp(7rem, 16svh, 8rem)), the caption ends 3rem above the window's bottom, and twelve rows are 12 × 0.91em = 10.92em */
-	font-size: max(0.75rem, min(5.2vw, calc(var(--u) * 64), calc((100svh - clamp(7rem, 16svh, 8rem) - 3rem) / 10.92), 5.5rem));
+	font-size: max(0.75rem, min(calc(var(--vw) * 5.2), calc(var(--u) * 64), calc((100svh - clamp(7rem, 16svh, 8rem) - 3rem) / 10.92), 5.5rem));
 	line-height: var(--roster-lh);
 	text-transform: uppercase;
 	white-space: nowrap;
@@ -177,7 +182,7 @@ body { min-height: 100%; font-family: var(--font-body); }
 .team-list .track {
 	position: absolute;
 	top: 0;
-	width: max(1.5rem, 2.55vw);
+	width: max(1.5rem, calc(var(--vw) * 2.55));
 	aspect-ratio: 1;
 	display: flex;
 	align-items: center;
