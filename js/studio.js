@@ -39,7 +39,8 @@ const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v))
 const lerp = (a, b, t) => a + (b - a) * t
 const smooth = t => t * t * (3 - 2 * t)
 // How the stepped scenes (How we work, Our values) follow the scroll, to compare (user 24.11.2026: "aggressive, it ends
-// fast and abruptly"): ?snap=a | b | c in the address, remembered for the tab like ?scroll=. a is the way it was.
+// fast and abruptly"): ?snap=a | b | c in the address, remembered for the tab like ?scroll=. a is the way it was; b is the
+// default since the user chose it (24.11.2026).
 //   edge: where the change starts in a stop's length (0.28: the change takes the middle 44 %, the rest is the shelf)
 //   lag: seconds the scene takes to catch up with the scroll, easing out (0: it follows the scroll exactly)
 //   pull: the snap that finishes a change the scroll stopped in
@@ -51,7 +52,7 @@ const FEELS = {
 const FEEL = FEELS[(() => {
 	let v = new URLSearchParams(location.search).get("snap")
 	try { if (v in FEELS) sessionStorage.setItem("bp-snap", v); else v = sessionStorage.getItem("bp-snap") } catch (e) {}
-	return v in FEELS ? v : "a"
+	return v in FEELS ? v : "b" // b chosen by the user 24.11.2026 (was a); a and c stay to compare
 })()]
 // Scroll progress to a scene's stops. Each stop is a shelf: it holds for most of the way and the change happens in the
 // middle, so the scene is nearly always at rest on a stop
@@ -369,7 +370,9 @@ function clients() {
 		probe.remove()
 		return y
 	}
-	const beside = () => getComputedStyle(box).display === "grid" // css/studio.css: the count beside the list
+	// switched off 24.11.2026 (user: the lit row stood now higher, now lower when the scroll stopped between two clients);
+	// the lit row is in the middle of the list again, as before. The count-line version stays here: remove "false &&"
+	const beside = () => false && getComputedStyle(box).display === "grid" // css/studio.css: the count beside the list
 	// the roll's y that puts a row in its place: beside the count its name stands on the number's baseline
 	const at = r => {
 		if (!beside()) return view.offsetHeight / 2 - mid(r)

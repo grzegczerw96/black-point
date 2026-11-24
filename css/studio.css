@@ -14,7 +14,8 @@
 .st .display { font-family: var(--font-black); font-variation-settings: var(--fvs-black); font-weight: normal; text-transform: uppercase; line-height: 0.82; color: var(--white); }
 /* the section labels are h2 and the steps and values h3, for screen readers and Google (21.11.2026); they look exactly like the
    spans they were: no heading look of their own, and any class rule wins over this one */
-:where(.st) :is(h2, h3) { display: inline; margin: 0; font: inherit; font-variation-settings: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
+/* only Studio's own sections: the shared Lisbon / Warsaw names are h2 too and keep their display type (fixed 24.11.2026) */
+:where(.st-hero, .st-how, .st-mf, .st-val, .st-cc) :is(h2, h3) { display: inline; margin: 0; font: inherit; font-variation-settings: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
 .st-pin { position: relative; height: 100vh; height: 100svh; overflow: hidden; } /* svh: the whole scene shows with the address bar in view (13.11.2026) */
 
 /* 01 THE OPENING — a dark sheet with a white word, multiplied over the photo: the word is a hole.
