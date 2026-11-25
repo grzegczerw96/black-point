@@ -140,6 +140,9 @@ a { color: var(--white); transition: all 400ms var(--ease-out-cubic); }
 	white-space: nowrap;
 	overflow: visible;
 }
+/* hidden until its type has come (js/site.js, 25.11.2026), so it never shows in the fallback type first */
+#logo { transition: opacity 0.3s var(--ease-out-cubic); }
+body:has(#smooth-content.home) #logo:not(.ready) { opacity: 0; } /* the pages built by js/site.js only (not the old index.html) */
 #logo i { font-style: normal; display: inline-block; }
 #logo i.space { width: 0.32em; }
 /* the first letter plays the original "O": on scroll it grows ×2 while the rest folds away */

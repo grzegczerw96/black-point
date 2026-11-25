@@ -136,6 +136,12 @@ function render() {
 	// logo: first letter plays the original "O"
 	$("#logo").innerHTML = [...theme.brand].map((c, i) => c === " " ? `<i class="space"></i>` : `<i${i === 0 ? ' class="letter-first"' : ""}>${c}</i>`).join("")
 	$("#logo").setAttribute("href", here === "home.html" ? "#top" : "home.html")
+	// the logo shows only in its own type (25.11.2026, the user's screen recording: on a first visit it came in the
+	// fallback type and changed to Archivo a moment later). Its type is not preloaded (13.11.2026, the first paint), so
+	// it waits for it here, at most 2 s; css/style.css fades it in
+	const logoIn = () => $("#logo").classList.add("ready")
+	if (document.fonts?.load) Promise.race([document.fonts.load('800 20px "Archivo"', theme.brand), new Promise(r => setTimeout(r, 2000))]).then(logoIn, logoIn)
+	else logoIn()
 	// nav: four big links, as in the original menu; the page you are on is dimmed
 	$("#navigation > div").innerHTML = NAV.map(([n, href], i) => `
 		<a data-pos="${i}" class="page-link f-140${href === here ? " active" : ""}" href="${href}" aria-label="${n}"><span>${n}</span><span aria-hidden="true">${n}</span></a>`).join("")

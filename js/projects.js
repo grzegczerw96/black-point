@@ -4,7 +4,10 @@
 
 // CONTENT /////////////////////////////////////////////////////////////////////////////////////////////////
 // one per photographer, in the order of the roster: their data live in js/themes.js
-const PROJECTS = theme.roster.map((who, i) => ({ ...theme.profile.projects[i], who, cover: imageFor(theme, who) }))
+// a project whose cover is not the photographer's photo elsewhere on the site (25.11.2026, the user): Common Ground needs a
+// wide photograph for the open project's 16:10 field; Home, the profile and Team keep Mila's upright photo
+const COVERS = { "Mila Petrović": "img/work/mila-petrovic-5.jpg" }
+const PROJECTS = theme.roster.map((who, i) => ({ ...theme.profile.projects[i], who, cover: COVERS[who] || imageFor(theme, who) }))
 const N = PROJECTS.length
 // the project's other pictures, skipping the one used as its cover
 const extras = (p, n) => Array.from({ length: 6 }, (_, k) => galleryImage(theme, p.who, k + 1)).filter(src => src !== p.cover).slice(0, n)
@@ -33,6 +36,14 @@ function changePage(out, inn, dir) {
 // THE WALL: prints in rows of different sizes, a caption under each. Upright prints hang no narrower than MIN_TILE,
 // which keeps the rows at the full width of the screen /////////////////////////////////////////////////////////
 const MIN_TILE = 1.33
+// a print that keeps another shape on the wall than its photograph's (25.11.2026): Mila Petrović's cover became a wide
+// photograph (mila-petrovic-5 for the upright -1, COVERS above; only on this page). Her print keeps the shape and place the upright one had,
+// 4:3 (MIN_TILE exactly, so the wall stays as it was), and shows the middle of the photograph
+const HANG = { "Mila Petrović": MIN_TILE }
+const hang = (i, asp) => HANG[PROJECTS[i].who] || Math.max(asp, MIN_TILE)
+// the layouts where the photograph has a field of its own, the same for every project (25.11.2026, the user): 16:10, the
+// photograph fills it (css/projects.css). Elsewhere the photograph keeps its whole shape in the room left for it
+const FIELD = ["desk", "low"]
 // the layout from the window's shape, as Studio's How we work: a low window (flat: a phone held sideways, below 500 px
 // of height), an upright tablet, a phone or a desktop. It sets the rows of the wall here and the project page in
 // css/projects.css (data-mode)
@@ -68,7 +79,7 @@ const ratio = i => picRatio(PROJECTS[i].cover)
 function thumbs() {
 	if (!PROJECTS.every((p, i) => ratio(i))) return PROJECTS.map(p => p.cover)
 	const vw = pageW(), vh = window.innerHeight
-	return placeTiles(vw, vh, PROJECTS.map((p, i) => Math.max(ratio(i), MIN_TILE))).map(({ R }, i) => {
+	return placeTiles(vw, vh, PROJECTS.map((p, i) => hang(i, ratio(i)))).map(({ R }, i) => {
 		const asp = ratio(i), w = asp > R.w / R.h ? R.h * asp : R.w // the whole photograph around the tile, as in layout()
 		return pic(PROJECTS[i].cover, w * density())
 	})
@@ -100,12 +111,21 @@ function pageHtml() {
 function wall(signal) {
 	const pin = $(".pj-pin"), sheet = $(".wl"), tiles = $$(".t"), boxes = $$(".t-box"), caps = $$(".t-cap"), imgs = $$(".t-box img"), layers = $$(".pv:not(.pv-probe)"), probe = $(".pv-probe"), x = $(".pv-x")
 	const cam = { s: 1, px: 0, py: 0, ox: 0, oy: 0 }, state = { others: 1, open: 0 }
-	let spots = [], insets = [], sizes = [], big = [], small = [], overview = {}, cur = null, busy = false, changing = false, front = 0, tl = null, ready = false
+	let spots = [], insets = [], ends = [], sizes = [], big = [], small = [], overview = {}, cur = null, busy = false, changing = false, front = 0, tl = null, ready = false
 	const aspect = i => ratio(i) || imgs[i].naturalWidth / imgs[i].naturalHeight || 1.6
 
 	const layout = () => {
-		const vw = pin.offsetWidth, vh = pin.offsetHeight, place = placeTiles(vw, vh, imgs.map((im, i) => Math.max(aspect(i), MIN_TILE))), box = pin.getBoundingClientRect()
+		const vw = pin.offsetWidth, vh = pin.offsetHeight, place = placeTiles(vw, vh, imgs.map((im, i) => hang(i, aspect(i)))), box = pin.getBoundingClientRect()
 		overview = { s: 1, px: vw / 2, py: vh / 2, ox: vw / 2, oy: vh / 2 }
+		const field = FIELD.includes(pin.dataset.mode)
+		// the text is as tall in every project as in the tallest one (--pv-text-h, css/projects.css), so going from one
+		// project to the next moves nothing: not the label on the phone, not the photograph's room, not the small ones (25.11.2026)
+		const pt = $(".pv-text", probe)
+		pin.style.removeProperty("--pv-text-h")
+		pt.style.alignSelf = "start"
+		const textH = Math.ceil(Math.max(...PROJECTS.map((p, i) => { words(probe, i); return pt.getBoundingClientRect().height })))
+		pt.style.alignSelf = ""
+		pin.style.setProperty("--pv-text-h", textH + "px")
 		const atTop = getComputedStyle($(".pv-a", probe)).alignItems === "start"
 		const menu = $("#hamburger").getBoundingClientRect(), clear = menu.bottom + (parseFloat(getComputedStyle(probe).rowGap) || 0) / 2 // the menu on the screen, where the pin stands while a project is open
 		place.forEach(({ R, cap }, i) => {
@@ -118,9 +138,17 @@ function wall(signal) {
 			caps[i].style.cssText = `left:${cap.x}px;top:${cap.y}px;width:${cap.w}px;height:${cap.h}px`
 			insets[i] = [R.y - by, bx + w - R.x - R.w, by + h - R.y - R.h, R.x - bx]
 			let s = Math.min(a.width / w, a.height / h), dy = 0
+			ends[i] = [0, 0, 0, 0]
+			// a field of its own: the photograph fills it, cut evenly at two sides; the print opens only as far as the field
+			if (field) {
+				s = Math.max(a.width / w, a.height / h)
+				const ex = (w * s - a.width) / 2 / s, ey = (h * s - a.height) / 2 / s
+				ends[i] = [ey, ex, ey, ex]
+			}
 			// at rest nothing lies under the menu: a photograph that would reach under it is fitted into its room below the menu
+			// (the field already stands clear of it)
 			const top = a.top + (atTop ? 0 : (a.height - h * s) / 2), half = (a.width - w * s) / 2
-			if (top < clear && a.right - half > menu.left && a.left + half < menu.right) {
+			if (!field && top < clear && a.right - half > menu.left && a.left + half < menu.right) {
 				const room = a.bottom - clear
 				s = Math.min(a.width / w, room / h)
 				dy = clear + (room - h * s) / 2 - (a.top + (a.height - h * s) / 2)
@@ -128,9 +156,9 @@ function wall(signal) {
 			// the camera brings the photograph to where the page shows it: in the middle of its room, or at its top
 			const ay = a.top + (atTop ? h * s / 2 : a.height / 2) + dy
 			spots[i] = { s, px: bx + w / 2, py: by + h / 2, ox: ax, oy: ay }
-			sizes[i] = { w: w * s, h: h * s, dy }
+			sizes[i] = field ? { w: a.width, h: a.height, dy: 0 } : { w: w * s, h: h * s, dy }
 			// the copies the open project needs: the photograph as large as the camera brings it, the two small ones as they hang
-			big[i] = pic(PROJECTS[i].cover, sizes[i].w * density())
+			big[i] = pic(PROJECTS[i].cover, w * s * density())
 			const f = $(".pv-b", probe).getBoundingClientRect(), fw = f.width, fh = f.height || f.width
 			small[i] = extras(PROJECTS[i], 2).map(src => pic(src, Math.max(fw, fh * (picRatio(src) || 1)) * density()))
 		})
@@ -146,7 +174,7 @@ function wall(signal) {
 			t.style.opacity = on ? 1 : state.others
 			caps[i].style.opacity = on ? state.others : 1
 			// the corner stays the same on screen at any zoom
-			boxes[i].style.clipPath = `inset(${insets[i].map(v => v * (1 - open) + "px").join(" ")} round ${RADIUS / s}px)`
+			boxes[i].style.clipPath = `inset(${insets[i].map((v, k) => v * (1 - open) + ends[i][k] * open + "px").join(" ")} round ${RADIUS / s}px)`
 		})
 		pin.classList.toggle("is-wall", cur === null && !busy)
 	}

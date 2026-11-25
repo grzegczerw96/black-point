@@ -83,19 +83,59 @@
 .pj-pin[data-mode="tall"] .pv { padding-top: calc(var(--pv-head) + var(--gap-group) + var(--pv-x) + var(--gap-tight)); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "t t" "a a" "b c"; }
 .pj-pin[data-mode="tall"] :is(.pv-b, .pv-c) { aspect-ratio: 2 / 1; } /* low enough that the photograph stays the largest picture */
 
-/* low windows: the text starts under the logo */
-.pj-pin:is([data-mode="low"], [data-mode="flat"]) .pv-x { top: calc(var(--pv-logo) + var(--gap-tight)); }
-.pj-pin:is([data-mode="low"], [data-mode="flat"]) .pv { padding-top: var(--header-inset); }
-.pj-pin:is([data-mode="low"], [data-mode="flat"]) .pv-text { margin-top: calc(var(--pv-logo) - var(--header-inset) + var(--gap-tight) + var(--pv-x) + var(--gap-tight)); }
+/* low windows: the text starts under the logo (a low window: until 25.11.2026, now with the desktop's layout at the end of
+   this file; its former rules are kept in the comment below) */
+.pj-pin[data-mode="flat"] .pv-x { top: calc(var(--pv-logo) + var(--gap-tight)); }
+.pj-pin[data-mode="flat"] .pv { padding-top: var(--header-inset); }
+.pj-pin[data-mode="flat"] .pv-text { margin-top: calc(var(--pv-logo) - var(--header-inset) + var(--gap-tight) + var(--pv-x) + var(--gap-tight)); }
 .pj-pin:is([data-mode="low"], [data-mode="flat"]) .pv-title { font-size: min(calc(var(--u) * 96), calc(var(--u-width) * 96), 13vh); }
-/* a low window — two columns: the text with the two small ones under it, the photograph large beside them, under the menu */
+/* switched off 25.11.2026 (a low window now has the desktop's layout, below):
+.pj-pin[data-mode="low"] .pv-x { top: calc(var(--pv-logo) + var(--gap-tight)); }
+.pj-pin[data-mode="low"] .pv { padding-top: var(--header-inset); }
+.pj-pin[data-mode="low"] .pv-text { margin-top: calc(var(--pv-logo) - var(--header-inset) + var(--gap-tight) + var(--pv-x) + var(--gap-tight)); }
+   a low window — two columns: the text with the two small ones under it, the photograph large beside them, under the menu
 .pj-pin[data-mode="low"] .pv { grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(0, 7fr); grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "t t a" "b c a"; }
-/* the photograph's room runs from the top of the label (09 / 12) to the bottom of the small ones (13.11, the user): a wide
-   photograph stands in its middle, an upright one fills it from top to bottom and never rises above the label */
+   the photograph's room runs from the top of the label (09 / 12) to the bottom of the small ones (13.11, the user): a wide
+   photograph stands in its middle, an upright one fills it from top to bottom and never rises above the label
 .pj-pin[data-mode="low"] .pv-a { margin-top: calc(var(--pv-logo) - var(--header-inset) + var(--gap-tight) + var(--pv-x) + var(--gap-tight)); }
 .pj-pin[data-mode="low"] :is(.pv-b, .pv-c) { aspect-ratio: 4 / 3; }
+*/
 /* a phone held sideways — three columns, as on the desktop. The photograph and the two small ones start in one line under
    the menu, and the small ones together are as tall as the photograph (--pic-h, set by fitPic() in js/projects.js) */
 .pj-pin[data-mode="flat"] .pv { grid-template-columns: minmax(15rem, 4fr) minmax(0, 7fr) minmax(0, 2fr); grid-template-rows: calc(var(--size-menu-h) + var(--gap-tight) - var(--gap-group)) calc((var(--pic-h, 0px) - var(--gap-group)) / 2) calc((var(--pic-h, 0px) - var(--gap-group)) / 2) minmax(0, 1fr); grid-template-areas: "t . ." "t a b" "t a c" "t a ."; }
 .pj-pin[data-mode="flat"] .pv-a { place-items: start center; }
 .pv-a img { translate: 0 var(--pic-dy, 0px); } /* set by fitPic(): a photograph moved down to clear the menu */
+
+/* THE COMPUTER AND LOW WINDOWS — two columns (25.11.2026, the user). The photograph on the right has a field of its own,
+   the same for every project in a window: 16:10, the photograph fills it (cut a little: the covers are 1.6–1.78, and
+   js/projects.js brings the camera to it), its right margin the same as the left one. The column on the left is as tall
+   as the field: the label (04 / 12) at its top edge, the title and the line under it, the credits and the two small ones
+   at the bottom, their bottom on the field's bottom. The X stands just above the column. The group stands in the middle
+   of the window's height, never under the menu and never so high that the X would come under the logo.
+   The desktop's former layout: the absolute rules at the top of this file (a column of text, the photograph, a column of
+   two small ones at the right edge); the low window's: the comment above. */
+.pj-pin:is([data-mode="desk"], [data-mode="low"]) {
+	--pv-col: calc(var(--u-width) * 416);                     /* the text column, at least */
+	--pv-gap: calc(var(--u-width) * 64);                      /* between the column and the field */
+	--pv-xs: 2.5rem;                                          /* the X */
+	--pv-xtop: calc(var(--u-width) * 128);                    /* the X never higher (the desktop: where it stood) */
+	--pv-bot: calc(var(--u-width) * 64);                      /* the room under the group, at least */
+	--pv-top: max(calc(var(--pv-xtop) + var(--pv-xs) + var(--gap-tight)), calc(var(--pv-head) + var(--gap-tight)));
+	--pv-fw: min(calc(var(--pw) - 2 * var(--gutter) - var(--pv-col) - var(--pv-gap)), calc((100svh - var(--pv-top) - var(--pv-bot)) * 1.6));
+	--pv-fh: calc(var(--pv-fw) / 1.6);
+	--pv-y: max(var(--pv-top), calc((100svh - var(--pv-fh)) / 2));  /* the top of the group */
+	/* the small ones: 4:3 at most, lower where the tallest text of the twelve (--pv-text-h, js/projects.js) needs the room */
+	--pv-sh: max(0px, min(calc((var(--pw) - 2 * var(--gutter) - var(--pv-gap) - var(--pv-fw) - var(--space-4)) / 2 * 3 / 4), calc(var(--pv-fh) - var(--gap-tight) - var(--pv-text-h, 0px))));
+}
+.pj-pin[data-mode="low"] { --pv-xs: var(--pv-x); --pv-xtop: calc(var(--pv-logo) + var(--gap-tight)); --pv-bot: var(--gap-group); }
+.pj-pin:is([data-mode="desk"], [data-mode="low"]) .pv-x { left: var(--gutter); top: calc(var(--pv-y) - var(--gap-tight) - var(--pv-xs)); width: var(--pv-xs); height: var(--pv-xs); }
+.pj-pin:is([data-mode="desk"], [data-mode="low"]) .pv { display: grid; align-content: start; padding: var(--pv-y) var(--gutter) 0; column-gap: var(--space-4); row-gap: var(--gap-tight); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) calc(var(--pv-fw) + var(--pv-gap) - var(--space-4)); grid-template-rows: calc(var(--pv-fh) - var(--gap-tight) - var(--pv-sh)) var(--pv-sh); grid-template-areas: "t t a" "b c a"; }
+.pj-pin:is([data-mode="desk"], [data-mode="low"]) :is(.pv-text, .pv figure) { position: relative; inset: auto; width: auto; height: auto; min-width: 0; min-height: 0; margin: 0; }
+.pj-pin:is([data-mode="desk"], [data-mode="low"]) .pv .pv-text { grid-area: t; display: flex; flex-direction: column; justify-content: space-between; gap: var(--gap-group); min-height: var(--pv-text-h, 0px); }
+.pj-pin:is([data-mode="desk"], [data-mode="low"]) .pv-no { text-box: trim-start cap alphabetic; } /* the top of the letters on the field's top edge */
+.pj-pin:is([data-mode="desk"], [data-mode="low"]) .pv .pv-a { grid-area: a; justify-self: end; width: var(--pv-fw); }
+.pj-pin:is([data-mode="desk"], [data-mode="low"]) .pv-b { grid-area: b; }
+.pj-pin:is([data-mode="desk"], [data-mode="low"]) .pv-c { grid-area: c; }
+.pv-a img { object-fit: cover; } /* a field of its own (above): the photograph fills it; elsewhere the box has the photograph's shape */
+/* the phone and the upright tablet: the text as tall in every project (js/projects.js), so the label and the pictures stand still */
+.pj-pin:is([data-mode="phone"], [data-mode="tall"]) .pv .pv-text { min-height: var(--pv-text-h, 0px); }

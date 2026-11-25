@@ -341,7 +341,9 @@ function values() {
 		words.forEach((w, i) => {
 			const o = 1 - smooth(clamp(Math.abs(t - i)))
 			w.style.opacity = lerp(0.2, 1, o)
-			pics[i].style.width = `${o * PIC_WIDTH}em`
+			// never two pictures open at once, not even a sliver (user 25.11.2026): the old one closes in the first half of the
+			// change, the new one opens in the second (was o: both moved at the same time)
+			pics[i].style.width = `${(1 - smooth(clamp(Math.abs(t - i) * 2))) * PIC_WIDTH}em`
 		})
 		const near = Math.round(t)
 		if (near !== cur) { cur = near; reveal(desc, VALUES[near].text) }
