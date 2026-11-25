@@ -62,23 +62,23 @@ const shelves = (progress, units) => {
 }
 // The gentle pull: only when the scroll has come to rest in the middle of a change, it finishes the change in the
 // direction of travel. On a shelf nothing moves, and any new scroll cancels it, so it never works against the visitor
-const settle = units => ({
+const settle = (units, feel = FEEL) => ({
 	snapTo: (progress, st) => {
-		const t = progress * (units + 0.4) - 0.2, i = Math.floor(t), f = t - i, e = FEEL.edge
+		const t = progress * (units + 0.4) - 0.2, i = Math.floor(t), f = t - i, e = feel.edge
 		if (t <= 0 || t >= units || f <= e || f >= 1 - e) return progress
 		return (i + (st.direction > 0 ? 1 - e + 0.01 : e - 0.01) + 0.2) / (units + 0.4)
 	},
-	...FEEL.pull, inertia: false
+	...feel.pull, inertia: false
 })
 // The scene catches up with the scroll over FEEL.lag seconds, so a change slows down before it stops even when the
 // scroll got there at once; a rebuild (now) puts it in place at once
 // (an exponential follow on the ticker: a tween started anew on every scroll update never got to run)
-const follower = render => {
-	if (!FEEL.lag) return render
+const follower = (render, lag = FEEL.lag) => {
+	if (!lag) return render
 	let at = null, to = 0
 	const tick = () => {
-		// 95 % of the way in FEEL.lag seconds; while a rebuilt page settles (dur() gives 0) it is in place at once
-		at = dur(1) ? at + (to - at) * (1 - Math.exp(-3 * gsap.ticker.deltaRatio() / 60 / FEEL.lag)) : to
+		// 95 % of the way in lag seconds; while a rebuilt page settles (dur() gives 0) it is in place at once
+		at = dur(1) ? at + (to - at) * (1 - Math.exp(-3 * gsap.ticker.deltaRatio() / 60 / lag)) : to
 		if (Math.abs(to - at) < 0.001) { at = to; gsap.ticker.remove(tick) }
 		render(at)
 	}
@@ -100,6 +100,37 @@ const hwMode = () => {
 	// before 24.11.2026: return ratio >= 1.9 || (H < 700 && (W >= 600 || ratio >= 1.1)) ? "side" : ratio < 1.1 ? "column" : "indent"
 	return H < 500 && ratio >= 1.1 ? "side" : ratio < 1.1 ? "column" : "indent"
 }
+// How we work, the change between steps, to compare (user 25.11.2026: two pictures at once for a moment, the clip's edge
+// rides over a standing picture): ?anim=a | b | c | d in the address, remembered for the tab like ?snap=; ?anim=off goes
+// back to the way it was (b with text 1 is the default since 25.11.2026). Sketches, for the indent and column layouts ("side" keeps its own; d
+// only in indent):
+//   a  one frame that stays: only the titles part, inside the frame the old picture fades into the new (1.05 → 1)
+//   b  close, then open: the old window shuts in the first half of the change, the new one opens in the second (1.1 → 1)
+//   c  a curtain: the old picture leaves upwards with the next title, the new one comes up from below, the picture
+//      inside its frame moving slower than the frame
+//   d  the list stands, one picture beside it fades into the next (a different layout, only to compare)
+const ANIM = (() => {
+	let v = new URLSearchParams(location.search).get("anim")
+	const all = ["a", "b", "c", "d"]
+	try {
+		if (all.includes(v) || v === "off") sessionStorage.setItem("bp-anim", v)
+		else v = sessionStorage.getItem("bp-anim")
+	} catch (e) {}
+	// b is the default since the user chose it with text 1 (25.11.2026); ?anim=off shows the way it was before
+	return all.includes(v) ? v : v === "off" ? "" : "b"
+})()
+// b, chosen to work on (user 25.11.2026). The scene came to its step too slowly after the scroll: How in b catches up
+// faster than the shared feel (lag 0.4 s, not 0.9; the pull after 0.15 s, not 0.4). Our values keeps the shared feel
+const HOW_B_FEEL = { ...FEEL, lag: FEEL.lag ? 0.4 : 0, pull: { delay: 0.15, duration: { min: 0.3, max: 0.6 }, ease: "power2.out" } }
+// b: the step's text, to compare: ?text=1 | 2 | 3, remembered for the tab; 1 by default. It never moves with a mask:
+//   1  a fade, the old text goes in the first half of the change, the new one comes in the second, with the picture
+//   2  the fade with a small rise (10 px, easing out)
+//   3  the fade line by line, a little after each other
+const TEXT_FX = (() => {
+	let v = new URLSearchParams(location.search).get("text")
+	try { if (["1", "2", "3"].includes(v)) sessionStorage.setItem("bp-text", v); else v = sessionStorage.getItem("bp-text") } catch (e) {}
+	return ["1", "2", "3"].includes(v) ? +v : 1
+})()
 const PIC_WIDTH = 1.3 // em
 // the rows the values may stand in; a word slides along its row as a picture opens and never changes row
 const VALUE_ROWS = [[[0, 3], [3, 5]], [[0, 1], [1, 3], [3, 5]], [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]]
@@ -179,7 +210,9 @@ boot({
 			<div class="ha-mask"><h1 class="ha-word display" style="visibility: hidden">Studio</h1></div>
 			<p class="h-lead" style="opacity: 0">Twelve photographers. Two cities. <span>One way of looking.</span></p>
 		</div>`
-		$(".st-how").innerHTML = `<div class="st-pin hw" data-mode="${hwMode()}"><h2 class="caps hw-label">How we work</h2>${STEPS.map((s, i) => `
+		// ?anim=a | d: one frame for all the pictures, under the rows (the titles pass over it)
+		const one = ANIM === "a" || ANIM === "d" ? `<figure class="hw-one" aria-hidden="true">${STEPS.map(s => `<img data-pic="${s.img}" loading="lazy" alt="">`).join("")}</figure>` : ""
+		$(".st-how").innerHTML = `<div class="st-pin hw" data-mode="${hwMode()}"${ANIM ? ` data-anim="${ANIM}"` : ""}><h2 class="caps hw-label">How we work</h2>${one}${STEPS.map((s, i) => `
 			<div class="hw-row">
 				<h3 class="hw-word"><b>${pad(i + 1)}</b> <b>${s.word}</b></h3>
 				<div class="hw-body"><figure><img data-pic="${s.img}" loading="lazy" alt=""></figure><p>${s.text}</p></div>
@@ -245,7 +278,11 @@ function opening(split) {
 function how() {
 	const root = $(".st-how"), pin = $(".hw", root), mode = pin.dataset.mode, label = $(".hw-label", root),
 		rows = $$(".hw-row", root), words = $$(".hw-word", root), bodies = $$(".hw-body", root), figs = $$(".hw-body figure", root), texts = $$(".hw-body p", root)
-	let top, size, step, open, figTop
+	// the change to compare (?anim, top of this file): "side" keeps its own, d is drawn for the indent only
+	const anim = mode === "side" || (ANIM === "d" && mode !== "indent") ? "" : ANIM
+	if (!anim) delete pin.dataset.anim
+	const one = $(".hw-one", root), oneImgs = one ? $$("img", one) : [], imgs = figs.map(f => $("img", f))
+	let top, size, step, open, figTop, oneTop = 0, drift = 0
 	const sizes = () => {
 		const W = pin.offsetWidth, H = pin.offsetHeight, U = W / 1440, gutter = (W - measure()) / 2
 		const k = Math.min(1, Math.max(0, (u() - 0.2604167) / 0.7395833)) // 0 at 375, 1 at 1440 (as --ku)
@@ -275,14 +312,75 @@ function how() {
 			const fh = open - 24, fw = Math.min(fh * 1.6, W * 0.42)
 			figs.forEach(f => { f.style.width = fw + "px"; f.style.height = fh + "px" })
 		}
+		// ?anim a: the one frame stands where the open row's picture stands
+		if (anim === "a") {
+			const f = figs[0]
+			one.style.cssText = `left: ${bodies[0].offsetLeft + f.offsetLeft}px; width: ${f.offsetWidth}px; height: ${f.offsetHeight}px`
+			oneTop = f.offsetTop
+		}
+		// ?anim c: the picture is taller than its frame by the way it lags behind it
+		// ?anim b, ?text=3: the text's words in spans, grouped by the line they stand on (again on every refresh: the lines
+		// follow the width)
+		if (anim === "b" && TEXT_FX === 3) texts.forEach(p => {
+			if (!p.lines) p.replaceChildren(...p.textContent.split(" ").flatMap((w, k) => { const s = document.createElement("span"); s.textContent = w; return k ? [" ", s] : [s] }))
+			const lines = []
+			$$("span", p).forEach(s => { const last = lines[lines.length - 1]; if (last && Math.abs(last[0].offsetTop - s.offsetTop) < 2) last.push(s); else lines.push([s]) })
+			p.lines = lines
+		})
+		drift = anim === "c" ? Math.round(open * 0.12) : 0
+		imgs.forEach(im => { im.style.height = drift ? `calc(100% + ${2 * drift}px)` : "" })
+		// ?anim d: the list stands closed, the text under it, one picture on the right from the label to the margin
+		if (anim === "d") {
+			// the list's width: where its longest title ends (a title's box is as wide as its row)
+			const col = Math.max(...words.map(w => w.lastElementChild.offsetLeft + w.lastElementChild.offsetWidth)) - gutter, colGap = Math.max(24, 64 * U)
+			const ft = label.offsetTop, fh = H - bottom - ft, fw = Math.min(fh * 0.8, W - 2 * gutter - col - colGap)
+			one.style.cssText = `left: ${W - gutter - fw}px; top: ${ft}px; width: ${fw}px; height: ${fh}px`
+			bodies.forEach((b, i) => { b.style.top = (rows.length - i) * step + Math.max(16, 32 * U) + "px" })
+		}
 	}
 	const render = t => {
-		const i0 = Math.min(rows.length - 1, Math.floor(t)), f = smooth(clamp(t - i0))
+		const i0 = Math.min(rows.length - 1, Math.floor(t)), fr = clamp(t - i0), f = smooth(fr)
+		// ?anim a, b, d: the old one goes in the first half of the change, the new one comes in the second
+		const half = i => i === i0 ? 1 - smooth(clamp(fr * 2)) : i === i0 + 1 ? smooth(clamp(fr * 2 - 1)) : 0
 		let y = top
 		rows.forEach((r, i) => {
 			const o = i === i0 ? 1 - f : i === i0 + 1 ? f : 0
 			r.style.transform = `translate3d(0,${y}px,0)`
 			words[i].style.opacity = lerp(0.38, 1, o)
+			if (anim) {
+				if (anim === "a" || anim === "d") texts[i].style.opacity = half(i)
+				else if (anim === "b") {
+					// the window opens under its title as before, but never while the old one is still open; the picture
+					// settles inside it (1.1 → 1), so the window opens on it rather than cutting it. Only the picture is
+					// clipped: the text fades (?text), at the same time as the picture
+					const shown = half(i)
+					figs[i].style.clipPath = `inset(0 0 ${(1 - shown) * 100}% 0)`
+					imgs[i].style.transform = `scale(${lerp(1.1, 1, shown)})`
+					// the new text stands where it will stay while its row still comes up, so only the fade is seen
+					const rise = TEXT_FX === 2 ? 10 * (1 - shown) ** 2 * (i === i0 ? -1 : 1) : 0
+					texts[i].style.transform = `translate3d(0,${(i === i0 + 1 ? -open * (1 - f) : 0) + rise}px,0)`
+					if (TEXT_FX === 3 && texts[i].lines) {
+						// line by line: each line a little after the one above (and gone a little before it, going back)
+						const L = texts[i].lines.length, s = 0.3
+						texts[i].style.opacity = 1
+						texts[i].lines.forEach((line, k) => { const q = clamp(shown * (1 + (L - 1) * s) - k * s); line.forEach(w => { w.style.opacity = q }) })
+					} else texts[i].style.opacity = shown
+				} else if (i === i0) {
+					// c, the old one: it leaves upwards with the next title, under the edge of its own title; the picture
+					// inside lags behind its frame
+					const d = (1 - o) * open
+					bodies[i].style.transform = `translate3d(0,${-d}px,0)`
+					bodies[i].style.clipPath = `inset(${d}px 0 0 0)`
+					imgs[i].style.transform = `translate3d(0,${-drift + (1 - o) * drift}px,0)`
+				} else {
+					// c, the new one: it comes up with its title from behind the next one, the picture lagging behind
+					bodies[i].style.transform = ""
+					bodies[i].style.clipPath = `inset(0 0 ${(1 - o) * 100}% 0)`
+					imgs[i].style.transform = `translate3d(0,${-drift - (1 - o) * drift}px,0)`
+				}
+				y += anim === "d" ? step : step + open * o
+				return
+			}
 			if (mode === "side") {
 				// the text opens under its row as the body does elsewhere; the next picture opens downwards over the
 				// open one, which stays whole under it, so two pictures never show through each other
@@ -293,13 +391,50 @@ function how() {
 			} else bodies[i].style.clipPath = `inset(0 0 ${(1 - o) * 100}% 0)`
 			y += step + open * o
 		})
+		// ?anim a, d: one frame, the new picture fades in over the old one and settles (1.05 → 1); in a the frame keeps
+		// to the open row's place (it goes down one row's height during the change, the next title passes over it)
+		if (anim === "a" || anim === "d") {
+			if (anim === "a") one.style.transform = `translate3d(0,${top + (i0 + f + 1) * step + oneTop}px,0)`
+			oneImgs.forEach((im, k) => {
+				im.style.opacity = k === i0 ? 1 : k === i0 + 1 ? f : 0
+				im.style.transform = k === i0 + 1 ? `scale(${lerp(1.05, 1, f)})` : ""
+			})
+		}
 	}
-	const units = rows.length - 1, show = follower(render)
-	ScrollTrigger.create({
-		trigger: root, start: "top top", end: () => "+=" + innerHeight * rows.length * 0.6, pin, invalidateOnRefresh: true, snap: settle(units),
-		onRefresh: s => { sizes(); show(shelves(s.progress, units), true) },
-		onUpdate: s => show(shelves(s.progress, units))
+	// b catches up faster (HOW_B_FEEL, top of this file)
+	const feel = anim === "b" ? HOW_B_FEEL : FEEL, units = rows.length - 1, show = follower(render, feel.lag), snap = settle(units, feel)
+	// b: the scene goes on to its step as soon as the scroll has come to rest in the middle of a change. The snap waits
+	// for ScrollSmoother's smoothing to end quite (smooth: 1, site.js), and the scene stood half changed for half a
+	// second (measured 25.11.2026). The snap then brings the scroll to the same step: while the scroll is on its way
+	// there, the scene holds the step; any other scroll lets go
+	let hold = null, seen = []
+	const update = s => {
+		const v = shelves(s.progress, units)
+		if (hold) {
+			const d = Math.sign(hold.to - hold.from)
+			if (d * (v - hold.from) >= -0.01 && d * (hold.to - v) > 0.001) return show(hold.to)
+			hold = null
+		}
+		show(v)
+	}
+	const rest = () => {
+		if (!pin.isConnected) return gsap.ticker.remove(rest) // the page was built again
+		if (hold || !st.isActive) { seen = []; return }
+		const now = performance.now(), p = st.progress
+		seen.push([now, p])
+		while (now - seen[0][0] > 150) seen.shift()
+		const t = p * (units + 0.4) - 0.2, fr = t - Math.floor(t)
+		if (now - seen[0][0] < 120 || t <= 0 || t >= units || fr <= feel.edge || fr >= 1 - feel.edge) return
+		if (Math.abs(p - seen[0][1]) * (units + 0.4) > 0.006) return // still moving
+		hold = { from: shelves(p, units), to: shelves(snap.snapTo(p, st), units) }
+		show(hold.to)
+	}
+	const st = ScrollTrigger.create({
+		trigger: root, start: "top top", end: () => "+=" + innerHeight * rows.length * 0.6, pin, invalidateOnRefresh: true, snap,
+		onRefresh: s => { sizes(); hold = null; show(shelves(s.progress, units), true) },
+		onUpdate: anim === "b" ? update : s => show(shelves(s.progress, units))
 	})
+	if (anim === "b") gsap.ticker.add(rest)
 	sizes()
 	render(0)
 }
