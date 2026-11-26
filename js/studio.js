@@ -20,6 +20,12 @@ const VALUES = [
 	{ word: "Restraint", text: "A frame is finished when nothing is left to remove.", img: work("nina-sorrento", 1) },
 	{ word: "Trust", text: "Twelve photographers, one table. Every edit is reviewed together.", img: work("greta-lindmark", 0) }
 ]
+// Where a picture sits in its frame, when the middle is not right (user 26.11.2026: "the pictures should be centred"):
+// the portraits stand in wide frames, so only a band of each shows. The road (Shoot): the road and the mountains, not
+// the clouds alone. The rest stay in the middle. (Edit & Print and Restraint had the letters, an upright cut of a wide
+// photograph; since 26.11.2026 nina-sorrento-1 is a wide photograph of prints on a white table, the user's choice C)
+const FOCUS = { [work("dex-margolin", 0)]: "50% 85%" }
+const focus = src => FOCUS[src] ? ` style="object-position: ${FOCUS[src]}"` : ""
 const CONTACT_SHEET = theme.roster.flatMap(n => [0, 1, 2].map(k => galleryImage(theme, n, k)))
 const KEPT = 17 // the one frame of the 36 that survives the edit
 // every client named in the profiles, with who shot for them and when (years are illustrative)
@@ -88,6 +94,29 @@ const follower = (render, lag = FEEL.lag) => {
 		gsap.ticker.add(tick)
 	}
 }
+// The same catching up, as a spring (user 26.11.2026 on How we work: "too mechanical and fast; a slower start, then
+// faster, then pulled in, without a long end"). The follow above starts at its fastest and ends slowest; a spring starts
+// still, gathers speed and settles, and it keeps its speed when the scroll gives it a new target, so a change never
+// starts again from a jerk. w: how stiff (5: one step takes about 0.9 s, 10 % at 0.1 s, 98 % at 0.85 s; was 10 % at 0.02,
+// 98 % at 0.53), z: the damping (0.85: it settles sooner than at 1, the overshoot 0.4 % of a step, under a pixel)
+const springer = (render, { w, z }) => {
+	let at = null, v = 0, to = 0
+	const tick = () => {
+		if (!dur(1)) { at = to; v = 0 } // a rebuilt page: in place at once
+		else for (let left = Math.min(0.05, gsap.ticker.deltaRatio() / 60); left > 0; left -= 1 / 240) {
+			const dt = Math.min(left, 1 / 240)
+			v += (w * w * (to - at) - 2 * z * w * v) * dt
+			at += v * dt
+		}
+		if (Math.abs(to - at) < 0.0005 && Math.abs(v) < 0.005) { at = to; v = 0; gsap.ticker.remove(tick) }
+		render(at)
+	}
+	return (t, now) => {
+		to = t
+		if (now || at === null) { at = t; v = 0; gsap.ticker.remove(tick); return render(t) }
+		gsap.ticker.add(tick)
+	}
+}
 // How we work, by the window's shape (test 2): low or very wide windows put the list beside the picture, tall and
 // square ones put the picture across the measure, the rest the picture with its indent and the text beside it
 // Computer windows all get the picture with its indent now (user 24.11.2026: the long, wide picture beside the list at
@@ -121,7 +150,9 @@ const ANIM = (() => {
 })()
 // b, chosen to work on (user 25.11.2026). The scene came to its step too slowly after the scroll: How in b catches up
 // faster than the shared feel (lag 0.4 s, not 0.9; the pull after 0.15 s, not 0.4). Our values keeps the shared feel
-const HOW_B_FEEL = { ...FEEL, lag: FEEL.lag ? 0.4 : 0, pull: { delay: 0.15, duration: { min: 0.3, max: 0.6 }, ease: "power2.out" } }
+// Since 26.11.2026 it follows with the spring (springer() above), not the 0.4 s follow; ?move=old shows the 0.4 s follow
+const HOW_SPRING = new URLSearchParams(location.search).get("move") === "old" ? null : { w: 5, z: 0.85 }
+const HOW_B_FEEL = { ...FEEL, lag: FEEL.lag ? 0.4 : 0, spring: FEEL.lag ? HOW_SPRING : null, pull: { delay: 0.15, duration: { min: 0.3, max: 0.6 }, ease: "power2.out" } }
 // b: the step's text, to compare: ?text=1 | 2 | 3, remembered for the tab; 1 by default. It never moves with a mask:
 //   1  a fade, the old text goes in the first half of the change, the new one comes in the second, with the picture
 //   2  the fade with a small rise (10 px, easing out)
@@ -215,7 +246,7 @@ boot({
 		$(".st-how").innerHTML = `<div class="st-pin hw" data-mode="${hwMode()}"${ANIM ? ` data-anim="${ANIM}"` : ""}><h2 class="caps hw-label">How we work</h2>${one}${STEPS.map((s, i) => `
 			<div class="hw-row">
 				<h3 class="hw-word"><b>${pad(i + 1)}</b> <b>${s.word}</b></h3>
-				<div class="hw-body"><figure><img data-pic="${s.img}" loading="lazy" alt=""></figure><p>${s.text}</p></div>
+				<div class="hw-body"><figure><img data-pic="${s.img}"${focus(s.img)} loading="lazy" alt=""></figure><p>${s.text}</p></div>
 			</div>`).join("")}</div>`
 		$(".st-mf").innerHTML = `<div class="st-pin">
 			<div class="mf-in">
@@ -226,7 +257,7 @@ boot({
 		</div>`
 		$(".st-val").innerHTML = `<div class="st-pin">
 			<h2 class="caps val-label">Our values</h2>
-			<div class="vd-text"><div class="vd-row">${VALUES.map(v => `<h3 class="vd-word">${v.word}</h3><span class="vd-pic"><img data-pic="${v.img}" loading="lazy" alt=""></span>`).join("")}</div></div>
+			<div class="vd-text"><div class="vd-row">${VALUES.map(v => `<h3 class="vd-word">${v.word}</h3><span class="vd-pic"><img data-pic="${v.img}"${focus(v.img)} loading="lazy" alt=""></span>`).join("")}</div></div>
 			<p class="vd-desc"></p>
 		</div>`
 		$(".st-cc").innerHTML = `<div class="cc-pin"><h2 class="sr-only">Clients</h2>
@@ -402,7 +433,8 @@ function how() {
 		}
 	}
 	// b catches up faster (HOW_B_FEEL, top of this file)
-	const feel = anim === "b" ? HOW_B_FEEL : FEEL, units = rows.length - 1, show = follower(render, feel.lag), snap = settle(units, feel)
+	const feel = anim === "b" ? HOW_B_FEEL : FEEL, units = rows.length - 1, snap = settle(units, feel)
+	const show = feel.spring ? springer(t => render(clamp(t, 0, units)), feel.spring) : follower(render, feel.lag)
 	// b: the scene goes on to its step as soon as the scroll has come to rest in the middle of a change. The snap waits
 	// for ScrollSmoother's smoothing to end quite (smooth: 1, site.js), and the scene stood half changed for half a
 	// second (measured 25.11.2026). The snap then brings the scroll to the same step: while the scroll is on its way

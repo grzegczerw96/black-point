@@ -63,10 +63,12 @@ const localTarget = href => {
 }
 
 // SHARED SECTIONS ///////////////////////////////////////////////////////////////////////////////////////////
+// the deer stands at the bottom of its picture: the frame shows the picture's lower part, so the deer stands higher
+// (user 26.11.2026; a tall frame, the phone's, shows the whole height either way)
 const STUDIOS_HTML = `
 	<div class="studios-frame">
 		<a class="city" href="https://maps.google.com/?q=Rua+das+Flores+28,+Lisbon" target="_blank" rel="noopener" data-tz="Europe/Lisbon">
-			<figure><img data-pic="img/studio-lisbon.jpg" loading="lazy" alt="Fallow deer in a forest clearing"></figure>
+			<figure><img data-pic="img/studio-lisbon.jpg" style="object-position: 50% 100%" loading="lazy" alt="Fallow deer in a forest clearing"></figure>
 			<div class="city-txt">
 				<h2>Lisbon</h2>
 				<div class="city-info">

@@ -80,7 +80,7 @@ Przed publikacją strony sprawdź licencję każdego zdjęcia na stronie źród�
 | work/mila-petrovic-5.jpg | Nick Turner | https://unsplash.com/photos/0EjvnhOkPLM |
 | work/mila-petrovic-6.jpg | Adam Przewoski | https://unsplash.com/photos/umchkHwkdyM |
 | work/nina-sorrento-0.jpg | Dustin Scarpitti | https://unsplash.com/photos/RdF3apSExR0 |
-| work/nina-sorrento-1.jpg | Joanna Kosinska | https://unsplash.com/photos/B6yDtYs2IgY |
+| work/nina-sorrento-1.jpg | Rirri | https://unsplash.com/photos/z4KhbVhPP7s (pobrane bezpośrednio z Unsplash 26.11.2026, przycięte do 1600×1000, w szarości) |
 | work/nina-sorrento-2.jpg | Jessica Polar | https://unsplash.com/photos/l5d9Zp7HO6o |
 | work/nina-sorrento-3.jpg | Jeff Sheldon | https://unsplash.com/photos/9dI3g8owHiI |
 | work/nina-sorrento-4.jpg | Jared Erondu | https://unsplash.com/photos/LoMs1_wq3tU |
