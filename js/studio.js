@@ -42,6 +42,8 @@ CLIENTS.forEach(c => { c.from = Math.min(...c.years); c.to = Math.max(...c.years
 CLIENTS.sort((a, b) => a.from - b.from || a.name.localeCompare(b.name))
 
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v))
+// a length written in CSS (a token, var(), calc()), in px, measured inside el (where its variables apply)
+const cssLen = (el, v) => { const p = document.createElement("div"); p.style.cssText = `position:absolute;visibility:hidden;height:${v}`; el.appendChild(p); const h = p.offsetHeight; p.remove(); return h }
 const lerp = (a, b, t) => a + (b - a) * t
 const smooth = t => t * t * (3 - 2 * t)
 // How the stepped scenes (How we work, Our values) follow the scroll, to compare (user 24.11.2026: "aggressive, it ends
@@ -55,11 +57,85 @@ const FEELS = {
 	b: { edge: 0.28, lag: 0.9, pull: { delay: 0.4, duration: { min: 0.35, max: 0.8 }, ease: "power1.inOut" } },
 	c: { edge: 0.15, lag: 0.7, pull: { delay: 0.15, duration: { min: 0.6, max: 1.2 }, ease: "power2.inOut" } }
 }
-const FEEL = FEELS[(() => {
+// SKETCH to judge (user 26.11.2026: one swipe of the wheel can go one step and start the next), ?krok=a | b, remembered
+// for the tab like ?snap=; ?krok=off goes back. Quick and unchecked (touch, keyboard, window changes):
+//   a  one gesture, one step: while How we work or Our values stands, the wheel does not scroll the page; each gesture
+//      goes exactly one step and the wheel waits until the gesture has ended; past the first and last step it scrolls on
+//   b  longer steps: twice the scroll for a step, the change in the middle 24 % of it (was 44 %), so a swipe ends on a shelf
+const KROK = (() => {
+	let v = new URLSearchParams(location.search).get("krok")
+	try { if (["a", "b", "off"].includes(v)) sessionStorage.setItem("bp-krok", v); else v = sessionStorage.getItem("bp-krok") } catch (e) {}
+	return ["a", "b"].includes(v) ? v : v === "off" ? "" : "a" // a chosen by the user 26.11.2026 ("zdecydowanie")
+})()
+const STEP_LONG = KROK === "b" ? 2 : 1
+// ?mfz=a: the Manifesto's kept frame growing to the full screen on a spring (manifesto()); the default since 26.11.2026
+const MFZ = (() => {
+	let v = new URLSearchParams(location.search).get("mfz")
+	try { if (["a", "off"].includes(v)) sessionStorage.setItem("bp-mfz", v); else v = sessionStorage.getItem("bp-mfz") } catch (e) {}
+	return v === "off" ? "" : "a" // a by default since 26.11.2026 (refined with the user, sent to Pages); ?mfz=off the way it was
+})()
+// ?pic=a | b: sketches of the picture opening in How we work (how(), setPic()); the way it was by default
+const PIC = (() => {
+	let v = new URLSearchParams(location.search).get("pic")
+	try { if (["a", "b", "off"].includes(v)) sessionStorage.setItem("bp-pic", v); else v = sessionStorage.getItem("bp-pic") } catch (e) {}
+	return ["a", "b"].includes(v) ? v : ""
+})()
+// How we work in the middle of the window: ?hwc=1 | 2 (how(), sizes()); 1 by default since 26.11.2026, ?hwc=0 the way it was
+const HWC = (() => {
+	let v = new URLSearchParams(location.search).get("hwc")
+	try { if (["1", "2", "0"].includes(v)) sessionStorage.setItem("bp-hwc", v); else v = sessionStorage.getItem("bp-hwc") } catch (e) {}
+	return ["1", "2"].includes(v) ? +v : v === "0" ? 0 : 1 // 1 chosen by the user 26.11.2026; ?hwc=0 the way it was
+})()
+const FEEL = (f => KROK === "b" ? { ...f, edge: 0.38 } : f)(FEELS[(() => {
 	let v = new URLSearchParams(location.search).get("snap")
 	try { if (v in FEELS) sessionStorage.setItem("bp-snap", v); else v = sessionStorage.getItem("bp-snap") } catch (e) {}
 	return v in FEELS ? v : "b" // b chosen by the user 24.11.2026 (was a); a and c stay to compare
-})()]
+})()])
+// ?krok=a: the wheel inside a standing scene. A gesture is a run of wheel events with less than 200 ms between them (a
+// trackpad's coasting counts as the same gesture); it moves the scroll to the middle of the next step's shelf
+// ?kolejka=1, SKETCH (user 26.11.2026: someone who scrolls fast; "the next picture when a second scroll starts, once the
+// last one has settled"): a new gesture during a step is kept, one at most, and its step starts as soon as the step under
+// way has come to rest (850 ms after it began). Without it (the default) such a gesture is ignored
+const QUEUE = (() => {
+	let v = new URLSearchParams(location.search).get("kolejka")
+	try { if (["1", "0"].includes(v)) sessionStorage.setItem("bp-kolejka", v); else v = sessionStorage.getItem("bp-kolejka") } catch (e) {}
+	return v !== "0" // the queue by default since the user liked it (26.11.2026, "jest spoko"); ?kolejka=0 ignores as before
+})()
+const oneStep = (st, units, alive) => {
+	if (KROK !== "a") return
+	let busy = false, last = 0, began = 0, goal = 0, queued = 0
+	const at = k => st.start + (st.end - st.start) * (k + 0.2) / (units + 0.4)
+	const go = dir => {
+		goal = clamp(goal + dir, 0, units); began = performance.now(); busy = true
+		setScroll(at(goal)) // ScrollSmoother eases the page there, the scene follows with its own catching up
+	}
+	const free = () => {
+		const now = performance.now()
+		if (QUEUE && queued && now - began >= 850) {
+			const d = queued; queued = 0
+			if ((d > 0 && goal < units) || (d < 0 && goal > 0)) { go(d); return setTimeout(free, 50) }
+		}
+		if (now - last >= 200 && now - began >= (QUEUE ? 850 : 700) && !queued) busy = false
+		else setTimeout(free, 50)
+	}
+	const wheel = e => {
+		if (!alive()) return window.removeEventListener("wheel", wheel, { capture: true })
+		const now = performance.now(), gap = now - last
+		last = now
+		if (!st.isActive) return
+		const dir = Math.sign(e.deltaY)
+		if (!busy) goal = Math.round(shelves(st.progress, units))
+		if (!busy && ((dir < 0 && goal === 0) || (dir > 0 && goal === units))) return // leave the scene: the page scrolls
+		e.preventDefault(); e.stopImmediatePropagation()
+		if (busy) {
+			if (QUEUE && gap >= 200) queued = dir // a new gesture while a step is under way: kept for later (one at most)
+			return // the same gesture, or the step still under way
+		}
+		go(dir)
+		setTimeout(free, 700)
+	}
+	window.addEventListener("wheel", wheel, { capture: true, passive: false })
+}
 // Scroll progress to a scene's stops. Each stop is a shelf: it holds for most of the way and the change happens in the
 // middle, so the scene is nearly always at rest on a stop
 const shelves = (progress, units) => {
@@ -186,7 +262,7 @@ function fitValues() {
 	// in the Manifesto; the label stood at the top of the screen and came up against the menu in smaller windows). The
 	// group stays clear of the menu above and of the text below (two lines at most)
 	const label = $(".val-label", root), descSize = parseFloat(getComputedStyle($(".vd-desc", root)).fontSize) || 16
-	const head = label.offsetHeight + 12, above = $("#hamburger").getBoundingClientRect().bottom, below = Math.max(16, 60 * u()) + descSize * 2.7
+	const head = label.offsetHeight + cssLen(root, "var(--label-gap-values, 1.5rem)"), above = $("#hamburger").getBoundingClientRect().bottom, below = Math.max(16, 60 * u()) + descSize * 2.7
 	size = Math.max(Math.min(size, (H - head - 2 * (Math.max(above, below) + 16)) / (rows.length * 0.875)), Math.min(size, 48))
 	root.style.setProperty("--val-head", head + "px")
 	// the same word and picture elements move into their rows, so the scene keeps hold of them
@@ -205,9 +281,9 @@ function fitValues() {
 function fitOpening() {
 	const hero = $(".st-hero"), word = $(".ha-word", hero), lead = $(".h-lead", hero)
 	if (!word) return
-	const W = pageW(), H = window.innerHeight, GAP = 16, menu = $("#hamburger").getBoundingClientRect(), logo = $("#logo")
-	// the letters themselves, not their line, must stay clear of the menu and the lead: their height and their place in
-	// the line, from the font (at 100px)
+	const W = pageW(), H = window.innerHeight, GAP = 16, LEAD_GAP = 32, menu = $("#hamburger").getBoundingClientRect(), logo = $("#logo")
+	// the letters themselves, not their line, must stay clear of the menu (16) and the lead (32; 16 until 26.11.2026, the
+	// user: more room between the word and the lead): their height and their place in the line, from the font (at 100px)
 	const pen = document.createElement("canvas").getContext("2d"), style = getComputedStyle(word)
 	pen.font = `900 100px ${style.fontFamily}`
 	const m = pen.measureText(word.textContent.toUpperCase()), line = parseFloat(style.lineHeight) / parseFloat(style.fontSize)
@@ -218,7 +294,7 @@ function fitOpening() {
 	let w = measure()
 	for (let k = 0; k < 2; k++) { // the lead starts where the word starts, and its height decides how low the word may go
 		hero.style.setProperty("--ha-left", (W - w) / 2 + "px")
-		const room = H - lead.offsetHeight - parseFloat(getComputedStyle(lead).bottom) - GAP
+		const room = H - lead.offsetHeight - parseFloat(getComputedStyle(lead).bottom) - LEAD_GAP
 		const across = Math.min(measure(), (room - menu.bottom - GAP) * ratio)
 		const between = Math.min(W - 2 * (logo.offsetLeft - pageSide() + logo.offsetWidth + 48), (room - menu.top - GAP) * ratio)
 		w = Math.max(across, between)
@@ -316,9 +392,18 @@ function how() {
 	let top, size, step, open, figTop, oneTop = 0, drift = 0
 	const sizes = () => {
 		const W = pin.offsetWidth, H = pin.offsetHeight, U = W / 1440, gutter = (W - measure()) / 2
-		const k = Math.min(1, Math.max(0, (u() - 0.2604167) / 0.7395833)) // 0 at 375, 1 at 1440 (as --ku)
-		top = label.offsetTop + label.offsetHeight + 8 + 8 * k // the first row 8 (phone) to 16 (desktop) under its label, on the scale (was 6 and 14)
-		const bottom = Math.max(32, 64 * U) // the margin below the last row
+		let bottom = Math.max(32, 64 * U) // the margin below the last row
+		// TO COMPARE (user 26.11.2026: "it fills the screen, so why the space above? can it be centred like Our values?"),
+		// ?hwc=1 | 2, not in "side":
+		//   1  the group in the middle, the picture as large as before: the label goes up, never closer than 24 to the menu
+		//   2  the group in the middle with equal margins: the bottom margin as the label's top, the picture smaller
+		label.style.top = ""
+		if (HWC && mode !== "side") {
+			const t0 = label.offsetTop, least = $("#hamburger").getBoundingClientRect().bottom + 24
+			if (HWC === 1) { const t = Math.max(least, (t0 + bottom) / 2); bottom = t0 + bottom - t; label.style.top = t + "px" }
+			else bottom = t0
+		}
+		top = label.offsetTop + label.offsetHeight + cssLen(pin, "var(--label-gap, 1rem)") // the first row --label-gap under its label (16; was 8 on a phone to 16, user 26.11.2026)
 		size = Math.max(isSmall() ? 40 : 0, Math.min(64 * u(), H * 0.09)) // a size: the size unit; the positions above follow the width (U)
 		pin.style.setProperty("--hw-size", size + "px")
 		step = size * (parseFloat(getComputedStyle(pin).getPropertyValue("--lh-display")) || 0.85) // a row is one line of display type (--lh-display)
@@ -369,6 +454,46 @@ function how() {
 			bodies.forEach((b, i) => { b.style.top = (rows.length - i) * step + Math.max(16, 32 * U) + "px" })
 		}
 	}
+	// b: how open each picture is. The text comes in as its picture ends opening (user 26.11.2026: "a little later, about
+	// when the picture has opened"; 70 % was a little late, 60 % since): from 60 % open to fully open; it goes in the same way, early in the closing.
+	// ?pic=a | b, SKETCHES to judge (user 26.11.2026: on a large screen the picture opens robotic and very fast, with no
+	// natural acceptance of the end): the picture opens on its own spring, softer than the rows' (w 5, no overshoot: 95 % about
+	// 1.1 s after it starts), and settles inside its window more slowly still (scale, w 3.2), so the end is seen to come to rest;
+	// closing follows the scene at once, so two pictures are never open together.
+	//   a  the window opens downwards as now, softly
+	//   b  no window: the picture fades in and settles (1.06 → 1)
+	const soft = PIC ? figs.map(() => ({ to: 0, open: 0, v: 0, sc: 0, vs: 0 })) : null
+	const drawPic = (i, open, sc) => {
+		if (PIC === "b") { figs[i].style.clipPath = ""; figs[i].style.opacity = open }
+		else figs[i].style.clipPath = `inset(0 0 ${(1 - open) * 100}% 0)`
+		imgs[i].style.transform = `scale(${lerp(PIC === "b" ? 1.06 : 1.1, 1, sc)})`
+		if (TEXT_FX === 1) texts[i].style.opacity = smooth(clamp((open - 0.6) / 0.4))
+	}
+	const softTick = () => {
+		if (!pin.isConnected) return gsap.ticker.remove(softTick)
+		const dt = Math.min(0.05, gsap.ticker.deltaRatio() / 60)
+		let still = true
+		soft.forEach((p, i) => {
+			for (let left = dt; left > 0; left -= 1 / 240) {
+				const h = Math.min(left, 1 / 240)
+				p.v += (25 * (p.to - p.open) - 10 * p.v) * h; p.open += p.v * h // w 5, z 1
+				p.vs += (10.24 * (p.to - p.sc) - 6.4 * p.vs) * h; p.sc += p.vs * h // w 3.2, z 1
+			}
+			if (Math.abs(p.to - p.open) < 0.001 && Math.abs(p.v) < 0.01) { p.open = p.to; p.v = 0 } else still = false
+			if (Math.abs(p.to - p.sc) < 0.001 && Math.abs(p.vs) < 0.01) { p.sc = p.to; p.vs = 0 } else still = false
+			drawPic(i, p.open, p.sc)
+		})
+		if (still) gsap.ticker.remove(softTick)
+	}
+	const setPic = (i, to) => {
+		if (!soft) return drawPic(i, to, to)
+		const p = soft[i]
+		p.to = to
+		if (to < p.open || !dur(1)) { p.open = to; p.v = 0 } // closing, or a rebuilt page: at once
+		if (to < p.sc || !dur(1)) { p.sc = to; p.vs = 0 }
+		drawPic(i, p.open, p.sc)
+		if (p.open !== to || p.sc !== to) gsap.ticker.add(softTick)
+	}
 	const render = t => {
 		const i0 = Math.min(rows.length - 1, Math.floor(t)), fr = clamp(t - i0), f = smooth(fr)
 		// ?anim a, b, d: the old one goes in the first half of the change, the new one comes in the second
@@ -385,8 +510,7 @@ function how() {
 					// settles inside it (1.1 → 1), so the window opens on it rather than cutting it. Only the picture is
 					// clipped: the text fades (?text), at the same time as the picture
 					const shown = half(i)
-					figs[i].style.clipPath = `inset(0 0 ${(1 - shown) * 100}% 0)`
-					imgs[i].style.transform = `scale(${lerp(1.1, 1, shown)})`
+					setPic(i, shown) // the picture, and with it the text (?pic, setPic() above)
 					// the new text stands where it will stay while its row still comes up, so only the fade is seen
 					const rise = TEXT_FX === 2 ? 10 * (1 - shown) ** 2 * (i === i0 ? -1 : 1) : 0
 					texts[i].style.transform = `translate3d(0,${(i === i0 + 1 ? -open * (1 - f) : 0) + rise}px,0)`
@@ -395,7 +519,7 @@ function how() {
 						const L = texts[i].lines.length, s = 0.3
 						texts[i].style.opacity = 1
 						texts[i].lines.forEach((line, k) => { const q = clamp(shown * (1 + (L - 1) * s) - k * s); line.forEach(w => { w.style.opacity = q }) })
-					} else texts[i].style.opacity = shown
+					} else if (TEXT_FX !== 1) texts[i].style.opacity = shown
 				} else if (i === i0) {
 					// c, the old one: it leaves upwards with the next title, under the edge of its own title; the picture
 					// inside lags behind its frame
@@ -462,11 +586,12 @@ function how() {
 		show(hold.to)
 	}
 	const st = ScrollTrigger.create({
-		trigger: root, start: "top top", end: () => "+=" + innerHeight * rows.length * 0.6, pin, invalidateOnRefresh: true, snap,
+		trigger: root, start: "top top", end: () => "+=" + innerHeight * rows.length * 0.6 * STEP_LONG, pin, invalidateOnRefresh: true, snap,
 		onRefresh: s => { sizes(); hold = null; show(shelves(s.progress, units), true) },
 		onUpdate: anim === "b" ? update : s => show(shelves(s.progress, units))
 	})
 	if (anim === "b") gsap.ticker.add(rest)
+	oneStep(st, units, () => pin.isConnected)
 	sizes()
 	render(0)
 }
@@ -483,21 +608,67 @@ function manifesto() {
 	const order = frames.slice(0, shown).map((_, i) => i).filter(i => i !== k).sort((a, b) => ((a * 13) % 35) - ((b * 13) % 35))
 	const clip = () => { const r = frames[k].getBoundingClientRect(), p = kept.parentNode.getBoundingClientRect(); return `inset(${r.top - p.top}px ${p.right - r.right}px ${p.bottom - r.bottom}px ${r.left - p.left}px round 3px)` }
 	gsap.set(kept, { autoAlpha: 0 })
+	// ?mfz=a: the scene stands a little longer after the frame is kept (1.12 instead of 1), so the picture fills the screen
+	// before the page goes on, and the hold stays short (1.5 felt like a pause that held the scroll, user 26.11.2026)
+	const T = MFZ ? 1.12 : 1
 	const tl = gsap.timeline({
 		defaults: { ease: "none" },
 		scrollTrigger: {
-			trigger: root, start: "top top", end: () => "+=" + innerHeight * 2.6, pin: $(".st-pin", root), scrub: true, invalidateOnRefresh: true,
-			onUpdate: s => { count.textContent = s.progress > 0.76 ? "36 frames. 1 kept." : "36 frames" }
+			trigger: root, start: "top top", end: () => "+=" + innerHeight * 2.6 * T, pin: $(".st-pin", root), scrub: true, invalidateOnRefresh: true,
+			onUpdate: s => { count.textContent = s.progress * T > 0.76 ? "36 frames. 1 kept." : "36 frames" }
 		}
 	})
 	words.forEach((w, i) => tl.to(w, { opacity: 1, duration: 0.03 }, i / words.length * 0.62))
 	order.forEach((i, n) => tl.to(frames[i], { opacity: 0.08, duration: 0.03 }, 0.3 + n / order.length * 0.45))
-	tl.set(kept, { autoAlpha: 1 }, 0.78)
+	if (!MFZ) tl.set(kept, { autoAlpha: 1 }, 0.78)
 	// the start is given, not read back from the page: when the kept frame stands in the middle of the strip, the browser
 	// writes its clip with three lengths (left = right), and GSAP then paired the radius with the left edge, so the picture
 	// grew from the screen's left edge instead of from the frame (seen on a phone, 13.11.2026)
-	tl.fromTo(kept, { clipPath: clip }, { clipPath: "inset(0px 0px 0px 0px round 0px)", duration: 0.22, ease: "power2.inOut" }, 0.78)
-	tl.set({}, {}, 1)
+	if (!MFZ) tl.fromTo(kept, { clipPath: clip }, { clipPath: "inset(0px 0px 0px 0px round 0px)", duration: 0.22, ease: "power2.inOut" }, 0.78)
+	tl.set({}, {}, T)
+	// ?mfz=a, SKETCH (user 26.11.2026: the kept frame grows to the full screen with no gentleness). The scroll gives how far
+	// the picture has grown (from the kept frame at 0.78 to the full screen at 0.9 of the scene), a spring follows it
+	// (w 8, no overshoot), so it starts softly and settles, and the hold after it is short. The picture really grows: at the
+	// start it stands exactly where and how large it is in the strip (the same crop), so going back it shrinks into its
+	// frame and becomes it, with nothing to jump (user 26.11.2026: going back a rounded picture of another crop jumped in,
+	// slowly; further scrolling should go on to the words)
+	if (MFZ) {
+		const img = $("img", kept), st = tl.scrollTrigger
+		let at = 0, v = 0, to = 0
+		const draw = () => {
+			const r = frames[k].getBoundingClientRect(), p = kept.getBoundingClientRect(), e = clamp(at)
+			const iw = img.naturalWidth || frames[k].naturalWidth || 1600, ih = img.naturalHeight || frames[k].naturalHeight || 1000
+			const s0 = Math.max(r.width / iw, r.height / ih) / Math.max(p.width / iw, p.height / ih)
+			const dx = r.left + r.width / 2 - p.left - p.width / 2, dy = r.top + r.height / 2 - p.top - p.height / 2
+			const q = [r.top - p.top, p.right - r.right, p.bottom - r.bottom, r.left - p.left].map(x => x * (1 - e))
+			kept.style.clipPath = `inset(${q[0]}px ${q[1]}px ${q[2]}px ${q[3]}px round ${3 * (1 - e)}px)`
+			// the picture's own box at its full-screen size (object-fit would crop it to the screen's shape first, and the
+			// shrunk picture was then lower than its frame: the strip showed under it, 26.11.2026)
+			const sK = Math.max(p.width / iw, p.height / ih), w = iw * sK, h = ih * sK
+			img.style.cssText = `position:absolute;max-width:none;left:${(p.width - w) / 2}px;top:${(p.height - h) / 2}px;width:${w}px;height:${h}px;transform:translate(${dx * (1 - e)}px, ${dy * (1 - e)}px) scale(${lerp(s0, 1, e)})`
+			kept.style.visibility = at > 0.002 || to > 0 ? "visible" : "hidden"
+			kept.style.opacity = 1
+		}
+		const tick = () => {
+			if (!root.isConnected) return gsap.ticker.remove(tick)
+			for (let left = Math.min(0.05, gsap.ticker.deltaRatio() / 60); left > 0; left -= 1 / 240) {
+				const h = Math.min(left, 1 / 240)
+				// going back the spring is stiffer (w 12, was 8): the picture comes into its frame quicker, so the end is not
+				// seen to linger (user 26.11.2026)
+				const back = to < at, ww = back ? 144 : 64, zz = back ? 24 : 16
+				v += (ww * (to - at) - zz * v) * h; at += v * h
+			}
+			if (!dur(1) || (Math.abs(to - at) < 0.002 && Math.abs(v) < 0.02)) { at = to; v = 0; gsap.ticker.remove(tick) }
+			draw()
+		}
+		const aim = (p, now) => {
+			to = clamp((p * T - 0.78) / 0.12)
+			if (now) { at = to; v = 0; return draw() }
+			gsap.ticker.add(tick)
+		}
+		ScrollTrigger.create({ trigger: root, start: () => st.start, end: () => st.end, onUpdate: s => aim(s.progress), onRefresh: s => aim(s.progress, true) })
+		aim(st.progress, true)
+	}
 }
 
 // 04 VALUES — the five rules in a few lines of type; a picture opens inside the line and pushes the words apart ////
@@ -516,11 +687,12 @@ function values() {
 		if (near !== cur) { cur = near; reveal(desc, VALUES[near].text) }
 	}
 	const show = follower(render)
-	ScrollTrigger.create({
-		trigger: root, start: "top top", end: () => "+=" + innerHeight * VALUES.length * 0.65, pin: $(".st-pin", root), invalidateOnRefresh: true, snap: settle(units),
+	const st = ScrollTrigger.create({
+		trigger: root, start: "top top", end: () => "+=" + innerHeight * VALUES.length * 0.65 * STEP_LONG, pin: $(".st-pin", root), invalidateOnRefresh: true, snap: settle(units),
 		onUpdate: s => show(shelves(s.progress, units)),
 		onRefresh: s => show(shelves(s.progress, units), true)
 	})
+	oneStep(st, units, () => root.isConnected && words[0].isConnected)
 	render(0)
 }
 

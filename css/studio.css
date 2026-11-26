@@ -9,6 +9,13 @@
 	/* a section label: under the logo and menu, 160 at 1440, and never less than 24 under the menu's bottom (user 21.11.2026:
 	   at 1024 × 768 it stood 2 under it, at 834 × 1194 11) */
 	--st-label-top: max(5.5rem, calc(var(--u-width) * 160), calc(var(--header-inset) + var(--size-menu-h) + var(--space-5)));
+	/* a section label to its content (user 26.11.2026: one declared gap): 16 on every screen under How we work's rows and
+	   Our values' words (was 8–16 and 12); seen from the letters it is 20–22. The Manifesto's serif stands lower in its
+	   line, so its gap is smaller and runs the other way, 12 at 375 to 4 at 1440, to be seen as about 21 too (was 12: seen
+	   29 at 1440, 21 at 390) */
+	--label-gap: var(--space-4);
+	--label-gap-values: var(--space-5); /* Our values: a little more, 24 (user 26.11.2026: 16 was a touch tight there) */
+	--label-gap-serif: clamp(var(--space-1), calc(var(--space-3) - var(--ku) * 8), var(--space-3));
 }
 .st .caps { font-size: var(--fs-label); line-height: 1.5; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
 .st .display { font-family: var(--font-black); font-variation-settings: var(--fvs-black); font-weight: normal; text-transform: uppercase; line-height: 0.82; color: var(--white); }
@@ -77,7 +84,7 @@
 	display: grid; grid-template-columns: minmax(0, 1fr);
 	grid-template-rows: minmax(var(--st-label-top), 1fr) auto minmax(clamp(var(--space-5), calc(var(--u) * 48), var(--space-7)), var(--mf-gap)) auto minmax(max(1rem, calc(var(--u-width) * 64)), 1fr);
 }
-.mf-head { grid-row: 2; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
+.mf-head { grid-row: 2; display: flex; flex-direction: column; align-items: flex-start; gap: var(--label-gap-serif); }
 .mf-text { margin: 0; color: var(--white); font-family: "Instrument Serif", serif; font-size: max(2rem, min(calc(var(--u) * 96), 10.67vh, calc(var(--vw) * 9))); line-height: 1.08; text-wrap: pretty; }
 .mf-text span { opacity: 0.16; }
 .mf-strip { grid-row: 4; container-type: inline-size; }
@@ -93,7 +100,7 @@
 
 /* 04 VALUES — the words in fixed rows, at 60 / 700 (readable on a phone too). fit() picks the size from the window's shape
    (a taller window gets larger words) and the fewest rows in which every word still fits with its picture open */
-/* the label and the words: one group in the middle, the label 12 above the words (js/studio.js fitValues() sets --val-head
+/* the label and the words: one group in the middle, the label --label-gap-values (24) above the words (12 until 26.11.2026) (js/studio.js fitValues() sets --val-head
    = label + 12 and --vd-h = the words' height; user 21.11.2026) */
 .val-label { position: absolute; z-index: 3; left: var(--gutter); top: calc(50% - (var(--val-head, 30px) + var(--vd-h, 0px)) / 2); }
 .vd-text { position: absolute; z-index: 2; left: var(--gutter); right: var(--gutter); top: calc(50% + var(--val-head, 30px) / 2); display: grid; font-size: 6rem; transform: translateY(-50%); font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); line-height: var(--lh-display); letter-spacing: 0; /* like the chapter words in the same cut (user 21.11.2026; was -0.008em) */ font-weight: normal; text-transform: uppercase; color: var(--white); }
@@ -118,7 +125,7 @@
 .cc-row span:nth-child(2) { display: none; }
 .cc-row span:last-child { text-align: right; }
 .cc-row.on { color: var(--white); }
-.cc-row.on span { color: var(--accent); }
+.cc-row.on span { color: var(--white); } /* the whole lit row in white (user 26.11.2026; the names and years were --accent) */
 /* who shot for them, when the list has room for it */
 @container (min-width: 34rem) {
 	.cc-row { grid-template-columns: 1.5fr 1fr 7rem; }
