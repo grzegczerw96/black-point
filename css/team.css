@@ -16,7 +16,7 @@
 .tm .ca-q { margin: 0; min-width: 0; font-family: var(--font-bold); font-variation-settings: var(--fvs-bold); font-size: 6rem; line-height: var(--lh-display); } /* 85% like all display type (was 0.82, 16.11.2026) */
 .ca-q > span { display: block; width: max-content; }
 .ca-q > span:not(.ca-first):not(.ca-clip) { position: absolute; visibility: hidden; white-space: nowrap; } /* the fit probe */
-.ca-clip { overflow: hidden; padding-top: 0.04em; }
+.ca-clip { overflow: hidden; padding-top: 0.04em; margin-top: -0.04em; } /* the room for the letters' tops, taken back, so the lines stand 85 % apart (were 89 %, user 26.11.2026; as .hero-title .line on Home) */
 .ca-word { display: inline-block; white-space: nowrap; will-change: transform; }
 
 /* the portraits: --cols comes from js/team.js where it is not 2 (low windows, phones) */

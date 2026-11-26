@@ -63,12 +63,15 @@ const localTarget = href => {
 }
 
 // SHARED SECTIONS ///////////////////////////////////////////////////////////////////////////////////////////
-// the deer stands at the bottom of its picture: the frame shows the picture's lower part, so the deer stands higher
-// (user 26.11.2026; a tall frame, the phone's, shows the whole height either way)
+// the deer stands at the bottom of its picture (ears at 53.5 % of its height): the frame shows the picture's lower part,
+// so the deer stands higher (user 26.11.2026), but never so low that a wide frame cuts the ears off (the hovered frame,
+// user 26.11.2026: 50% 100% did). max(): 85 % of the room, or the picture's top edge at 48 % of its height (the picture
+// is 1000 × 1300, so 48 % of its height is 62.4 % of the frame's width, cqw: .city figure is a container, css/home.css);
+// a tall frame (phones) shows the whole height either way
 const STUDIOS_HTML = `
 	<div class="studios-frame">
 		<a class="city" href="https://maps.google.com/?q=Rua+das+Flores+28,+Lisbon" target="_blank" rel="noopener" data-tz="Europe/Lisbon">
-			<figure><img data-pic="img/studio-lisbon.jpg" style="object-position: 50% 100%" loading="lazy" alt="Fallow deer in a forest clearing"></figure>
+			<figure><img data-pic="img/studio-lisbon.jpg" style="object-position: 50% max(85%, -62.4cqw)" loading="lazy" alt="Fallow deer in a forest clearing"></figure>
 			<div class="city-txt">
 				<h2>Lisbon</h2>
 				<div class="city-info">

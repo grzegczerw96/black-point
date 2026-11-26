@@ -259,7 +259,7 @@ body { min-height: 100%; font-family: var(--font-body); }
 	background: var(--panel);
 	transition: flex-grow 0.9s var(--ease-out-quint);
 }
-.city figure { position: absolute; inset: 0; margin: 0; }
+.city figure { position: absolute; inset: 0; margin: 0; container-type: size; } /* cqw for the deer's place in its frame (js/site.js) */
 .city img {
 	width: 100%;
 	height: 100%;
