@@ -21,12 +21,25 @@ let openAt = null // the open project survives a resize or a turn of the phone: 
 const NEXT_AFTER = 0.49 // seconds: from here a further move of the wheel already brings the next project
 // The new page comes over this one like a sheet laid on top, from below or above with the scroll. This one hardly moves
 // and is dark before the sheet is halfway, so nothing of it shows (version 1, chosen by the user 13.11)
+// A sheet from above leads with its photographs, which used to fly under the logo and the X (the user, on a phone,
+// 28.11.2026). Now it shows only below the line where its content will stand, as a sheet from below does by itself:
+// its top is empty. Accepted by the user the same day; ?maska=0 shows the old change
+const TOP_MASK = new URLSearchParams(location.search).get("maska") !== "0"
+const contentTop = page => {
+	const top = page.getBoundingClientRect().top
+	return Math.min(...$$(".pv-text, .pv figure", page).map(el => el.getBoundingClientRect().top - top))
+}
 function changePage(out, inn, dir) {
 	const tl = gsap.timeline(), dim = $(".pv-dim", out)
 	gsap.set(inn, { autoAlpha: 1, yPercent: 100 * dir, zIndex: 7 })
 	gsap.set(dim, { opacity: 0 })
+	// the mask line stands still on the screen while the sheet moves through it
+	const line = dir < 0 && TOP_MASK ? contentTop(inn) : 0, mask = () => {
+		if (line) inn.style.clipPath = `inset(${Math.max(0, line - gsap.getProperty(inn, "yPercent") / 100 * inn.offsetHeight)}px 0 0 0)`
+	}
+	mask()
 	// it starts at once, under the wheel, and has all but arrived by NEXT_AFTER
-	tl.to(inn, { yPercent: 0, duration: 0.7, ease: "power4.out" }, 0)
+	tl.to(inn, { yPercent: 0, duration: 0.7, ease: "power4.out", onUpdate: mask, onComplete: () => { inn.style.clipPath = "" } }, 0)
 	tl.to(out, { yPercent: -6 * dir, duration: 0.7, ease: "power4.out" }, 0)
 	tl.to(dim, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0)
 	tl.fromTo($(".pv-a img", inn), { scale: 1.08 }, { scale: 1, duration: 0.9, ease: "expo.out" }, 0)

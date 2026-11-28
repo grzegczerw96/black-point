@@ -101,7 +101,7 @@ const QUEUE = (() => {
 	try { if (["1", "0"].includes(v)) sessionStorage.setItem("bp-kolejka", v); else v = sessionStorage.getItem("bp-kolejka") } catch (e) {}
 	return v !== "0" // the queue by default since the user liked it (26.11.2026, "jest spoko"); ?kolejka=0 ignores as before
 })()
-const oneStep = (st, units, alive) => {
+const oneStep = (st, units, alive, touch = false) => {
 	if (KROK !== "a") return
 	let busy = false, last = 0, began = 0, goal = 0, queued = 0
 	const at = k => st.start + (st.end - st.start) * (k + 0.2) / (units + 0.4)
@@ -135,7 +135,42 @@ const oneStep = (st, units, alive) => {
 		setTimeout(free, 700)
 	}
 	window.addEventListener("wheel", wheel, { capture: true, passive: false })
+	if (touch && ScrollTrigger.isTouch && TOUCH_STEP) touchSteps()
+	// One swipe, one step (user 28.11.2026, on a phone: one swipe in Our values could go several steps; Our values
+	// accepted on the phone the same day, then How we work too). On touch the page glides on
+	// after the finger lifts (site.js, normalizeScroll), so a flick carried two or three steps. Inside the standing scene
+	// a swipe now goes exactly one step as soon as the finger has moved 8 px, the page does not glide, and the rest of
+	// the swipe does nothing; past the first and last step the page scrolls as usual. The script that scrolls the page
+	// never sees such a swipe (stopped on the window, before it). ?palec=0 shows the way it was
+	function touchSteps() {
+		let y0 = null, mine = false
+		const opts = { capture: true, passive: false }
+		const down = e => { y0 = e.touches[0].clientY; mine = false }
+		const move = e => {
+			if (!alive()) return off()
+			if (y0 === null || !st.isActive) return
+			if (!mine) {
+				const dy = y0 - e.touches[0].clientY
+				if (Math.abs(dy) < 8) return
+				const dir = Math.sign(dy)
+				if (!busy) goal = Math.round(shelves(st.progress, units))
+				if (!busy && ((dir < 0 && goal === 0) || (dir > 0 && goal === units))) { y0 = null; return } // leave the scene
+				mine = true
+				if (busy) { if (QUEUE) queued = dir } // a new swipe while a step is under way: kept for later, as with the wheel
+				else { go(dir); setTimeout(free, 700) }
+			}
+			last = performance.now()
+			e.preventDefault(); e.stopImmediatePropagation()
+		}
+		const up = e => { if (mine) e.stopImmediatePropagation(); mine = false; y0 = null }
+		const off = () => { window.removeEventListener("touchstart", down, opts); window.removeEventListener("touchmove", move, opts); window.removeEventListener("touchend", up, opts) }
+		window.addEventListener("touchstart", down, opts)
+		window.addEventListener("touchmove", move, opts)
+		window.addEventListener("touchend", up, opts)
+	}
 }
+const TOUCH_STEP = new URLSearchParams(location.search).get("palec") !== "0"
+const OPENING_LAG = (v => v === null ? 2 : +v > 0 ? +v : true)(new URLSearchParams(location.search).get("scrub"))
 // Scroll progress to a scene's stops. Each stop is a shelf: it holds for most of the way and the change happens in the
 // middle, so the scene is nearly always at rest on a stop
 const shelves = (progress, units) => {
@@ -373,7 +408,11 @@ function opening(split) {
 		return `${((o.left + o.width * 0.15 - w.left) / w.width) * 100}% 50%`
 	}
 	gsap.set(word, { transformOrigin: origin })
-	const tl = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: root, start: "top top", end: () => "+=" + innerHeight * 1.6, pin: $(".st-pin", root), scrub: true, invalidateOnRefresh: true } })
+	// on touch the scene catches up with the scroll over OPENING_LAG seconds, 2 (user 28.11.2026 on a phone, accepted the same day: a fast
+	// swipe up turned the full photo back into the word in a moment). With the mouse ScrollSmoother already smooths the
+	// scroll by 1 s (site.js); on a phone nothing did. Measured: the word shrinking out of the photo took 0.22 s of a fast
+	// swipe, 0.28 s with 1, 0.45 s with 2. ?scrub=0 shows the way it was, ?scrub=1 another lag
+	const tl = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: root, start: "top top", end: () => "+=" + innerHeight * 1.6, pin: $(".st-pin", root), scrub: touchScroll ? OPENING_LAG : true, invalidateOnRefresh: true } })
 	tl.to(word, { scale: 70, duration: 1, ease: "power3.in" }, 0)
 	tl.to(".h-lead", { opacity: 0, y: -40, duration: 0.25 }, 0)
 	tl.set(mask, { autoAlpha: 0 }, 1)
@@ -591,7 +630,7 @@ function how() {
 		onUpdate: anim === "b" ? update : s => show(shelves(s.progress, units))
 	})
 	if (anim === "b") gsap.ticker.add(rest)
-	oneStep(st, units, () => pin.isConnected)
+	oneStep(st, units, () => pin.isConnected, true)
 	sizes()
 	render(0)
 }
@@ -692,7 +731,7 @@ function values() {
 		onUpdate: s => show(shelves(s.progress, units)),
 		onRefresh: s => show(shelves(s.progress, units), true)
 	})
-	oneStep(st, units, () => root.isConnected && words[0].isConnected)
+	oneStep(st, units, () => root.isConnected && words[0].isConnected, true)
 	render(0)
 }
 

@@ -128,7 +128,9 @@
 .pf-disc svg { width: 28%; transition: transform 600ms var(--ease-out-quint); }
 .pf-next:hover .pf-disc { transform: scale(0.92); }
 .pf-next:hover .pf-disc svg { transform: translateX(18%); }
-.pf-foot { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--gap-group) var(--gutter); font-size: var(--pf-tiny); line-height: 1.5; text-transform: uppercase; }
+/* the same colour and spacing as the footer line of the other pages (.foot-bar, css/home.css; user 28.11.2026: it was white) */
+.pf-foot { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--gap-group) var(--gutter); font-size: var(--pf-tiny); line-height: 1.5; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+.pf-foot a { color: var(--dim); }
 .pf-foot a:hover { color: var(--accent); }
 
 /* PHONE (data-mode="phone") — chosen by the user 12.11.2026 in Figma ("Profil mobile: propozycje", 285:173) =========== */
